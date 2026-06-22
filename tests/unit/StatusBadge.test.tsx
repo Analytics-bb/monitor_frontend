@@ -1,9 +1,6 @@
 import { render, screen } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
-import {
-  StatusBadge,
-  type StatusBadgeVariant,
-} from '@/components/StatusBadge'
+import { StatusBadge, type StatusBadgeVariant } from '@/components/StatusBadge'
 
 const VARIANTS: StatusBadgeVariant[] = [
   'success',

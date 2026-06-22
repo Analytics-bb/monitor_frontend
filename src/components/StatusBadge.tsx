@@ -32,11 +32,9 @@ const DEFAULT_LABELS: Record<StatusBadgeVariant, string> = {
 }
 
 const STATUS_CLASS: Record<StatusBadgeVariant, string> = {
-  success:
-    'border-status-success/30 bg-status-success/10 text-status-success',
+  success: 'border-status-success/30 bg-status-success/10 text-status-success',
   error: 'border-status-error/30 bg-status-error/10 text-status-error',
-  skipped:
-    'border-status-skipped/30 bg-status-skipped/10 text-status-skipped',
+  skipped: 'border-status-skipped/30 bg-status-skipped/10 text-status-skipped',
   active: 'border-status-active/30 bg-status-active/10 text-status-active',
   awaiting_approval:
     'border-status-awaiting-approval/30 bg-status-awaiting-approval/10 text-status-awaiting-approval',
@@ -50,7 +48,11 @@ const STATUS_CLASS: Record<StatusBadgeVariant, string> = {
 
 /**
  * Единый badge статуса для monitoring и deep chat.
- * Цвет + текстовая метка (цвет не единственный индикатор).
+ *
+ * Цвет через CSS tokens `status-*`; всегда показывает текстовую метку (a11y).
+ *
+ * @param props.status - Семантический статус
+ * @param props.label - Опциональная подпись вместо дефолтной
  */
 export function StatusBadge({ status, label, className }: StatusBadgeProps) {
   const text = label ?? DEFAULT_LABELS[status]

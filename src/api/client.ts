@@ -14,8 +14,13 @@ export interface ApiFetchOptions extends RequestInit {
 }
 
 /**
- * Базовый URL REST API anomaly-api (включая `/api`, без trailing slash).
- * В dev без `VITE_ANOMALY_API_BASE_URL` — `console.warn` и `null` (fixtures).
+ * Возвращает базовый URL REST API anomaly-api.
+ *
+ * В dev без `VITE_ANOMALY_API_BASE_URL` пишет предупреждение в консоль и возвращает `null`
+ * (для работы через fixtures). В prod бросает ошибку, если env не задан.
+ *
+ * @returns Base URL без trailing slash или `null` в dev без конфигурации
+ * @throws {Error} В prod-сборке, если `VITE_ANOMALY_API_BASE_URL` не задан
  */
 export function getApiBaseUrl(): string | null {
   const baseUrl = import.meta.env.VITE_ANOMALY_API_BASE_URL
@@ -56,11 +61,16 @@ async function fetchWithTimeout(
 }
 
 /**
- * Выполняет fetch к anomaly-api относительно `getApiBaseUrl()`.
- * JSON headers, timeout, GET-retry при 502/503/504.
+ * Выполняет HTTP-запрос к anomaly-api относительно {@link getApiBaseUrl}.
  *
- * @throws {ApiClientError} при HTTP-ошибке с распарсенным envelope, если есть
- * @throws {Error} если base URL не задан
+ * Добавляет JSON headers, timeout и retry для GET/HEAD при 502/503/504 (до 3 попыток).
+ * Сетевой вызов через `fetch`; при ошибке HTTP парсит error envelope.
+ *
+ * @param path - Путь относительно base URL (с `/` или без)
+ * @param init - Опции fetch и политика timeout/retry
+ * @returns Успешный `Response` (status 2xx)
+ * @throws {ApiClientError} При HTTP-ошибке с распарсенным envelope, если есть
+ * @throws {Error} Если base URL не задан или сработал timeout (`AbortError`)
  */
 export async function apiFetch(
   path: string,
@@ -75,8 +85,7 @@ export async function apiFetch(
   const url = `${baseUrl}${normalizedPath}`
   const method = (init.method ?? 'GET').toUpperCase()
   const timeoutMs = init.timeoutMs ?? DEFAULT_API_TIMEOUT_MS
-  const shouldRetry =
-    init.retry ?? (method === 'GET' || method === 'HEAD')
+  const shouldRetry = init.retry ?? (method === 'GET' || method === 'HEAD')
 
   const headers = new Headers(init.headers)
   if (!headers.has('Accept')) {
@@ -125,7 +134,12 @@ export async function apiFetch(
 }
 
 /**
- * GET + parse JSON body; бросает {@link ApiClientError} при ошибке HTTP.
+ * Выполняет GET и парсит JSON-тело ответа.
+ *
+ * @param path - Путь относительно base URL
+ * @param init - Опции {@link apiFetch}
+ * @returns Распарсенное тело ответа
+ * @throws {ApiClientError} При HTTP-ошибке
  */
 export async function apiGetJson<T>(
   path: string,

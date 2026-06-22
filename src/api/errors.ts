@@ -17,7 +17,9 @@ export type ApiError = z.infer<typeof apiErrorEnvelopeSchema>
  * @param response - HTTP-ответ с ошибкой
  * @returns Распарсенный envelope или `null`, если тело не соответствует схеме
  */
-export async function parseApiError(response: Response): Promise<ApiError | null> {
+export async function parseApiError(
+  response: Response,
+): Promise<ApiError | null> {
   if (response.ok) {
     return null
   }
@@ -56,7 +58,9 @@ export function isApiErrorCode(error: unknown, errorCode: string): boolean {
 /**
  * Показывает toast с `error_code` для API/транспортных ошибок.
  *
- * @param error - ошибка fetch/client или произвольная
+ * Побочный эффект: UI toast через `sonner` (не бросает исключений).
+ *
+ * @param error - `ApiClientError`, `Error` или произвольная ошибка
  */
 export function mapApiError(error: unknown): void {
   if (error instanceof ApiClientError) {

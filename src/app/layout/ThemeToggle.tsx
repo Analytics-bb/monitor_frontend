@@ -15,7 +15,9 @@ export function ThemeToggle() {
       variant="ghost"
       size="icon-sm"
       onClick={toggle}
-      aria-label={theme === 'dark' ? 'Включить светлую тему' : 'Включить тёмную тему'}
+      aria-label={
+        theme === 'dark' ? 'Включить светлую тему' : 'Включить тёмную тему'
+      }
     >
       {theme === 'dark' ? (
         <Sun className="size-5" aria-hidden />

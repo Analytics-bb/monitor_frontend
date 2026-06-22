@@ -28,10 +28,15 @@ function getEffectiveInterval(intervalMs: number): number {
 }
 
 /**
- * HTTP polling с lifecycle: смена интервала, ×2 при hidden tab, stop on unmount.
+ * HTTP polling с lifecycle для live-данных (monitoring, deep chat).
+ *
+ * При mount запускает немедленный fetch и периодический timer; при unmount останавливает.
+ * При `document.visibilityState=hidden` интервал удваивается. Смена `intervalMs` перезапускает timer.
+ *
+ * Побочные эффекты: сетевые вызовы через `fetcher`, подписка на `visibilitychange`.
  *
  * @param options - fetcher, interval и колбэки
- * @returns `refetch` и флаг `isPolling`
+ * @returns `refetch` для ручного обновления и флаг `isPolling` (= `enabled`)
  */
 export function usePolling<T>({
   fetcher,

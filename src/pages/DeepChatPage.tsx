@@ -6,7 +6,7 @@ export function DeepChatPage() {
   return (
     <section>
       <h1 className="text-2xl font-semibold tracking-tight">Deep chat</h1>
-      <p className="mt-2 text-sm text-muted-foreground">Audit: {auditId}</p>
+      <p className="text-muted-foreground mt-2 text-sm">Audit: {auditId}</p>
     </section>
   )
 }
