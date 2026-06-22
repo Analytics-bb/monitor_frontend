@@ -35,6 +35,7 @@ export {
 export {
   getStatusConclusion,
   getStatusGateId,
+  getStatusGateName,
   getStatusLastTickAt,
   getStatusReportError,
   getStatusReportStatus,

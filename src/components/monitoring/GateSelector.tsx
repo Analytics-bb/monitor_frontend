@@ -8,24 +8,11 @@ import { cn } from '@/lib/utils'
 export interface GateSelectorProps {
   /** Текущий gate из последнего status (`event.gate_id`). */
   currentGateId: string | null | undefined
+  /** Имя gate из последнего status (`event.gate_name`). */
+  currentGateName?: string | null | undefined
   /** Refetch status после успешной активации. */
   onActivated: () => Promise<void>
   className?: string
-}
-
-function parseGateDisplay(gateId: string | null | undefined): {
-  number: string
-  name: string
-} {
-  if (!gateId) {
-    return { number: '—', name: '—' }
-  }
-
-  const match = /^gate-(.+)$/i.exec(gateId)
-  return {
-    number: match?.[1] ?? gateId,
-    name: gateId,
-  }
 }
 
 /**
@@ -33,12 +20,16 @@ function parseGateDisplay(gateId: string | null | undefined): {
  */
 export function GateSelector({
   currentGateId,
+  currentGateName,
   onActivated,
   className,
 }: GateSelectorProps) {
   const [inputValue, setInputValue] = useState('')
   const [isActivating, setIsActivating] = useState(false)
-  const { number, name } = parseGateDisplay(currentGateId)
+
+  const handleInputChange = (value: string) => {
+    setInputValue(value.replace(/\D/g, ''))
+  }
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -68,34 +59,39 @@ export function GateSelector({
       data-testid="gate-selector"
     >
       <div className="min-w-0">
-        <p className="text-muted-foreground text-xs">Gate</p>
-        <p className="font-mono text-2xl font-semibold tabular-nums">{number}</p>
-        <p className="text-muted-foreground truncate text-sm">{name}</p>
+        <p className="font-mono text-2xl font-semibold tabular-nums">
+          {currentGateId ?? '—'}
+        </p>
+        <p className="text-muted-foreground truncate text-sm">
+          {currentGateName ?? '—'}
+        </p>
       </div>
 
       <form
-        className="flex w-full max-w-md flex-1 items-end justify-end gap-2 sm:w-auto"
+        className="flex w-full max-w-md flex-1 flex-col gap-1 sm:w-auto"
         onSubmit={(event) => void handleSubmit(event)}
       >
-        <label className="min-w-0 flex-1 space-y-1">
-          <span className="text-muted-foreground text-xs">Новый gate</span>
+        <span className="text-muted-foreground text-xs">Новый gate</span>
+        <div className="flex items-center gap-2">
           <input
             type="text"
-            className="border-input bg-background w-full rounded-md border px-3 py-2 text-sm"
+            inputMode="numeric"
+            pattern="[0-9]*"
+            className="border-input bg-background focus:border-ring/40 focus:ring-ring/20 h-9 min-w-0 flex-1 rounded-md border px-3 text-sm outline-none transition-colors focus:ring-1"
             value={inputValue}
-            onChange={(event) => setInputValue(event.target.value)}
-            placeholder="gate-42"
+            onChange={(event) => handleInputChange(event.target.value)}
+            placeholder="1001"
             aria-label="Номер gate"
             disabled={isActivating}
           />
-        </label>
-        <Button
-          type="submit"
-          size="sm"
-          disabled={!inputValue.trim() || isActivating}
-        >
-          Сменить
-        </Button>
+          <Button
+            type="submit"
+            className="h-9 shrink-0 px-4"
+            disabled={!inputValue.trim() || isActivating}
+          >
+            Сменить
+          </Button>
+        </div>
       </form>
     </div>
   )

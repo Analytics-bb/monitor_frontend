@@ -21,6 +21,23 @@ vi.mock('@/api/errors', async (importOriginal) => {
 const activateGateMock = vi.mocked(monitoringApi.activateGate)
 
 describe('GateSelector', () => {
+  it('accepts only digits in gate input', async () => {
+    const user = userEvent.setup()
+
+    render(
+      <GateSelector
+        currentGateId="1001"
+        currentGateName="Test Gate 1001 Test Method"
+        onActivated={async () => undefined}
+      />,
+    )
+
+    const input = screen.getByLabelText('Номер gate')
+    await user.type(input, 'ab12c3!')
+
+    expect(input).toHaveValue('123')
+  })
+
   it('keeps current gate on activate 404 and shows toast', async () => {
     const user = userEvent.setup()
 
@@ -33,21 +50,23 @@ describe('GateSelector', () => {
 
     render(
       <GateSelector
-        currentGateId="gate-42"
+        currentGateId="1001"
+        currentGateName="Test Gate 1001 Test Method"
         onActivated={async () => undefined}
       />,
     )
 
-    expect(screen.getByText('42')).toBeInTheDocument()
-    expect(screen.getByText('gate-42')).toBeInTheDocument()
+    expect(screen.getByText('1001')).toBeInTheDocument()
+    expect(screen.getByText('Test Gate 1001 Test Method')).toBeInTheDocument()
+    expect(screen.queryByText('Gate')).not.toBeInTheDocument()
 
-    await user.type(screen.getByLabelText('Номер gate'), 'gate-99')
+    await user.type(screen.getByLabelText('Номер gate'), '2002')
     await user.click(screen.getByRole('button', { name: 'Сменить' }))
 
     await waitFor(() => {
-      expect(activateGateMock).toHaveBeenCalledWith('gate-99')
+      expect(activateGateMock).toHaveBeenCalledWith('2002')
     })
 
-    expect(screen.getByText('gate-42')).toBeInTheDocument()
+    expect(screen.getByText('1001')).toBeInTheDocument()
   })
 })

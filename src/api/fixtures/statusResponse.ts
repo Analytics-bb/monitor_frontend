@@ -32,6 +32,7 @@ const configSnapshotSchema = z.record(z.string(), z.unknown())
 const eventSchema = z.object({
   event_id: z.string().uuid(),
   gate_id: z.string(),
+  gate_name: z.string().optional(),
   triggered_by: z.string().optional(),
   direction: z.string().nullable().optional(),
   zeros_share: z.number().optional(),
@@ -93,7 +94,8 @@ export const statusResponseFixture: StatusResponse = {
   tick_in_progress: false,
   event: {
     event_id: 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',
-    gate_id: 'gate-42',
+    gate_id: '1001',
+    gate_name: 'Test Gate 1001 Test Method',
     triggered_by: 'tx_count',
     direction: 'LOW',
     zeros_share: 0.0,
@@ -173,6 +175,13 @@ export function getStatusGateId(
   data: StatusResponse | null | undefined,
 ): string | null {
   return data?.event?.gate_id ?? null
+}
+
+/** Human-readable имя gate из последнего status. */
+export function getStatusGateName(
+  data: StatusResponse | null | undefined,
+): string | null {
+  return data?.event?.gate_name ?? null
 }
 
 /** Время последнего тика для StatusPanel. */
