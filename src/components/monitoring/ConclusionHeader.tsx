@@ -37,7 +37,7 @@ export function ConclusionHeader({
           type="button"
           variant="ghost"
           size="icon-sm"
-          className="text-muted-foreground hover:text-foreground size-8 shrink-0"
+          className="text-muted-foreground hover:text-foreground hover:bg-accent/50 size-8 shrink-0 border-transparent shadow-none focus-visible:border-transparent focus-visible:ring-1 focus-visible:ring-ring/25"
           onClick={onAction}
           aria-label={actionLabel}
         >

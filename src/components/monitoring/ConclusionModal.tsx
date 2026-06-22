@@ -35,6 +35,11 @@ export function ConclusionModal({ open, data, onClose }: ConclusionModalProps) {
 
     if (open && !dialog.open) {
       dialog.showModal()
+      requestAnimationFrame(() => {
+        if (document.activeElement instanceof HTMLElement) {
+          document.activeElement.blur()
+        }
+      })
     }
     if (!open && dialog.open) {
       dialog.close()
@@ -59,7 +64,7 @@ export function ConclusionModal({ open, data, onClose }: ConclusionModalProps) {
   return (
     <dialog
       ref={dialogRef}
-      className="bg-background/80 fixed inset-0 z-50 m-0 h-full max-h-none w-full max-w-none backdrop-blur-sm"
+      className="conclusion-modal text-foreground fixed inset-0 z-50 m-0 h-full max-h-none w-full max-w-none border-0 bg-transparent p-0 backdrop:bg-background/80 backdrop:backdrop-blur-sm"
       aria-labelledby={titleId}
       onClick={(event) => {
         if (event.target === dialogRef.current) {
@@ -69,7 +74,7 @@ export function ConclusionModal({ open, data, onClose }: ConclusionModalProps) {
     >
       <div className="flex h-full items-center justify-center p-4">
         <div
-          className="border-border bg-card flex max-h-[85vh] w-full max-w-4xl flex-col rounded-lg border shadow-lg"
+          className="border-border bg-card text-card-foreground flex max-h-[85vh] w-full max-w-4xl flex-col rounded-lg border shadow-lg"
           data-testid="conclusion-modal"
         >
           <div className="border-border border-b px-4 py-3">
