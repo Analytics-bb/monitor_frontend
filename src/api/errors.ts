@@ -1,3 +1,4 @@
+import { toast } from 'sonner'
 import { z } from 'zod'
 
 /** Zod-схема error envelope anomaly-api. */
@@ -50,4 +51,26 @@ export function isApiErrorCode(error: unknown, errorCode: string): boolean {
   return (
     error instanceof ApiClientError && error.apiError?.error_code === errorCode
   )
+}
+
+/**
+ * Показывает toast с `error_code` для API/транспортных ошибок.
+ *
+ * @param error - ошибка fetch/client или произвольная
+ */
+export function mapApiError(error: unknown): void {
+  if (error instanceof ApiClientError) {
+    const code = error.apiError?.error_code ?? `http_${error.status}`
+    toast.error(code, {
+      description: error.message,
+    })
+    return
+  }
+
+  if (error instanceof Error) {
+    toast.error('unknown_error', { description: error.message })
+    return
+  }
+
+  toast.error('unknown_error')
 }

@@ -1,5 +1,7 @@
 import type { ReactNode } from 'react'
 import { Outlet } from 'react-router'
+import { Toaster } from 'sonner'
+
 import { Sidebar } from './Sidebar'
 
 export interface AppLayoutProps {
@@ -17,6 +19,7 @@ export function AppLayout({ authSlot }: AppLayoutProps) {
       <main className="flex-1 overflow-auto p-6">
         <Outlet />
       </main>
+      <Toaster richColors closeButton position="top-right" />
     </div>
   )
 }

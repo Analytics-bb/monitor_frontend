@@ -4,6 +4,7 @@ export {
   apiErrorEnvelopeSchema,
   ApiClientError,
   isApiErrorCode,
+  mapApiError,
   parseApiError,
 } from './errors'
 export type { ApiError } from './errors'

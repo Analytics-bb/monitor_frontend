@@ -22,13 +22,13 @@ todos:
     status: completed
   - id: m0-toast-provider
     content: "sonner Toaster в AppLayout; хелпер mapApiError → toast с error_code"
-    status: pending
+    status: completed
   - id: m0-mock-samples
     content: "fixtures: AuditEntry, ChatSnapshot, AgentUsageRun, StatusResponse, DeepCaseSummary — для dev и Vitest"
     status: completed
   - id: m0-tests-shared
     content: "Vitest: usePolling unmount/interval; error envelope parse; StatusBadge renders all variants"
-    status: pending
+    status: completed
 isProject: true
 ---
 

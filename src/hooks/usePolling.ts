@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 
 export interface UsePollingOptions<T> {
   /** Асинхронный fetcher (обычно GET API). */
@@ -16,7 +16,7 @@ export interface UsePollingOptions<T> {
 export interface UsePollingResult {
   /** Немедленный refetch вне интервала. */
   refetch: () => Promise<void>
-  /** Polling активен (`enabled` и не на паузе unmount). */
+  /** Polling активен (`enabled`). */
   isPolling: boolean
 }
 
@@ -43,11 +43,12 @@ export function usePolling<T>({
   const fetcherRef = useRef(fetcher)
   const onDataRef = useRef(onData)
   const onErrorRef = useRef(onError)
-  const [isPolling, setIsPolling] = useState(enabled)
 
-  fetcherRef.current = fetcher
-  onDataRef.current = onData
-  onErrorRef.current = onError
+  useEffect(() => {
+    fetcherRef.current = fetcher
+    onDataRef.current = onData
+    onErrorRef.current = onError
+  }, [fetcher, onData, onError])
 
   const runFetch = useCallback(async () => {
     try {
@@ -64,11 +65,9 @@ export function usePolling<T>({
 
   useEffect(() => {
     if (!enabled) {
-      setIsPolling(false)
       return undefined
     }
 
-    setIsPolling(true)
     let timeoutId: ReturnType<typeof setTimeout> | undefined
     let cancelled = false
 
@@ -99,7 +98,6 @@ export function usePolling<T>({
 
     return () => {
       cancelled = true
-      setIsPolling(false)
       if (timeoutId !== undefined) {
         clearTimeout(timeoutId)
       }
@@ -107,5 +105,5 @@ export function usePolling<T>({
     }
   }, [enabled, intervalMs, runFetch])
 
-  return { refetch, isPolling }
+  return { refetch, isPolling: enabled }
 }

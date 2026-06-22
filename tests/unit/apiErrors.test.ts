@@ -1,5 +1,13 @@
-import { describe, expect, it } from 'vitest'
-import { parseApiError } from '@/api/errors'
+import { describe, expect, it, vi } from 'vitest'
+import { ApiClientError, mapApiError, parseApiError } from '@/api/errors'
+
+vi.mock('sonner', () => ({
+  toast: {
+    error: vi.fn(),
+  },
+}))
+
+const { toast } = await import('sonner')
 
 function jsonResponse(body: unknown, status = 400): Response {
   return new Response(JSON.stringify(body), {
@@ -47,5 +55,18 @@ describe('parseApiError', () => {
     const error = await parseApiError(response)
 
     expect(error).toBeNull()
+  })
+
+  it('mapApiError shows error_code in toast title', () => {
+    mapApiError(
+      new ApiClientError(404, {
+        error_code: 'gate_not_found',
+        message: 'Gate not found',
+      }),
+    )
+
+    expect(toast.error).toHaveBeenCalledWith('gate_not_found', {
+      description: 'Gate not found',
+    })
   })
 })
