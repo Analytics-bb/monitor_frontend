@@ -4,7 +4,7 @@ overview: "Индекс FE R2: дизайн-система (light-default data-d
 todos:
   - id: m0-design-tokens
     content: "index.css + shadcn theme: light (:root) и dark (.dark) палитры §Дизайн-система (ref colibrix.one, primary violet); шрифты Inter + JetBrains Mono; CSS-переменные status-* для StatusBadge"
-    status: pending
+    status: completed
   - id: m0-theme-toggle
     content: "ThemeProvider + toggle в AppLayout/Sidebar: default light, switch dark; persist localStorage; class .dark на html"
     status: pending
@@ -16,7 +16,7 @@ todos:
     status: pending
   - id: m0-api-client
     content: "api/client: base ANOMALY_API_BASE_URL, timeouts §10.z.1, retry GET 502/503/504 max 3; Zod error envelope"
-    status: pending
+    status: completed
   - id: m0-use-polling
     content: "hooks/usePolling: interval switch, visibility pause ×2, stop on unmount, immediate refetch helper"
     status: pending
