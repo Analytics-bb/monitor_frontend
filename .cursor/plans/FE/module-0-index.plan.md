@@ -10,7 +10,7 @@ todos:
     status: completed
   - id: m0-status-badge
     content: "StatusBadge — monitoring (6) + deep chat (not_started/cancelled); единые цвета; TSDoc; экспорт из components/"
-    status: pending
+    status: completed
   - id: m0-app-layout
     content: "AppLayout + Sidebar: навигация M17, Login/Logout слот, ThemeToggle, active-gate placeholder; маршруты → /settings/agents, deep/:auditId"
     status: pending
