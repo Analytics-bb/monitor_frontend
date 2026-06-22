@@ -13,7 +13,7 @@ todos:
     status: completed
   - id: m0-app-layout
     content: "AppLayout + Sidebar: навигация M17, Login/Logout слот, ThemeToggle, active-gate placeholder; маршруты → /settings/agents, deep/:auditId"
-    status: pending
+    status: completed
   - id: m0-api-client
     content: "api/client: base ANOMALY_API_BASE_URL, timeouts §10.z.1, retry GET 502/503/504 max 3; Zod error envelope"
     status: completed
