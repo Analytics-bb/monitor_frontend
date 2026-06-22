@@ -63,6 +63,10 @@ export function MonitoringPage() {
         />
       </MonitoringZone>
 
+      <MonitoringZone label="Metrics charts" testId="monitoring-charts">
+        <MetricsChartsSlider metricsCharts={getStatusMetricsChartSlides(data)} />
+      </MonitoringZone>
+
       <DegradedBanner visible={isDegraded} onRetry={refetch} />
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
@@ -101,10 +105,6 @@ export function MonitoringPage() {
           />
         </MonitoringZone>
       </div>
-
-      <MonitoringZone label="Metrics charts" testId="monitoring-charts">
-        <MetricsChartsSlider metricsCharts={getStatusMetricsChartSlides(data)} />
-      </MonitoringZone>
 
       <MonitoringZone label="Вывод агента" testId="monitoring-conclusion">
         <ConclusionPanel
