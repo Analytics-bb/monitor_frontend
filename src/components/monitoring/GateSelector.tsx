@@ -13,6 +13,21 @@ export interface GateSelectorProps {
   className?: string
 }
 
+function parseGateDisplay(gateId: string | null | undefined): {
+  number: string
+  name: string
+} {
+  if (!gateId) {
+    return { number: '—', name: '—' }
+  }
+
+  const match = /^gate-(.+)$/i.exec(gateId)
+  return {
+    number: match?.[1] ?? gateId,
+    name: gateId,
+  }
+}
+
 /**
  * Ввод номера gate и активация через `POST /api/gates/{gate_id}/activate`.
  */
@@ -22,29 +37,21 @@ export function GateSelector({
   className,
 }: GateSelectorProps) {
   const [inputValue, setInputValue] = useState('')
-  const [pendingGateId, setPendingGateId] = useState<string | null>(null)
   const [isActivating, setIsActivating] = useState(false)
+  const { number, name } = parseGateDisplay(currentGateId)
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     const trimmed = inputValue.trim()
     if (!trimmed || trimmed === currentGateId) {
       return
     }
-    setPendingGateId(trimmed)
-  }
-
-  const handleConfirm = async () => {
-    if (!pendingGateId) {
-      return
-    }
 
     setIsActivating(true)
     try {
-      await activateGate(pendingGateId)
+      await activateGate(trimmed)
       await onActivated()
       setInputValue('')
-      setPendingGateId(null)
     } catch (error) {
       mapApiError(error)
     } finally {
@@ -53,17 +60,25 @@ export function GateSelector({
   }
 
   return (
-    <div className={cn('space-y-3', className)} data-testid="gate-selector">
-      <div>
-        <h2 className="text-sm font-semibold">Gate</h2>
-        <p className="text-muted-foreground mt-1 text-sm">
-          {currentGateId ?? '—'}
-        </p>
+    <div
+      className={cn(
+        'flex flex-wrap items-center justify-between gap-4',
+        className,
+      )}
+      data-testid="gate-selector"
+    >
+      <div className="min-w-0">
+        <p className="text-muted-foreground text-xs">Gate</p>
+        <p className="font-mono text-2xl font-semibold tabular-nums">{number}</p>
+        <p className="text-muted-foreground truncate text-sm">{name}</p>
       </div>
 
-      <form className="space-y-2" onSubmit={handleSubmit}>
-        <label className="block space-y-1">
-          <span className="text-muted-foreground text-xs">Номер gate</span>
+      <form
+        className="flex w-full max-w-md flex-1 items-end justify-end gap-2 sm:w-auto"
+        onSubmit={(event) => void handleSubmit(event)}
+      >
+        <label className="min-w-0 flex-1 space-y-1">
+          <span className="text-muted-foreground text-xs">Новый gate</span>
           <input
             type="text"
             className="border-input bg-background w-full rounded-md border px-3 py-2 text-sm"
@@ -71,47 +86,17 @@ export function GateSelector({
             onChange={(event) => setInputValue(event.target.value)}
             placeholder="gate-42"
             aria-label="Номер gate"
+            disabled={isActivating}
           />
         </label>
-        <Button type="submit" size="sm" disabled={!inputValue.trim()}>
-          Сменить gate
+        <Button
+          type="submit"
+          size="sm"
+          disabled={!inputValue.trim() || isActivating}
+        >
+          Сменить
         </Button>
       </form>
-
-      {pendingGateId ? (
-        <div
-          className="border-border bg-background/95 fixed inset-0 z-50 flex items-center justify-center p-4"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="gate-confirm-title"
-        >
-          <div className="border-border bg-card w-full max-w-md rounded-lg border p-4 shadow-lg">
-            <h3 id="gate-confirm-title" className="font-semibold">
-              Подтвердить смену gate
-            </h3>
-            <p className="text-muted-foreground mt-2 text-sm">
-              Активировать gate {pendingGateId}?
-            </p>
-            <div className="mt-4 flex justify-end gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setPendingGateId(null)}
-                disabled={isActivating}
-              >
-                Отмена
-              </Button>
-              <Button
-                type="button"
-                onClick={() => void handleConfirm()}
-                disabled={isActivating}
-              >
-                Активировать
-              </Button>
-            </div>
-          </div>
-        </div>
-      ) : null}
     </div>
   )
 }

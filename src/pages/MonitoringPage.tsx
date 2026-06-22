@@ -55,21 +55,21 @@ export function MonitoringPage() {
       className="mx-auto flex w-full max-w-[1440px] flex-col gap-4"
       data-testid="monitoring-page"
     >
-      <MonitoringZone label="Status" testId="monitoring-status">
-        <StatusPanel
-          data={data}
-          isStale={isStale}
-          isDegraded={isDegraded}
+      <MonitoringZone label="Gate" testId="monitoring-gate">
+        <GateSelector
+          currentGateId={getStatusGateId(data)}
+          onActivated={refetch}
         />
       </MonitoringZone>
 
       <DegradedBanner visible={isDegraded} onRetry={refetch} />
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(280px,1fr)_2fr]">
-        <MonitoringZone label="Gate" testId="monitoring-gate">
-          <GateSelector
-            currentGateId={getStatusGateId(data)}
-            onActivated={refetch}
+        <MonitoringZone label="Tick" testId="monitoring-status">
+          <StatusPanel
+            data={data}
+            isStale={isStale}
+            isDegraded={isDegraded}
           />
         </MonitoringZone>
         <MonitoringZone label="Config snapshot" testId="monitoring-config">

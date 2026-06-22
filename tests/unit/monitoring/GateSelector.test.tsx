@@ -38,11 +38,11 @@ describe('GateSelector', () => {
       />,
     )
 
+    expect(screen.getByText('42')).toBeInTheDocument()
     expect(screen.getByText('gate-42')).toBeInTheDocument()
 
     await user.type(screen.getByLabelText('Номер gate'), 'gate-99')
-    await user.click(screen.getByRole('button', { name: 'Сменить gate' }))
-    await user.click(screen.getByRole('button', { name: 'Активировать' }))
+    await user.click(screen.getByRole('button', { name: 'Сменить' }))
 
     await waitFor(() => {
       expect(activateGateMock).toHaveBeenCalledWith('gate-99')
