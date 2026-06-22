@@ -1,60 +1,37 @@
-import { useCallback, useEffect, useState, type ChangeEvent } from 'react'
+import { useState, type FormEvent } from 'react'
 
-import {
-  activateGate,
-  getActiveGate,
-  getGates,
-  type GateInfo,
-} from '@/api/monitoring'
+import { activateGate } from '@/api/monitoring'
 import { mapApiError } from '@/api/errors'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
 export interface GateSelectorProps {
+  /** Текущий gate из последнего status (`event.gate_id`). */
+  currentGateId: string | null | undefined
   /** Refetch status после успешной активации. */
   onActivated: () => Promise<void>
   className?: string
 }
 
 /**
- * Выбор и активация gate с confirm-dialog.
+ * Ввод номера gate и активация через `POST /api/gates/{gate_id}/activate`.
  */
-export function GateSelector({ onActivated, className }: GateSelectorProps) {
-  const [gates, setGates] = useState<GateInfo[]>([])
-  const [activeGateId, setActiveGateId] = useState<string>('')
+export function GateSelector({
+  currentGateId,
+  onActivated,
+  className,
+}: GateSelectorProps) {
+  const [inputValue, setInputValue] = useState('')
   const [pendingGateId, setPendingGateId] = useState<string | null>(null)
   const [isActivating, setIsActivating] = useState(false)
 
-  const loadGates = useCallback(async () => {
-    const [list, active] = await Promise.all([getGates(), getActiveGate()])
-    setGates(list)
-    setActiveGateId(active.gate_id)
-  }, [])
-
-  useEffect(() => {
-    let cancelled = false
-
-    void Promise.all([getGates(), getActiveGate()]).then(([list, active]) => {
-      if (!cancelled) {
-        setGates(list)
-        setActiveGateId(active.gate_id)
-      }
-    })
-
-    return () => {
-      cancelled = true
-    }
-  }, [])
-
-  const activeGate = gates.find((gate) => gate.gate_id === activeGateId)
-  const pendingGate = gates.find((gate) => gate.gate_id === pendingGateId)
-
-  const handleSelectChange = (event: ChangeEvent<HTMLSelectElement>) => {
-    const nextId = event.target.value
-    if (nextId === activeGateId) {
+  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    const trimmed = inputValue.trim()
+    if (!trimmed || trimmed === currentGateId) {
       return
     }
-    setPendingGateId(nextId)
+    setPendingGateId(trimmed)
   }
 
   const handleConfirm = async () => {
@@ -65,9 +42,8 @@ export function GateSelector({ onActivated, className }: GateSelectorProps) {
     setIsActivating(true)
     try {
       await activateGate(pendingGateId)
-      await loadGates()
       await onActivated()
-      setActiveGateId(pendingGateId)
+      setInputValue('')
       setPendingGateId(null)
     } catch (error) {
       mapApiError(error)
@@ -81,27 +57,26 @@ export function GateSelector({ onActivated, className }: GateSelectorProps) {
       <div>
         <h2 className="text-sm font-semibold">Gate</h2>
         <p className="text-muted-foreground mt-1 text-sm">
-          {activeGate
-            ? `${activeGate.gate_id} — ${activeGate.label ?? activeGate.name}`
-            : '—'}
+          {currentGateId ?? '—'}
         </p>
       </div>
 
-      <label className="block space-y-1">
-        <span className="text-muted-foreground text-xs">Сменить gate</span>
-        <select
-          className="border-input bg-background w-full rounded-md border px-3 py-2 text-sm"
-          value={activeGateId}
-          onChange={handleSelectChange}
-          aria-label="Выбор gate"
-        >
-          {gates.map((gate) => (
-            <option key={gate.gate_id} value={gate.gate_id}>
-              {gate.gate_id} — {gate.label ?? gate.name}
-            </option>
-          ))}
-        </select>
-      </label>
+      <form className="space-y-2" onSubmit={handleSubmit}>
+        <label className="block space-y-1">
+          <span className="text-muted-foreground text-xs">Номер gate</span>
+          <input
+            type="text"
+            className="border-input bg-background w-full rounded-md border px-3 py-2 text-sm"
+            value={inputValue}
+            onChange={(event) => setInputValue(event.target.value)}
+            placeholder="gate-42"
+            aria-label="Номер gate"
+          />
+        </label>
+        <Button type="submit" size="sm" disabled={!inputValue.trim()}>
+          Сменить gate
+        </Button>
+      </form>
 
       {pendingGateId ? (
         <div
@@ -115,8 +90,7 @@ export function GateSelector({ onActivated, className }: GateSelectorProps) {
               Подтвердить смену gate
             </h3>
             <p className="text-muted-foreground mt-2 text-sm">
-              Активировать gate {pendingGate?.gate_id} (
-              {pendingGate?.label ?? pendingGate?.name})?
+              Активировать gate {pendingGateId}?
             </p>
             <div className="mt-4 flex justify-end gap-2">
               <Button

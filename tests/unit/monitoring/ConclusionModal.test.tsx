@@ -5,6 +5,7 @@ import type { ReactElement } from 'react'
 import { describe, expect, it, vi } from 'vitest'
 
 import { statusResponseFixture } from '@/api/fixtures/statusResponse'
+import { getStatusConclusion } from '@/api/fixtures/statusResponse'
 import { ConclusionModal } from '@/components/monitoring/ConclusionModal'
 import { ConclusionPanel } from '@/components/monitoring/ConclusionPanel'
 
@@ -21,7 +22,7 @@ describe('ConclusionPanel', () => {
       />,
     )
 
-    const preview = screen.getByText(statusResponseFixture.conclusion!)
+    const preview = screen.getByText(getStatusConclusion(statusResponseFixture)!)
     expect(preview.className).toContain('line-clamp-6')
   })
 })
@@ -43,7 +44,9 @@ describe('ConclusionModal', () => {
     )
 
     expect(screen.getByTestId('conclusion-modal')).toBeInTheDocument()
-    expect(screen.getByText(statusResponseFixture.conclusion!)).toBeInTheDocument()
+    expect(
+      screen.getByText(getStatusConclusion(statusResponseFixture)!),
+    ).toBeInTheDocument()
 
     await user.click(screen.getByLabelText('Свернуть conclusion'))
     expect(onClose).toHaveBeenCalled()

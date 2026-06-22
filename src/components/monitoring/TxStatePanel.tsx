@@ -1,8 +1,10 @@
 import { cn } from '@/lib/utils'
 
+type StateRecord = Record<string, unknown>
+
 export interface StateRecordPanelProps {
   title: string
-  state: Record<string, unknown> | null | undefined
+  state: StateRecord | null | undefined
   testId: string
   className?: string
 }
@@ -15,7 +17,7 @@ function renderValue(value: unknown): string {
     return value.toLocaleString('ru-RU')
   }
   if (typeof value === 'object') {
-    return JSON.stringify(value)
+    return JSON.stringify(value, null, 2)
   }
   return String(value)
 }
@@ -41,7 +43,9 @@ function StateRecordPanel({
               className="flex items-baseline justify-between gap-4"
             >
               <dt className="text-muted-foreground">{key}</dt>
-              <dd className="font-mono tabular-nums">{renderValue(value)}</dd>
+              <dd className="font-mono text-right text-xs whitespace-pre-wrap tabular-nums">
+                {renderValue(value)}
+              </dd>
             </div>
           ))}
         </dl>
@@ -51,7 +55,7 @@ function StateRecordPanel({
 }
 
 export interface TxStatePanelProps {
-  txState: Record<string, unknown> | null | undefined
+  txState: StateRecord | null | undefined
   className?: string
 }
 
@@ -67,7 +71,7 @@ export function TxStatePanel({ txState, className }: TxStatePanelProps) {
 }
 
 export interface SrStatePanelProps {
-  srState: Record<string, unknown> | null | undefined
+  srState: StateRecord | null | undefined
   className?: string
 }
 

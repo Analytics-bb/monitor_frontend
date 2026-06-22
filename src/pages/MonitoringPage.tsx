@@ -1,5 +1,6 @@
 import { useState } from 'react'
 
+import { getStatusGateId } from '@/api/fixtures/statusResponse'
 import { useMonitoringPolling } from '@/hooks/useMonitoringPolling'
 import { cn } from '@/lib/utils'
 
@@ -59,7 +60,6 @@ export function MonitoringPage() {
           data={data}
           isStale={isStale}
           isDegraded={isDegraded}
-          onRefresh={refetch}
         />
       </MonitoringZone>
 
@@ -67,24 +67,39 @@ export function MonitoringPage() {
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(280px,1fr)_2fr]">
         <MonitoringZone label="Gate" testId="monitoring-gate">
-          <GateSelector onActivated={refetch} />
+          <GateSelector
+            currentGateId={getStatusGateId(data)}
+            onActivated={refetch}
+          />
         </MonitoringZone>
         <MonitoringZone label="Config snapshot" testId="monitoring-config">
-          <ConfigSnapshotPanel configSnapshot={data?.config_snapshot} />
+          <ConfigSnapshotPanel
+            configSnapshot={data?.event?.config_snapshot ?? null}
+          />
         </MonitoringZone>
       </div>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <MonitoringZone label="TX state" testId="monitoring-tx-state">
-          <TxStatePanel txState={data?.tx_state} />
+          <TxStatePanel
+            txState={
+              (data?.event?.tx_state as Record<string, unknown> | undefined) ??
+              null
+            }
+          />
         </MonitoringZone>
         <MonitoringZone label="SR state" testId="monitoring-sr-state">
-          <SrStatePanel srState={data?.sr_state} />
+          <SrStatePanel
+            srState={
+              (data?.event?.sr_state as Record<string, unknown> | undefined) ??
+              null
+            }
+          />
         </MonitoringZone>
       </div>
 
       <MonitoringZone label="Metrics charts" testId="monitoring-charts">
-        <MetricsChartsSlider metricsCharts={data?.metrics_charts} />
+        <MetricsChartsSlider metricsCharts={null} />
       </MonitoringZone>
 
       <MonitoringZone label="Conclusion" testId="monitoring-conclusion">

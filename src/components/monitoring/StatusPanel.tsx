@@ -1,8 +1,9 @@
-import { RefreshCw } from 'lucide-react'
-
 import type { StatusResponse } from '@/api/monitoring'
+import {
+  getStatusLastTickAt,
+  getStatusReportStatus,
+} from '@/api/fixtures/statusResponse'
 import { StatusBadge } from '@/components/StatusBadge'
-import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
 export interface StatusPanelProps {
@@ -12,21 +13,16 @@ export interface StatusPanelProps {
   isStale: boolean
   /** 503 scheduler_not_initialized. */
   isDegraded: boolean
-  /** Ручной refetch без сброса interval. */
-  onRefresh: () => void
 }
 
 /**
  * Полоса статуса подключения и последнего тика scheduler.
  */
-export function StatusPanel({
-  data,
-  isStale,
-  isDegraded,
-  onRefresh,
-}: StatusPanelProps) {
+export function StatusPanel({ data, isStale, isDegraded }: StatusPanelProps) {
   const isLive = !isStale && data !== null
   const tickInProgress = data?.tick_in_progress ?? false
+  const lastTickAt = getStatusLastTickAt(data)
+  const reportStatus = getStatusReportStatus(data)
 
   return (
     <div
@@ -60,14 +56,14 @@ export function StatusPanel({
         <span>Последний тик:</span>
         <time
           className="text-foreground font-mono tabular-nums"
-          dateTime={data?.last_tick_at ?? undefined}
+          dateTime={lastTickAt ?? undefined}
         >
-          {data?.last_tick_at ?? '—'}
+          {lastTickAt ?? '—'}
         </time>
       </div>
 
-      {data?.last_status ? (
-        <StatusBadge status={data.last_status} />
+      {reportStatus ? (
+        <StatusBadge status={reportStatus} />
       ) : (
         <span className="text-muted-foreground text-sm">—</span>
       )}
@@ -80,18 +76,6 @@ export function StatusPanel({
           Тик выполняется
         </span>
       ) : null}
-
-      <Button
-        type="button"
-        variant="outline"
-        size="sm"
-        className="ml-auto"
-        onClick={() => void onRefresh()}
-        aria-label="Обновить статус"
-      >
-        <RefreshCw className="size-4" />
-        Обновить
-      </Button>
     </div>
   )
 }

@@ -1,15 +1,18 @@
 import { Maximize2 } from 'lucide-react'
 
 import type { StatusResponse } from '@/api/monitoring'
+import {
+  getStatusConclusion,
+  getStatusLastTickAt,
+  getStatusReportError,
+  getStatusReportStatus,
+} from '@/api/fixtures/statusResponse'
 import { StatusBadge } from '@/components/StatusBadge'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
 export interface ConclusionPanelProps {
-  data: Pick<
-    StatusResponse,
-    'conclusion' | 'last_status' | 'report_error' | 'audit_id' | 'last_tick_at'
-  > | null
+  data: StatusResponse | null
   onExpand: () => void
   className?: string
 }
@@ -18,14 +21,16 @@ export interface ConclusionPanelProps {
  * Inline-превью conclusion с truncate.
  */
 export function ConclusionPanel({ data, onExpand, className }: ConclusionPanelProps) {
-  const hasTick = Boolean(data?.last_tick_at)
-  const conclusion = data?.conclusion?.trim()
+  const hasTick = Boolean(getStatusLastTickAt(data))
+  const conclusion = getStatusConclusion(data)?.trim()
+  const reportStatus = getStatusReportStatus(data)
+  const reportError = getStatusReportError(data)
 
   return (
     <div className={cn('space-y-3', className)} data-testid="conclusion-panel">
       <div className="flex items-center gap-2">
         <h2 className="text-sm font-semibold">Conclusion</h2>
-        {data?.last_status ? <StatusBadge status={data.last_status} /> : null}
+        {reportStatus ? <StatusBadge status={reportStatus} /> : null}
       </div>
 
       {!hasTick ? (
@@ -36,8 +41,8 @@ export function ConclusionPanel({ data, onExpand, className }: ConclusionPanelPr
         <p className="line-clamp-6 text-sm leading-relaxed">{conclusion}</p>
       )}
 
-      {data?.report_error ? (
-        <p className="text-status-error text-sm">{data.report_error}</p>
+      {reportError ? (
+        <p className="text-status-error text-sm">{reportError}</p>
       ) : null}
 
       {conclusion ? (

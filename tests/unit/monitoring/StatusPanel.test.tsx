@@ -11,23 +11,15 @@ describe('StatusPanel', () => {
         data={statusResponseFixture}
         isStale={false}
         isDegraded={false}
-        onRefresh={() => undefined}
       />,
     )
 
     expect(screen.getByText('Live')).toBeInTheDocument()
-    expect(screen.getByText(statusResponseFixture.last_tick_at!)).toBeInTheDocument()
+    expect(screen.getByText(statusResponseFixture.created_at!)).toBeInTheDocument()
   })
 
   it('shows Stale when fetch failed', () => {
-    render(
-      <StatusPanel
-        data={null}
-        isStale
-        isDegraded={false}
-        onRefresh={() => undefined}
-      />,
-    )
+    render(<StatusPanel data={null} isStale isDegraded={false} />)
 
     expect(screen.getByText('Stale')).toBeInTheDocument()
   })
@@ -38,24 +30,11 @@ describe('StatusPanel', () => {
         data={{ ...statusResponseFixture, tick_in_progress: true }}
         isStale={false}
         isDegraded={false}
-        onRefresh={() => undefined}
       />,
     )
 
-    expect(screen.getByTestId('tick-in-progress')).toHaveClass('motion-safe:animate-pulse')
-  })
-
-  it('omits pulse when prefers reduced motion via motion-safe guard', () => {
-    render(
-      <StatusPanel
-        data={{ ...statusResponseFixture, tick_in_progress: true }}
-        isStale={false}
-        isDegraded={false}
-        onRefresh={() => undefined}
-      />,
+    expect(screen.getByTestId('tick-in-progress')).toHaveClass(
+      'motion-safe:animate-pulse',
     )
-
-    const indicator = screen.getByTestId('tick-in-progress')
-    expect(indicator.className).toContain('motion-safe:animate-pulse')
   })
 })

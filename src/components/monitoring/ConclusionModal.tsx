@@ -3,15 +3,17 @@ import { Minimize2 } from 'lucide-react'
 import { Link } from 'react-router'
 
 import type { StatusResponse } from '@/api/monitoring'
+import {
+  getStatusConclusion,
+  getStatusReportError,
+  getStatusReportStatus,
+} from '@/api/fixtures/statusResponse'
 import { StatusBadge } from '@/components/StatusBadge'
 import { Button } from '@/components/ui/button'
 
 export interface ConclusionModalProps {
   open: boolean
-  data: Pick<
-    StatusResponse,
-    'conclusion' | 'last_status' | 'report_error' | 'audit_id'
-  > | null
+  data: StatusResponse | null
   onClose: () => void
 }
 
@@ -21,6 +23,9 @@ export interface ConclusionModalProps {
 export function ConclusionModal({ open, data, onClose }: ConclusionModalProps) {
   const titleId = useId()
   const dialogRef = useRef<HTMLDialogElement>(null)
+  const conclusion = getStatusConclusion(data)
+  const reportStatus = getStatusReportStatus(data)
+  const reportError = getStatusReportError(data)
 
   useEffect(() => {
     const dialog = dialogRef.current
@@ -72,9 +77,7 @@ export function ConclusionModal({ open, data, onClose }: ConclusionModalProps) {
               <h2 id={titleId} className="font-semibold">
                 Conclusion
               </h2>
-              {data?.last_status ? (
-                <StatusBadge status={data.last_status} />
-              ) : null}
+              {reportStatus ? <StatusBadge status={reportStatus} /> : null}
             </div>
             <Button
               type="button"
@@ -89,11 +92,9 @@ export function ConclusionModal({ open, data, onClose }: ConclusionModalProps) {
           </div>
 
           <div className="overflow-y-auto px-4 py-4 text-sm leading-relaxed">
-            <p className="whitespace-pre-wrap">
-              {data?.conclusion ?? 'Нет вывода'}
-            </p>
-            {data?.report_error ? (
-              <p className="text-status-error mt-4">{data.report_error}</p>
+            <p className="whitespace-pre-wrap">{conclusion ?? 'Нет вывода'}</p>
+            {reportError ? (
+              <p className="text-status-error mt-4">{reportError}</p>
             ) : null}
             {data?.audit_id ? (
               <Link

@@ -10,12 +10,17 @@ import {
   YAxis,
 } from 'recharts'
 
-import type { StatusResponse } from '@/api/monitoring'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
+export interface MetricsChartSlide {
+  key: string
+  title: string
+  data: Array<{ label: string; value: number }>
+}
+
 export interface MetricsChartsSliderProps {
-  metricsCharts: StatusResponse['metrics_charts']
+  metricsCharts: MetricsChartSlide[] | null | undefined
   className?: string
 }
 

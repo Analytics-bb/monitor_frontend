@@ -33,6 +33,11 @@ export {
   type GateInfo,
 } from './gateInfo'
 export {
+  getStatusConclusion,
+  getStatusGateId,
+  getStatusLastTickAt,
+  getStatusReportError,
+  getStatusReportStatus,
   parseStatusResponse,
   statusResponseFixture,
   statusResponseSchema,

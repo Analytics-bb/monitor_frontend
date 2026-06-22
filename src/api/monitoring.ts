@@ -1,13 +1,5 @@
 import { apiFetch, apiGetJson, getApiBaseUrl } from './client'
 import {
-  activeGateFixture,
-  gatesFixture,
-  parseActiveGate,
-  parseGateInfoList,
-  type ActiveGateResponse,
-  type GateInfo,
-} from './fixtures/gateInfo'
-import {
   parseStatusResponse,
   statusResponseFixture,
   type StatusResponse,
@@ -27,26 +19,6 @@ export async function getStatus(): Promise<StatusResponse> {
   return parseStatusResponse(json)
 }
 
-/** Список gates (`GET /api/gates`). */
-export async function getGates(): Promise<GateInfo[]> {
-  if (!getApiBaseUrl()) {
-    return gatesFixture
-  }
-
-  const json = await apiGetJson<unknown>('/api/gates')
-  return parseGateInfoList(json)
-}
-
-/** Активный gate (`GET /api/gates/active`). */
-export async function getActiveGate(): Promise<ActiveGateResponse> {
-  if (!getApiBaseUrl()) {
-    return activeGateFixture
-  }
-
-  const json = await apiGetJson<unknown>('/api/gates/active')
-  return parseActiveGate(json)
-}
-
 /**
  * Активирует gate (`POST /api/gates/{gate_id}/activate`).
  *
@@ -62,4 +34,4 @@ export async function activateGate(gateId: string): Promise<void> {
   })
 }
 
-export type { ActiveGateResponse, GateInfo, StatusResponse }
+export type { StatusResponse }
