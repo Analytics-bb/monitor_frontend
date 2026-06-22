@@ -1,0 +1,35 @@
+---
+description: Коммиты, ветки, pull request
+alwaysApply: true
+---
+
+# Git правила
+
+## Ветки
+Формат: `тип/краткий-slug` латиницей через `-`
+Типы: `feat` `fix` `docs` `chore` `refactor` `test` `ci`
+Одна ветка = одна цель. Затрагивает два несвязанных модуля — две ветки.
+Перед созданием ветки: `git checkout main && git pull origin main`, затем `git checkout -b тип/slug`.
+
+## Коммиты
+Формат: `тип(область): описание`
+Области: `monitoring` `deep` `usage` `settings` `ui` `api` `hooks` `deploy` `docs` `tests` `ci`
+
+Примеры:
+- `feat(monitoring): add polling status banner for 503 scheduler_not_initialized`
+- `fix(deep): stop chat polling in terminal state on unmount`
+- `feat(ui): add StatusBadge with shared status colors`
+- `refactor(api): parse error envelope with Zod schema`
+
+Один коммит = один смысловой шаг. Не смешивать несвязанные изменения.
+
+## Чеклист перед коммитом
+- `git status` и `git branch --show-current` — убедиться что ветка правильная
+- Нет секретов, токенов, `.env`, локальных дампов в индексе
+- Нет IDE-мусора и временных файлов
+
+## Жёсткие ограничения
+- Push и PR — только по явной просьбе пользователя
+- В рамках модульного цикла (module-runner) коммиты делают только
+  task-runner (на уровне задачи) и module-closer (на уровне модуля).
+  module-runner не коммитит напрямую.
