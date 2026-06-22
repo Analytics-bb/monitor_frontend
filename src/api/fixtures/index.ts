@@ -39,6 +39,8 @@ export {
   getStatusLastTickAt,
   getStatusReportError,
   getStatusReportStatus,
+  getStatusScheduler,
+  getStatusTickInProgress,
   parseStatusResponse,
   statusResponseFixture,
   statusResponseSchema,

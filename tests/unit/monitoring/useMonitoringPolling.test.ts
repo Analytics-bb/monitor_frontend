@@ -29,7 +29,10 @@ describe('useMonitoringPolling', () => {
   it('uses faster interval when tick_in_progress is true', async () => {
     getStatusMock.mockResolvedValue({
       ...statusResponseFixture,
-      tick_in_progress: true,
+      scheduler: {
+        ...statusResponseFixture.scheduler!,
+        tick_in_progress: true,
+      },
     })
 
     renderHook(() => useMonitoringPolling())

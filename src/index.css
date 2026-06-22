@@ -37,6 +37,7 @@
   --color-status-completed: var(--status-completed);
   --color-status-not-started: var(--status-not-started);
   --color-status-cancelled: var(--status-cancelled);
+  --animate-soft-pulse: soft-pulse 2.5s ease-in-out infinite;
 }
 
 :root {
@@ -109,5 +110,18 @@
 
   body {
     @apply bg-background text-foreground font-sans antialiased;
+  }
+}
+
+@keyframes soft-pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.55;
+    transform: scale(0.92);
   }
 }

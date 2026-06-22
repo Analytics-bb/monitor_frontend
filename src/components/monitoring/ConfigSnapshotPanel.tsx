@@ -87,14 +87,13 @@ export function ConfigSnapshotPanel({
   return (
     <div className={cn('space-y-3', className)} data-testid="config-snapshot">
       <h2 className="text-sm font-semibold">Настройки конфига</h2>
-      <dl className="grid gap-2 text-sm">
+      <dl className="grid grid-cols-1 gap-3">
         {entries.map(([key, value]) => (
-          <div
-            key={key}
-            className="flex items-baseline justify-between gap-4"
-          >
-            <dt className="text-muted-foreground">{getFieldLabel(key)}</dt>
-            <dd className="font-mono text-right tabular-nums">
+          <div key={key} className="space-y-0.5">
+            <dt className="text-muted-foreground text-xs leading-snug">
+              {getFieldLabel(key)}
+            </dt>
+            <dd className="font-mono text-sm tabular-nums">
               {formatValue(value)}
             </dd>
           </div>

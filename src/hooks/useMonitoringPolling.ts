@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from 'react'
 
 import { getStatus, type StatusResponse } from '@/api/monitoring'
+import { getStatusTickInProgress } from '@/api/fixtures/statusResponse'
 import { ApiClientError, isApiErrorCode } from '@/api/errors'
 import { usePolling } from '@/hooks/usePolling'
 
@@ -77,11 +78,11 @@ export function useMonitoringPolling(): UseMonitoringPollingResult {
     if (isDegraded) {
       return DEGRADED_BACKOFF_MS[backoffIndex]
     }
-    if (data?.tick_in_progress) {
+    if (getStatusTickInProgress(data)) {
       return TICK_IN_PROGRESS_INTERVAL_MS
     }
     return NORMAL_INTERVAL_MS
-  }, [isDegraded, backoffIndex, data?.tick_in_progress])
+  }, [isDegraded, backoffIndex, data])
 
   const { refetch } = usePolling({
     fetcher,

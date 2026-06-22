@@ -1,9 +1,8 @@
+import { CheckCircle2, XCircle } from 'lucide-react'
+
 import type { StatusResponse } from '@/api/monitoring'
-import {
-  getStatusLastTickAt,
-  getStatusReportStatus,
-} from '@/api/fixtures/statusResponse'
-import { StatusBadge } from '@/components/StatusBadge'
+import { getStatusScheduler } from '@/api/fixtures/statusResponse'
+import { formatDateTimeRu } from '@/lib/formatDateTime'
 import { cn } from '@/lib/utils'
 
 export interface StatusPanelProps {
@@ -15,21 +14,81 @@ export interface StatusPanelProps {
   isDegraded: boolean
 }
 
+function formatOptionalDateTime(value: string | null | undefined): string {
+  return formatDateTimeRu(value) ?? 'нет'
+}
+
+function formatBoolean(value: boolean | null | undefined): string {
+  if (value === true) {
+    return 'Да'
+  }
+  if (value === false) {
+    return 'Нет'
+  }
+  return 'нет'
+}
+
+function formatOptionalText(value: string | null | undefined): string {
+  if (!value) {
+    return 'нет'
+  }
+  return value
+}
+
+function formatCount(value: number | null | undefined): string {
+  if (value === null || value === undefined) {
+    return 'нет'
+  }
+  return value.toLocaleString('ru-RU')
+}
+
+function isSchedulerStatusOk(status: string | null | undefined): boolean {
+  return status === 'ok'
+}
+
 /**
- * Статус подключения и данные последнего тика scheduler.
+ * Статус scheduler: live-индикатор, `last_status` и поля `scheduler`.
  */
 export function StatusPanel({ data, isStale, isDegraded }: StatusPanelProps) {
   const isLive = !isStale && data !== null
-  const tickInProgress = data?.tick_in_progress ?? false
-  const lastTickAt = getStatusLastTickAt(data)
-  const reportStatus = getStatusReportStatus(data)
+  const scheduler = getStatusScheduler(data)
+  const lastStatus = scheduler?.last_status
+
+  const fields = [
+    {
+      label: 'Сервис запущен',
+      value: formatOptionalDateTime(scheduler?.created_at),
+    },
+    {
+      label: 'Крайний тик отработал',
+      value: formatOptionalDateTime(scheduler?.last_tick_at),
+    },
+    {
+      label: 'Крайний тик запущен',
+      value: formatOptionalDateTime(scheduler?.last_tick_started_at),
+    },
+    {
+      label: 'Детектор запущен',
+      value: formatBoolean(scheduler?.tick_in_progress),
+    },
+    {
+      label: 'Крайняя ошибка',
+      value: formatOptionalText(scheduler?.last_error_code),
+    },
+    {
+      label: 'Всего тиков',
+      value: formatCount(scheduler?.ticks_total),
+    },
+    {
+      label: 'Всего тиков с ошибкой',
+      value: formatCount(scheduler?.ticks_error_total),
+    },
+  ] as const
 
   return (
     <div className="space-y-3" data-testid="status-panel">
-      <h2 className="text-sm font-semibold">Тик</h2>
-
-      <div className="flex flex-wrap items-center gap-3">
-        <div className="flex items-center gap-2">
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex min-w-0 items-center gap-2">
           <span
             aria-label={
               isDegraded
@@ -41,42 +100,43 @@ export function StatusPanel({ data, isStale, isDegraded }: StatusPanelProps) {
             className={cn(
               'size-2.5 shrink-0 rounded-full',
               isDegraded && 'bg-status-skipped',
-              !isDegraded && isLive && 'bg-status-success',
+              !isDegraded && isLive && 'bg-status-success motion-safe:animate-soft-pulse',
               !isDegraded && !isLive && 'bg-muted-foreground/50',
-              tickInProgress &&
-                'bg-status-active motion-safe:animate-pulse',
             )}
+            data-testid="status-live-indicator"
           />
-          <span className="text-sm font-medium">
-            {isDegraded ? 'Degraded' : isLive ? 'Live' : 'Stale'}
-          </span>
+          <h2 className="text-sm font-semibold">Статус</h2>
         </div>
 
-        {reportStatus ? (
-          <StatusBadge status={reportStatus} />
-        ) : (
-          <span className="text-muted-foreground text-sm">—</span>
-        )}
+        {lastStatus ? (
+          isSchedulerStatusOk(lastStatus) ? (
+            <CheckCircle2
+              aria-label="Последний тик: успех"
+              className="text-status-success size-5 shrink-0"
+              data-testid="status-last-ok-icon"
+            />
+          ) : (
+            <XCircle
+              aria-label="Последний тик: ошибка"
+              className="text-status-error size-5 shrink-0"
+              data-testid="status-last-error-icon"
+            />
+          )
+        ) : null}
       </div>
 
-      <div className="text-muted-foreground space-y-1 text-sm">
-        <span>Последний тик</span>
-        <time
-          className="text-foreground block font-mono text-base tabular-nums"
-          dateTime={lastTickAt ?? undefined}
-        >
-          {lastTickAt ?? '—'}
-        </time>
-      </div>
-
-      {tickInProgress ? (
-        <span
-          className="text-status-active text-xs font-medium motion-safe:animate-pulse"
-          data-testid="tick-in-progress"
-        >
-          Тик выполняется
-        </span>
-      ) : null}
+      <dl className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        {fields.map((field) => (
+          <div key={field.label} className="space-y-0.5">
+            <dt className="text-muted-foreground text-xs leading-snug">
+              {field.label}
+            </dt>
+            <dd className="text-foreground font-mono text-sm tabular-nums">
+              {field.value}
+            </dd>
+          </div>
+        ))}
+      </dl>
     </div>
   )
 }

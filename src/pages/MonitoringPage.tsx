@@ -65,17 +65,17 @@ export function MonitoringPage() {
 
       <DegradedBanner visible={isDegraded} onRetry={refetch} />
 
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(280px,1fr)_2fr]">
-        <MonitoringZone label="Tick" testId="monitoring-status">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <MonitoringZone label="Настройки конфига" testId="monitoring-config">
+          <ConfigSnapshotPanel
+            configSnapshot={data?.event?.config_snapshot ?? null}
+          />
+        </MonitoringZone>
+        <MonitoringZone label="Статус" testId="monitoring-status">
           <StatusPanel
             data={data}
             isStale={isStale}
             isDegraded={isDegraded}
-          />
-        </MonitoringZone>
-        <MonitoringZone label="Настройки конфига" testId="monitoring-config">
-          <ConfigSnapshotPanel
-            configSnapshot={data?.event?.config_snapshot ?? null}
           />
         </MonitoringZone>
       </div>

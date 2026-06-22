@@ -43,6 +43,29 @@ const eventSchema = z.object({
   config_snapshot: configSnapshotSchema.nullable().optional(),
 })
 
+const recentTickSchema = z.object({
+  tick_id: z.string().uuid(),
+  gate_id: z.string(),
+  started_at: z.string(),
+  finished_at: z.string().nullable().optional(),
+  status: z.string(),
+  n_events: z.number().optional(),
+  error: z.string().nullable().optional(),
+})
+
+const schedulerSchema = z.object({
+  created_at: z.string(),
+  last_tick_at: z.string().nullable(),
+  last_tick_started_at: z.string().nullable().optional(),
+  tick_in_progress: z.boolean(),
+  current_tick_started_at: z.string().nullable().optional(),
+  last_status: z.string().nullable().optional(),
+  last_error_code: z.string().nullable().optional(),
+  ticks_total: z.number(),
+  ticks_error_total: z.number(),
+  recent_ticks: z.array(recentTickSchema).optional(),
+})
+
 const reportUsageSchema = z.object({
   model: z.string(),
   prompt_tokens: z.number(),
@@ -78,11 +101,13 @@ export const statusResponseSchema = z.object({
   deep_chat: z.unknown().nullable().optional(),
   event: eventSchema.nullable().optional(),
   report: reportSchema.nullable().optional(),
+  scheduler: schedulerSchema.nullable().optional(),
   /** Ускоренный polling, если бэкенд сигнализирует активный тик. */
   tick_in_progress: z.boolean().optional(),
 })
 
 export type StatusResponse = z.infer<typeof statusResponseSchema>
+export type SchedulerStatus = z.infer<typeof schedulerSchema>
 
 /** Fixture StatusResponse для dev и Vitest. */
 export const statusResponseFixture: StatusResponse = {
@@ -92,6 +117,28 @@ export const statusResponseFixture: StatusResponse = {
   telegram_status: null,
   deep_chat: null,
   tick_in_progress: false,
+  scheduler: {
+    created_at: '2026-06-07T12:00:00',
+    last_tick_at: '2026-06-07T12:05:00',
+    last_tick_started_at: '2026-06-07T12:04:30',
+    tick_in_progress: false,
+    current_tick_started_at: null,
+    last_status: 'ok',
+    last_error_code: null,
+    ticks_total: 12,
+    ticks_error_total: 0,
+    recent_ticks: [
+      {
+        tick_id: '11111111-1111-4111-8111-111111111111',
+        gate_id: '1001',
+        started_at: '2026-06-07T12:04:30',
+        finished_at: '2026-06-07T12:05:00',
+        status: 'ok',
+        n_events: 1,
+        error: null,
+      },
+    ],
+  },
   event: {
     event_id: 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',
     gate_id: '1001',
@@ -184,11 +231,25 @@ export function getStatusGateName(
   return data?.event?.gate_name ?? null
 }
 
-/** Время последнего тика для StatusPanel. */
+/** Время последнего тика (`scheduler.last_tick_at` или fallback). */
 export function getStatusLastTickAt(
   data: StatusResponse | null | undefined,
 ): string | null {
-  return data?.created_at ?? null
+  return data?.scheduler?.last_tick_at ?? data?.created_at ?? null
+}
+
+/** Активный тик scheduler для ускоренного polling. */
+export function getStatusTickInProgress(
+  data: StatusResponse | null | undefined,
+): boolean {
+  return data?.scheduler?.tick_in_progress ?? data?.tick_in_progress ?? false
+}
+
+/** Снимок scheduler из status. */
+export function getStatusScheduler(
+  data: StatusResponse | null | undefined,
+): SchedulerStatus | null {
+  return data?.scheduler ?? null
 }
 
 /** Статус отчёта для StatusBadge. */
