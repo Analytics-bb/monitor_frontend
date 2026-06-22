@@ -10,28 +10,28 @@ todos:
     status: completed
   - id: m1-gate-selector
     content: "GateSelector: gate_id + имя; список gates; POST activate с confirm; refetch status"
-    status: pending
+    status: completed
   - id: m1-config-snapshot
     content: "ConfigSnapshotPanel: интерактивный просмотр config_snapshot (tree/accordion, copy field)"
-    status: pending
+    status: completed
   - id: m1-state-panels
     content: "TxStatePanel + SrStatePanel: структурированный вывод tx_state / sr_state из status"
-    status: pending
+    status: completed
   - id: m1-charts-slider
     content: "MetricsChartsSlider: несколько графиков, переключение Carousel/Slider; данные из status или §API"
-    status: pending
+    status: completed
   - id: m1-conclusion-modal
     content: "ConclusionPanel + ConclusionModal: превью в карточке; expand → Dialog overlay + backdrop; collapse обратно"
-    status: pending
+    status: completed
   - id: m1-status-polling
     content: "usePolling GET /status: 5-10s штатно, 2-3s при tick_in_progress, backoff при 503"
     status: completed
   - id: m1-degraded-banner
     content: Баннер scheduler_not_initialized (503) и empty state «ожидание первого тика»
-    status: pending
+    status: completed
   - id: m1-tests
     content: "Vitest: state panels render; conclusion expand/collapse modal; polling interval; gate activate 404"
-    status: pending
+    status: completed
 isProject: false
 ---
 

@@ -1,14 +1,24 @@
-import type { ReactNode } from 'react'
+import { useState } from 'react'
 
 import { useMonitoringPolling } from '@/hooks/useMonitoringPolling'
 import { cn } from '@/lib/utils'
 
-import { StatusPanel } from './StatusPanel'
+import {
+  ConfigSnapshotPanel,
+  ConclusionModal,
+  ConclusionPanel,
+  DegradedBanner,
+  GateSelector,
+  MetricsChartsSlider,
+  StatusPanel,
+  SrStatePanel,
+  TxStatePanel,
+} from '@/components/monitoring'
 
 interface MonitoringZoneProps {
   label: string
   testId: string
-  children: ReactNode
+  children: React.ReactNode
   className?: string
 }
 
@@ -32,36 +42,12 @@ function MonitoringZone({
   )
 }
 
-interface ZoneSkeletonProps {
-  lines?: number
-  tall?: boolean
-}
-
-function ZoneSkeleton({ lines = 3, tall = false }: ZoneSkeletonProps) {
-  return (
-    <div aria-hidden="true" className="space-y-2">
-      <div
-        className={cn(
-          'bg-muted animate-pulse rounded',
-          tall ? 'h-32' : 'h-5 w-1/3',
-        )}
-      />
-      {Array.from({ length: lines }, (_, index) => (
-        <div
-          key={index}
-          className="bg-muted h-4 animate-pulse rounded"
-          style={{ width: `${65 + (index % 3) * 10}%` }}
-        />
-      ))}
-    </div>
-  )
-}
-
 /**
  * Live-дашборд последнего тика scheduler: grid из 7 зон.
  */
 export function MonitoringPage() {
   const { data, isStale, isDegraded, refetch } = useMonitoringPolling()
+  const [conclusionOpen, setConclusionOpen] = useState(false)
 
   return (
     <div
@@ -77,31 +63,42 @@ export function MonitoringPage() {
         />
       </MonitoringZone>
 
+      <DegradedBanner visible={isDegraded} onRetry={refetch} />
+
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(280px,1fr)_2fr]">
         <MonitoringZone label="Gate" testId="monitoring-gate">
-          <ZoneSkeleton lines={2} />
+          <GateSelector onActivated={refetch} />
         </MonitoringZone>
         <MonitoringZone label="Config snapshot" testId="monitoring-config">
-          <ZoneSkeleton lines={4} />
+          <ConfigSnapshotPanel configSnapshot={data?.config_snapshot} />
         </MonitoringZone>
       </div>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <MonitoringZone label="TX state" testId="monitoring-tx-state">
-          <ZoneSkeleton lines={3} />
+          <TxStatePanel txState={data?.tx_state} />
         </MonitoringZone>
         <MonitoringZone label="SR state" testId="monitoring-sr-state">
-          <ZoneSkeleton lines={3} />
+          <SrStatePanel srState={data?.sr_state} />
         </MonitoringZone>
       </div>
 
       <MonitoringZone label="Metrics charts" testId="monitoring-charts">
-        <ZoneSkeleton lines={2} tall />
+        <MetricsChartsSlider metricsCharts={data?.metrics_charts} />
       </MonitoringZone>
 
       <MonitoringZone label="Conclusion" testId="monitoring-conclusion">
-        <ZoneSkeleton lines={6} />
+        <ConclusionPanel
+          data={data}
+          onExpand={() => setConclusionOpen(true)}
+        />
       </MonitoringZone>
+
+      <ConclusionModal
+        open={conclusionOpen}
+        data={data}
+        onClose={() => setConclusionOpen(false)}
+      />
     </div>
   )
 }

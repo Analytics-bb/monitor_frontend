@@ -9,7 +9,23 @@ export const statusResponseSchema = z.object({
   tx_state: z.record(z.string(), z.unknown()).nullable(),
   sr_state: z.record(z.string(), z.unknown()).nullable(),
   conclusion: z.string().nullable(),
+  report_error: z.string().nullable().optional(),
   audit_id: z.string().uuid().nullable().optional(),
+  metrics_charts: z
+    .array(
+      z.object({
+        key: z.string(),
+        title: z.string(),
+        data: z.array(
+          z.object({
+            label: z.string(),
+            value: z.number(),
+          }),
+        ),
+      }),
+    )
+    .nullable()
+    .optional(),
 })
 
 export type StatusResponse = z.infer<typeof statusResponseSchema>
@@ -34,6 +50,26 @@ export const statusResponseFixture: StatusResponse = {
   },
   conclusion: 'Порог превышен на gate 42; рекомендован deep analysis.',
   audit_id: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
+  metrics_charts: [
+    {
+      key: 'tx_volume',
+      title: 'Объём транзакций',
+      data: [
+        { label: '10:00', value: 120 },
+        { label: '11:00', value: 184 },
+        { label: '12:00', value: 210 },
+      ],
+    },
+    {
+      key: 'decline_rate',
+      title: 'Decline rate',
+      data: [
+        { label: '10:00', value: 2.1 },
+        { label: '11:00', value: 3.4 },
+        { label: '12:00', value: 5.8 },
+      ],
+    },
+  ],
 }
 
 export function parseStatusResponse(data: unknown): StatusResponse {

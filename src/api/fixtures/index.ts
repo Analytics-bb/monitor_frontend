@@ -23,6 +23,16 @@ export {
   type DeepCaseSummary,
 } from './deepCaseSummary'
 export {
+  activeGateFixture,
+  activeGateResponseSchema,
+  gateInfoSchema,
+  gatesFixture,
+  parseActiveGate,
+  parseGateInfoList,
+  type ActiveGateResponse,
+  type GateInfo,
+} from './gateInfo'
+export {
   parseStatusResponse,
   statusResponseFixture,
   statusResponseSchema,
