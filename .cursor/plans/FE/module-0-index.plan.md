@@ -25,7 +25,7 @@ todos:
     status: pending
   - id: m0-mock-samples
     content: "fixtures: AuditEntry, ChatSnapshot, AgentUsageRun, StatusResponse, DeepCaseSummary — для dev и Vitest"
-    status: pending
+    status: completed
   - id: m0-tests-shared
     content: "Vitest: usePolling unmount/interval; error envelope parse; StatusBadge renders all variants"
     status: pending
