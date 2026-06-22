@@ -1,6 +1,2 @@
-/**
- * Компоненты страницы `/monitoring`.
- * Re-export добавляются по мере реализации task-пакета module-1.
- */
-
-export {}
+export { StatusPanel } from './StatusPanel'
+export type { StatusPanelProps } from './StatusPanel'

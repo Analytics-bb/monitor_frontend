@@ -1,19 +1,17 @@
 import type { ReactNode } from 'react'
 
+import { useMonitoringPolling } from '@/hooks/useMonitoringPolling'
 import { cn } from '@/lib/utils'
 
+import { StatusPanel } from './StatusPanel'
+
 interface MonitoringZoneProps {
-  /** A11y-метка зоны. */
   label: string
-  /** `data-testid` для тестов. */
   testId: string
   children: ReactNode
   className?: string
 }
 
-/**
- * Карточка-зона дашборда мониторинга (placeholder до подключения компонентов).
- */
 function MonitoringZone({
   label,
   testId,
@@ -39,7 +37,6 @@ interface ZoneSkeletonProps {
   tall?: boolean
 }
 
-/** Skeleton-заглушка содержимого зоны на first mount. */
 function ZoneSkeleton({ lines = 3, tall = false }: ZoneSkeletonProps) {
   return (
     <div aria-hidden="true" className="space-y-2">
@@ -61,19 +58,23 @@ function ZoneSkeleton({ lines = 3, tall = false }: ZoneSkeletonProps) {
 }
 
 /**
- * Live-дашборд последнего тика scheduler: grid из 7 зон (shell).
- *
- * Desktop-first 1440px; на `<1024px` — Gate+Config и Tx+Sr в stack.
- * Данные и интерактивность подключаются в последующих задачах module-1.
+ * Live-дашборд последнего тика scheduler: grid из 7 зон.
  */
 export function MonitoringPage() {
+  const { data, isStale, isDegraded, refetch } = useMonitoringPolling()
+
   return (
     <div
       className="mx-auto flex w-full max-w-[1440px] flex-col gap-4"
       data-testid="monitoring-page"
     >
       <MonitoringZone label="Status" testId="monitoring-status">
-        <ZoneSkeleton lines={1} />
+        <StatusPanel
+          data={data}
+          isStale={isStale}
+          isDegraded={isDegraded}
+          onRefresh={refetch}
+        />
       </MonitoringZone>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(280px,1fr)_2fr]">

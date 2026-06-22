@@ -7,7 +7,7 @@ todos:
     status: completed
   - id: m1-status-panel
     content: "StatusPanel: активность подключения, last_tick_at, last_status, tick_in_progress, pulse + StatusBadge"
-    status: pending
+    status: completed
   - id: m1-gate-selector
     content: "GateSelector: gate_id + имя; список gates; POST activate с confirm; refetch status"
     status: pending
