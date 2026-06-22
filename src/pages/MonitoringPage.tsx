@@ -80,7 +80,10 @@ export function MonitoringPage() {
       </div>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <MonitoringZone label="TX state" testId="monitoring-tx-state">
+        <MonitoringZone
+          label="Сводка по объёму транзакций"
+          testId="monitoring-tx-state"
+        >
           <TxStatePanel
             txState={
               (data?.event?.tx_state as Record<string, unknown> | undefined) ??
@@ -88,7 +91,7 @@ export function MonitoringPage() {
             }
           />
         </MonitoringZone>
-        <MonitoringZone label="SR state" testId="monitoring-sr-state">
+        <MonitoringZone label="Сводка по конверсии" testId="monitoring-sr-state">
           <SrStatePanel
             srState={
               (data?.event?.sr_state as Record<string, unknown> | undefined) ??
