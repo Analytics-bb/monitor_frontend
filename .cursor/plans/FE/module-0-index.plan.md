@@ -7,7 +7,7 @@ todos:
     status: completed
   - id: m0-theme-toggle
     content: "ThemeProvider + toggle в AppLayout/Sidebar: default light, switch dark; persist localStorage; class .dark на html"
-    status: pending
+    status: completed
   - id: m0-status-badge
     content: "StatusBadge — monitoring (6) + deep chat (not_started/cancelled); единые цвета; TSDoc; экспорт из components/"
     status: pending
