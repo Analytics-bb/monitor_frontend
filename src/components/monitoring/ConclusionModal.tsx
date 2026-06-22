@@ -1,5 +1,4 @@
 import { useEffect, useId, useRef } from 'react'
-import { Minimize2 } from 'lucide-react'
 import { Link } from 'react-router'
 
 import type { StatusResponse } from '@/api/monitoring'
@@ -8,8 +7,9 @@ import {
   getStatusReportError,
   getStatusReportStatus,
 } from '@/api/fixtures/statusResponse'
-import { StatusBadge } from '@/components/StatusBadge'
-import { Button } from '@/components/ui/button'
+import { AgentConclusionContent } from '@/components/monitoring/AgentConclusionContent'
+import { ConclusionHeader } from '@/components/monitoring/ConclusionHeader'
+import { ConclusionScrollArea } from '@/components/monitoring/ConclusionScrollArea'
 
 export interface ConclusionModalProps {
   open: boolean
@@ -18,7 +18,7 @@ export interface ConclusionModalProps {
 }
 
 /**
- * Полноэкранный modal conclusion; backdrop click не закрывает.
+ * Modal вывода агента по центру экрана; backdrop click не закрывает.
  */
 export function ConclusionModal({ open, data, onClose }: ConclusionModalProps) {
   const titleId = useId()
@@ -72,29 +72,19 @@ export function ConclusionModal({ open, data, onClose }: ConclusionModalProps) {
           className="border-border bg-card flex max-h-[85vh] w-full max-w-4xl flex-col rounded-lg border shadow-lg"
           data-testid="conclusion-modal"
         >
-          <div className="border-border flex items-center justify-between gap-2 border-b px-4 py-3">
-            <div className="flex items-center gap-2">
-              <h2 id={titleId} className="font-semibold">
-                Conclusion
-              </h2>
-              {reportStatus ? <StatusBadge status={reportStatus} /> : null}
-            </div>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={onClose}
-              aria-label="Свернуть conclusion"
-            >
-              <Minimize2 className="size-4" />
-              Свернуть
-            </Button>
+          <div className="border-border border-b px-4 py-3">
+            <ConclusionHeader
+              titleId={titleId}
+              reportStatus={reportStatus}
+              action="collapse"
+              onAction={onClose}
+            />
           </div>
 
-          <div className="overflow-y-auto px-4 py-4 text-sm leading-relaxed">
-            <p className="whitespace-pre-wrap">{conclusion ?? 'Нет вывода'}</p>
+          <ConclusionScrollArea variant="modal" className="px-4 py-4">
+            <AgentConclusionContent content={conclusion ?? 'Нет вывода'} />
             {reportError ? (
-              <p className="text-status-error mt-4">{reportError}</p>
+              <p className="text-status-error mt-4 text-sm">{reportError}</p>
             ) : null}
             {data?.audit_id ? (
               <Link
@@ -104,7 +94,7 @@ export function ConclusionModal({ open, data, onClose }: ConclusionModalProps) {
                 Deep analysis →
               </Link>
             ) : null}
-          </div>
+          </ConclusionScrollArea>
         </div>
       </div>
     </dialog>

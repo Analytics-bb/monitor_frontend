@@ -1,5 +1,7 @@
 import { z } from 'zod'
 
+import { agentConclusionHtmlFixture } from './agentConclusionHtml'
+
 type ReportStatusVariant = 'success' | 'error' | 'skipped'
 
 const baselineSchema = z.object({
@@ -194,12 +196,11 @@ export const statusResponseFixture: StatusResponse = {
     matched_instruction_id: null,
     prompt_rendered: '',
     tool_calls: [],
-    conclusion:
-      'Трафик ниже нормы на 3 среза подряд. Рекомендация: проверить merchant routing.',
+    conclusion: agentConclusionHtmlFixture,
     latency_ms: 1200,
     status: 'success',
     error: null,
-    decision: 'close_fast',
+    decision: 'escalate',
     severity: 'warning',
     usage_run_id: 'dddddddd-dddd-4ddd-8ddd-dddddddddddd',
     usage: {

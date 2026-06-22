@@ -5,7 +5,6 @@ import type { ReactElement } from 'react'
 import { describe, expect, it, vi } from 'vitest'
 
 import { statusResponseFixture } from '@/api/fixtures/statusResponse'
-import { getStatusConclusion } from '@/api/fixtures/statusResponse'
 import { ConclusionModal } from '@/components/monitoring/ConclusionModal'
 import { ConclusionPanel } from '@/components/monitoring/ConclusionPanel'
 
@@ -14,7 +13,7 @@ function renderModal(ui: ReactElement) {
 }
 
 describe('ConclusionPanel', () => {
-  it('truncates conclusion preview with line-clamp', () => {
+  it('renders scrollable agent conclusion preview', () => {
     render(
       <ConclusionPanel
         data={statusResponseFixture}
@@ -22,13 +21,30 @@ describe('ConclusionPanel', () => {
       />,
     )
 
-    const preview = screen.getByText(getStatusConclusion(statusResponseFixture)!)
-    expect(preview.className).toContain('line-clamp-6')
+    expect(screen.getByRole('heading', { name: 'Вывод агента' })).toBeInTheDocument()
+    expect(screen.getByText(/ALERT: Gate 1001 Test/)).toBeInTheDocument()
+    expect(screen.getByLabelText('Развернуть вывод агента')).toBeInTheDocument()
+    expect(document.querySelector('.conclusion-scroll')).toBeInTheDocument()
+  })
+
+  it('calls onExpand when expand icon clicked', async () => {
+    const user = userEvent.setup()
+    const onExpand = vi.fn()
+
+    render(
+      <ConclusionPanel
+        data={statusResponseFixture}
+        onExpand={onExpand}
+      />,
+    )
+
+    await user.click(screen.getByLabelText('Развернуть вывод агента'))
+    expect(onExpand).toHaveBeenCalled()
   })
 })
 
 describe('ConclusionModal', () => {
-  it('opens dialog and closes on collapse button', async () => {
+  it('opens dialog and closes on collapse icon', async () => {
     const user = userEvent.setup()
     const onClose = vi.fn()
 
@@ -44,11 +60,10 @@ describe('ConclusionModal', () => {
     )
 
     expect(screen.getByTestId('conclusion-modal')).toBeInTheDocument()
-    expect(
-      screen.getByText(getStatusConclusion(statusResponseFixture)!),
-    ).toBeInTheDocument()
+    expect(screen.getByText(/ЭСКАЛИРОВАТЬ/)).toBeInTheDocument()
+    expect(screen.getByText('Deep analysis →')).toBeInTheDocument()
 
-    await user.click(screen.getByLabelText('Свернуть conclusion'))
+    await user.click(screen.getByLabelText('Свернуть вывод агента'))
     expect(onClose).toHaveBeenCalled()
   })
 

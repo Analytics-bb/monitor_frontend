@@ -1,5 +1,3 @@
-import { Maximize2 } from 'lucide-react'
-
 import type { StatusResponse } from '@/api/monitoring'
 import {
   getStatusConclusion,
@@ -7,8 +5,9 @@ import {
   getStatusReportError,
   getStatusReportStatus,
 } from '@/api/fixtures/statusResponse'
-import { StatusBadge } from '@/components/StatusBadge'
-import { Button } from '@/components/ui/button'
+import { AgentConclusionContent } from '@/components/monitoring/AgentConclusionContent'
+import { ConclusionHeader } from '@/components/monitoring/ConclusionHeader'
+import { ConclusionScrollArea } from '@/components/monitoring/ConclusionScrollArea'
 import { cn } from '@/lib/utils'
 
 export interface ConclusionPanelProps {
@@ -18,7 +17,7 @@ export interface ConclusionPanelProps {
 }
 
 /**
- * Inline-превью conclusion с truncate.
+ * Превью вывода агента со скроллом и иконкой разворота в modal.
  */
 export function ConclusionPanel({ data, onExpand, className }: ConclusionPanelProps) {
   const hasTick = Boolean(getStatusLastTickAt(data))
@@ -28,34 +27,24 @@ export function ConclusionPanel({ data, onExpand, className }: ConclusionPanelPr
 
   return (
     <div className={cn('space-y-3', className)} data-testid="conclusion-panel">
-      <div className="flex items-center gap-2">
-        <h2 className="text-sm font-semibold">Conclusion</h2>
-        {reportStatus ? <StatusBadge status={reportStatus} /> : null}
-      </div>
+      <ConclusionHeader
+        reportStatus={reportStatus}
+        action={conclusion ? 'expand' : null}
+        onAction={onExpand}
+      />
 
       {!hasTick ? (
         <p className="text-muted-foreground text-sm">Ожидание первого тика</p>
       ) : !conclusion ? (
         <p className="text-muted-foreground text-sm">Нет вывода</p>
       ) : (
-        <p className="line-clamp-6 text-sm leading-relaxed">{conclusion}</p>
+        <ConclusionScrollArea variant="panel">
+          <AgentConclusionContent content={conclusion} />
+        </ConclusionScrollArea>
       )}
 
       {reportError ? (
         <p className="text-status-error text-sm">{reportError}</p>
-      ) : null}
-
-      {conclusion ? (
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          onClick={onExpand}
-          aria-label="Развернуть conclusion"
-        >
-          <Maximize2 className="size-4" />
-          Развернуть
-        </Button>
       ) : null}
     </div>
   )

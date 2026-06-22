@@ -106,7 +106,7 @@ export function MonitoringPage() {
         <MetricsChartsSlider metricsCharts={null} />
       </MonitoringZone>
 
-      <MonitoringZone label="Conclusion" testId="monitoring-conclusion">
+      <MonitoringZone label="Вывод агента" testId="monitoring-conclusion">
         <ConclusionPanel
           data={data}
           onExpand={() => setConclusionOpen(true)}
