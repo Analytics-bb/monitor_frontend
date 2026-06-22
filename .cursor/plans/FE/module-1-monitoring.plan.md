@@ -4,7 +4,7 @@ overview: "Страница /monitoring: live-дашборд последнег�
 todos:
   - id: m1-page-shell
     content: "MonitoringPage: grid layout §Концепция страницы — 7 зон; responsive desktop-first 1440"
-    status: pending
+    status: in_progress
   - id: m1-status-panel
     content: "StatusPanel: активность подключения, last_tick_at, last_status, tick_in_progress, pulse + StatusBadge"
     status: pending
@@ -27,7 +27,7 @@ todos:
     content: "usePolling GET /status: 5-10s штатно, 2-3s при tick_in_progress, backoff при 503"
     status: pending
   - id: m1-degraded-banner
-    content: "Баннер scheduler_not_initialized (503) и empty state «ожидание первого тика»"
+    content: Баннер scheduler_not_initialized (503) и empty state «ожидание первого тика»
     status: pending
   - id: m1-tests
     content: "Vitest: state panels render; conclusion expand/collapse modal; polling interval; gate activate 404"
