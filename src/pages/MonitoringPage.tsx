@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import { getStatusGateId, getStatusGateName } from '@/api/fixtures/statusResponse'
+import { getStatusGateId, getStatusGateName, getStatusMetricsChartSlides } from '@/api/fixtures/statusResponse'
 import { useMonitoringPolling } from '@/hooks/useMonitoringPolling'
 import { cn } from '@/lib/utils'
 
@@ -103,7 +103,7 @@ export function MonitoringPage() {
       </div>
 
       <MonitoringZone label="Metrics charts" testId="monitoring-charts">
-        <MetricsChartsSlider metricsCharts={null} />
+        <MetricsChartsSlider metricsCharts={getStatusMetricsChartSlides(data)} />
       </MonitoringZone>
 
       <MonitoringZone label="Вывод агента" testId="monitoring-conclusion">

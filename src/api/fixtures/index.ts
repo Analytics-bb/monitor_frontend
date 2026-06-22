@@ -39,6 +39,7 @@ export {
   getStatusLastTickAt,
   getStatusReportError,
   getStatusReportStatus,
+  getStatusMetricsChartSlides,
   getStatusScheduler,
   getStatusTickInProgress,
   parseStatusResponse,
@@ -46,3 +47,14 @@ export {
   statusResponseSchema,
   type StatusResponse,
 } from './statusResponse'
+export {
+  buildMetricsChartSlides,
+  metricsChartSlidesFixture,
+  metricsToolsFixture,
+  metricsToolsSchema,
+  parseMetricsTools,
+  type MetricsChartSeries,
+  type MetricsChartSlide,
+  type MetricsChartType,
+  type MetricsTools,
+} from './metricsCharts'

@@ -1,7 +1,10 @@
 import { useMemo, useState } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import {
+  Bar,
+  BarChart,
   CartesianGrid,
+  Legend,
   Line,
   LineChart,
   ResponsiveContainer,
@@ -10,22 +13,154 @@ import {
   YAxis,
 } from 'recharts'
 
+import type { MetricsChartSlide } from '@/api/fixtures/metricsCharts'
+import {
+  CHART_AXIS_TICK,
+  CHART_GRID_PROPS,
+  CHART_LEGEND_PROPS,
+  CHART_LINE_PROPS,
+  CHART_MARGIN,
+  CHART_TOOLTIP_STYLE,
+  CHART_X_AXIS_PROPS,
+  CHART_Y_AXIS_PROPS,
+} from '@/components/monitoring/chartTheme'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
-
-export interface MetricsChartSlide {
-  key: string
-  title: string
-  data: Array<{ label: string; value: number }>
-}
 
 export interface MetricsChartsSliderProps {
   metricsCharts: MetricsChartSlide[] | null | undefined
   className?: string
 }
 
+export type { MetricsChartSlide }
+
+function ChartLines({ slide }: { slide: MetricsChartSlide }) {
+  return (
+    <>
+      {slide.series.map((series) => (
+        <Line
+          key={series.key}
+          dataKey={series.key}
+          name={series.label}
+          stroke={series.color}
+          yAxisId={series.yAxisId ?? 'left'}
+          {...CHART_LINE_PROPS}
+        />
+      ))}
+    </>
+  )
+}
+
+function MetricsChartView({ slide }: { slide: MetricsChartSlide }) {
+  if (slide.type === 'bar') {
+    const series = slide.series[0]
+    if (!series) {
+      return null
+    }
+
+    const isHorizontal = slide.key === 'top_ips_tx_details_3h'
+
+    if (isHorizontal) {
+      return (
+        <BarChart
+          data={slide.data}
+          layout="vertical"
+          margin={{ ...CHART_MARGIN, left: 4 }}
+        >
+          <CartesianGrid {...CHART_GRID_PROPS} horizontal={false} />
+          <XAxis type="number" {...CHART_Y_AXIS_PROPS} />
+          <YAxis
+            type="category"
+            dataKey={slide.xKey}
+            width={112}
+            tick={CHART_AXIS_TICK}
+            axisLine={false}
+            tickLine={false}
+          />
+          <Tooltip contentStyle={CHART_TOOLTIP_STYLE} cursor={{ fillOpacity: 0.06 }} />
+          <Bar
+            dataKey={series.key}
+            name={series.label}
+            fill={series.color}
+            radius={[0, 6, 6, 0]}
+            maxBarSize={18}
+          />
+        </BarChart>
+      )
+    }
+
+    return (
+      <BarChart data={slide.data} margin={CHART_MARGIN}>
+        <CartesianGrid {...CHART_GRID_PROPS} />
+        <XAxis dataKey={slide.xKey} {...CHART_X_AXIS_PROPS} />
+        <YAxis {...CHART_Y_AXIS_PROPS} />
+        <Tooltip contentStyle={CHART_TOOLTIP_STYLE} cursor={{ fillOpacity: 0.06 }} />
+        <Bar
+          dataKey={series.key}
+          name={series.label}
+          fill={series.color}
+          radius={[6, 6, 0, 0]}
+          maxBarSize={36}
+        />
+      </BarChart>
+    )
+  }
+
+  if (slide.type === 'dualAxis') {
+    return (
+      <LineChart data={slide.data} margin={{ ...CHART_MARGIN, right: 8 }}>
+        <CartesianGrid {...CHART_GRID_PROPS} />
+        <XAxis dataKey={slide.xKey} {...CHART_X_AXIS_PROPS} />
+        <YAxis yAxisId="left" {...CHART_Y_AXIS_PROPS} />
+        <YAxis
+          yAxisId="right"
+          orientation="right"
+          {...CHART_Y_AXIS_PROPS}
+          width={42}
+        />
+        <Tooltip contentStyle={CHART_TOOLTIP_STYLE} />
+        <Legend {...CHART_LEGEND_PROPS} />
+        <ChartLines slide={slide} />
+      </LineChart>
+    )
+  }
+
+  if (slide.type === 'multiLine') {
+    return (
+      <LineChart data={slide.data} margin={CHART_MARGIN}>
+        <CartesianGrid {...CHART_GRID_PROPS} />
+        <XAxis dataKey={slide.xKey} {...CHART_X_AXIS_PROPS} />
+        <YAxis {...CHART_Y_AXIS_PROPS} />
+        <Tooltip contentStyle={CHART_TOOLTIP_STYLE} />
+        <Legend {...CHART_LEGEND_PROPS} />
+        <ChartLines slide={slide} />
+      </LineChart>
+    )
+  }
+
+  const series = slide.series[0]
+  if (!series) {
+    return null
+  }
+
+  return (
+    <LineChart data={slide.data} margin={CHART_MARGIN}>
+      <CartesianGrid {...CHART_GRID_PROPS} />
+      <XAxis dataKey={slide.xKey} {...CHART_X_AXIS_PROPS} />
+      <YAxis {...CHART_Y_AXIS_PROPS} />
+      <Tooltip contentStyle={CHART_TOOLTIP_STYLE} />
+      <Line
+        dataKey={series.key}
+        name={series.label}
+        stroke={series.color}
+        {...CHART_LINE_PROPS}
+      />
+    </LineChart>
+  )
+}
+
 /**
- * Carousel графиков метрик на Recharts.
+ * Carousel графиков метрик на Recharts (стилизация под Plotly/GitHub dark).
  */
 export function MetricsChartsSlider({
   metricsCharts,
@@ -48,7 +183,8 @@ export function MetricsChartsSlider({
     )
   }
 
-  const active = slides[index]!
+  const safeIndex = Math.min(index, slides.length - 1)
+  const active = slides[safeIndex]!
   const total = slides.length
 
   const goPrev = () => {
@@ -77,7 +213,7 @@ export function MetricsChartsSlider({
             className="text-muted-foreground text-xs tabular-nums"
             data-testid="chart-slide-indicator"
           >
-            {index + 1}/{total}
+            {safeIndex + 1}/{total}
           </span>
           <Button
             type="button"
@@ -92,30 +228,12 @@ export function MetricsChartsSlider({
       </div>
 
       <div
-        className="border-border h-56 rounded-md border p-2 motion-safe:transition-opacity motion-safe:duration-200"
+        className="bg-elevated/40 h-80 rounded-lg p-3 motion-safe:transition-opacity motion-safe:duration-200"
         data-testid="chart-active-slide"
         data-chart-key={active.key}
       >
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={active.data}>
-            <CartesianGrid stroke="var(--border)" strokeDasharray="3 3" />
-            <XAxis dataKey="label" tick={{ fill: 'var(--muted-foreground)' }} />
-            <YAxis tick={{ fill: 'var(--muted-foreground)' }} />
-            <Tooltip
-              contentStyle={{
-                background: 'var(--card)',
-                border: '1px solid var(--border)',
-                color: 'var(--card-foreground)',
-              }}
-            />
-            <Line
-              type="monotone"
-              dataKey="value"
-              stroke="var(--primary)"
-              strokeWidth={2}
-              dot={false}
-            />
-          </LineChart>
+          <MetricsChartView slide={active} />
         </ResponsiveContainer>
       </div>
     </div>

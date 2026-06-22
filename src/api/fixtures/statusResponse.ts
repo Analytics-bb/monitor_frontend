@@ -1,6 +1,12 @@
 import { z } from 'zod'
 
 import { agentConclusionHtmlFixture } from './agentConclusionHtml'
+import type { MetricsChartSlide } from './metricsCharts'
+import {
+  buildMetricsChartSlides,
+  metricsToolsFixture,
+  metricsToolsSchema,
+} from './metricsCharts'
 
 type ReportStatusVariant = 'success' | 'error' | 'skipped'
 
@@ -104,6 +110,7 @@ export const statusResponseSchema = z.object({
   event: eventSchema.nullable().optional(),
   report: reportSchema.nullable().optional(),
   scheduler: schedulerSchema.nullable().optional(),
+  metrics_tools: metricsToolsSchema.nullable().optional(),
   /** Ускоренный polling, если бэкенд сигнализирует активный тик. */
   tick_in_progress: z.boolean().optional(),
 })
@@ -141,6 +148,7 @@ export const statusResponseFixture: StatusResponse = {
       },
     ],
   },
+  metrics_tools: metricsToolsFixture,
   event: {
     event_id: 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',
     gate_id: '1001',
@@ -251,6 +259,13 @@ export function getStatusScheduler(
   data: StatusResponse | null | undefined,
 ): SchedulerStatus | null {
   return data?.scheduler ?? null
+}
+
+/** Слайды графиков из `metrics_tools` status. */
+export function getStatusMetricsChartSlides(
+  data: StatusResponse | null | undefined,
+): MetricsChartSlide[] {
+  return buildMetricsChartSlides(data?.metrics_tools ?? null)
 }
 
 /** Статус отчёта для StatusBadge. */
