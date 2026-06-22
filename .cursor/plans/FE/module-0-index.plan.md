@@ -4,31 +4,31 @@ overview: "Индекс FE R2: дизайн-система (light-default data-d
 todos:
   - id: m0-design-tokens
     content: "index.css + shadcn theme: light (:root) и dark (.dark) палитры §Дизайн-система (ref colibrix.one, primary violet); шрифты Inter + JetBrains Mono; CSS-переменные status-* для StatusBadge"
-    status: pending
+    status: completed
   - id: m0-theme-toggle
     content: "ThemeProvider + toggle в AppLayout/Sidebar: default light, switch dark; persist localStorage; class .dark на html"
-    status: pending
+    status: completed
   - id: m0-status-badge
     content: "StatusBadge — monitoring (6) + deep chat (not_started/cancelled); единые цвета; TSDoc; экспорт из components/"
-    status: pending
+    status: completed
   - id: m0-app-layout
     content: "AppLayout + Sidebar: навигация M17, Login/Logout слот, ThemeToggle, active-gate placeholder; маршруты → /settings/agents, deep/:auditId"
-    status: pending
+    status: completed
   - id: m0-api-client
     content: "api/client: base ANOMALY_API_BASE_URL, timeouts §10.z.1, retry GET 502/503/504 max 3; Zod error envelope"
-    status: pending
+    status: completed
   - id: m0-use-polling
     content: "hooks/usePolling: interval switch, visibility pause ×2, stop on unmount, immediate refetch helper"
-    status: pending
+    status: completed
   - id: m0-toast-provider
     content: "sonner Toaster в AppLayout; хелпер mapApiError → toast с error_code"
-    status: pending
+    status: completed
   - id: m0-mock-samples
     content: "fixtures: AuditEntry, ChatSnapshot, AgentUsageRun, StatusResponse, DeepCaseSummary — для dev и Vitest"
-    status: pending
+    status: completed
   - id: m0-tests-shared
     content: "Vitest: usePolling unmount/interval; error envelope parse; StatusBadge renders all variants"
-    status: pending
+    status: completed
 isProject: true
 ---
 

@@ -1,2 +1,2 @@
-/** Placeholder для polling-хуков (реализация в Phase 4–5). */
-export {}
+export { usePolling } from './usePolling'
+export type { UsePollingOptions, UsePollingResult } from './usePolling'
