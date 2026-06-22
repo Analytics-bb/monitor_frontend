@@ -22,7 +22,7 @@ todos:
     status: completed
   - id: scaffold
     content: Скаффолд Vite+React19+TS+Tailwind+shadcn+Router v7, структура src/, .env.example, .gitignore
-    status: pending
+    status: completed
   - id: plan-fe
     content: plan-writer → .cursor/plans/FE/ индекс + per-page планы по M17; task-packager
     status: pending
