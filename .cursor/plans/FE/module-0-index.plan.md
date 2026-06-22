@@ -19,7 +19,7 @@ todos:
     status: completed
   - id: m0-use-polling
     content: "hooks/usePolling: interval switch, visibility pause ×2, stop on unmount, immediate refetch helper"
-    status: pending
+    status: completed
   - id: m0-toast-provider
     content: "sonner Toaster в AppLayout; хелпер mapApiError → toast с error_code"
     status: pending
