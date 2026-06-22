@@ -1,39 +1,37 @@
 import { render, screen } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { describe, expect, it } from 'vitest'
 
 import { ConfigSnapshotPanel } from '@/components/monitoring/ConfigSnapshotPanel'
 
 describe('ConfigSnapshotPanel', () => {
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
-
-  it('expands section and copies field value', async () => {
-    const user = userEvent.setup()
+  it('renders labeled config fields without hidden keys', () => {
     render(
       <ConfigSnapshotPanel
         configSnapshot={{
-          detector_version: '1.2.0',
-          threshold: 0.85,
+          gate_id: null,
+          slice_minutes: 10,
+          window_slices: 18,
+          quantile_low: 0.1,
+          quantile_high: 0.9,
+          persistence: 3,
+          mode: 'anomaly',
+          created_at: '2026-05-25T12:00:00',
+          updated_at: '2026-05-25T12:00:00',
         }}
       />,
     )
 
-    const writeText = vi
-      .spyOn(navigator.clipboard, 'writeText')
-      .mockResolvedValue(undefined)
+    expect(screen.getByText('Настройки конфига')).toBeInTheDocument()
+    expect(screen.getByText('Длина шага')).toBeInTheDocument()
+    expect(screen.getByText('10')).toBeInTheDocument()
+    expect(screen.getByText('Режим детекции')).toBeInTheDocument()
+    expect(screen.getByText('anomaly')).toBeInTheDocument()
 
-    await user.click(screen.getByRole('button', { name: /detector_version/i }))
-
+    expect(screen.queryByText('gate_id')).not.toBeInTheDocument()
+    expect(screen.queryByText('created_at')).not.toBeInTheDocument()
+    expect(screen.queryByText('updated_at')).not.toBeInTheDocument()
     expect(
-      screen.getByRole('button', { name: 'Копировать detector_version' }),
-    ).toBeInTheDocument()
-
-    await user.click(
-      screen.getByRole('button', { name: 'Копировать detector_version' }),
-    )
-
-    expect(writeText).toHaveBeenCalledWith('1.2.0')
+      screen.queryByRole('button', { name: /копировать/i }),
+    ).not.toBeInTheDocument()
   })
 })

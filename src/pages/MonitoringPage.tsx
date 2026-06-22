@@ -72,7 +72,7 @@ export function MonitoringPage() {
             isDegraded={isDegraded}
           />
         </MonitoringZone>
-        <MonitoringZone label="Config snapshot" testId="monitoring-config">
+        <MonitoringZone label="Настройки конфига" testId="monitoring-config">
           <ConfigSnapshotPanel
             configSnapshot={data?.event?.config_snapshot ?? null}
           />

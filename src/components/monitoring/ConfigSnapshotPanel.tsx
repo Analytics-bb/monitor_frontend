@@ -1,8 +1,3 @@
-import { useState } from 'react'
-import { Copy } from 'lucide-react'
-import { toast } from 'sonner'
-
-import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
 export interface ConfigSnapshotPanelProps {
@@ -10,32 +5,78 @@ export interface ConfigSnapshotPanelProps {
   className?: string
 }
 
+const HIDDEN_FIELDS = new Set(['gate_id', 'created_at', 'updated_at'])
+
+const CONFIG_FIELD_LABELS: Record<string, string> = {
+  slice_minutes: 'Длина шага',
+  window_slices: 'Кол-во шагов',
+  quantile_low: 'Порог нижнего квантиля',
+  quantile_high: 'Порог верхнего квантиля',
+  persistence: 'Срабатываний подряд',
+  mode: 'Режим детекции',
+}
+
+const CONFIG_DISPLAY_ORDER = [
+  'slice_minutes',
+  'window_slices',
+  'quantile_low',
+  'quantile_high',
+  'persistence',
+  'mode',
+] as const
+
 function formatValue(value: unknown): string {
   if (value === null || value === undefined) {
     return '—'
   }
-  if (typeof value === 'object') {
-    return JSON.stringify(value, null, 2)
+  if (typeof value === 'number') {
+    return value.toLocaleString('ru-RU')
   }
   return String(value)
 }
 
-function isEmptySnapshot(
-  configSnapshot: Record<string, unknown> | null | undefined,
-): boolean {
-  return !configSnapshot || Object.keys(configSnapshot).length === 0
+function getVisibleEntries(
+  configSnapshot: Record<string, unknown>,
+): Array<[string, unknown]> {
+  const visible = Object.entries(configSnapshot).filter(
+    ([key]) => !HIDDEN_FIELDS.has(key),
+  )
+
+  const orderIndex = new Map(
+    CONFIG_DISPLAY_ORDER.map((key, index) => [key, index]),
+  )
+
+  return visible.sort(([keyA], [keyB]) => {
+    const indexA = orderIndex.get(keyA as (typeof CONFIG_DISPLAY_ORDER)[number])
+    const indexB = orderIndex.get(keyB as (typeof CONFIG_DISPLAY_ORDER)[number])
+
+    if (indexA !== undefined && indexB !== undefined) {
+      return indexA - indexB
+    }
+    if (indexA !== undefined) {
+      return -1
+    }
+    if (indexB !== undefined) {
+      return 1
+    }
+    return keyA.localeCompare(keyB)
+  })
+}
+
+function getFieldLabel(key: string): string {
+  return CONFIG_FIELD_LABELS[key] ?? key
 }
 
 /**
- * Read-only просмотр `config_snapshot` с accordion и copy.
+ * Read-only просмотр `config_snapshot` — настройки конфига.
  */
 export function ConfigSnapshotPanel({
   configSnapshot,
   className,
 }: ConfigSnapshotPanelProps) {
-  const [openKey, setOpenKey] = useState<string | null>(null)
+  const entries = configSnapshot ? getVisibleEntries(configSnapshot) : []
 
-  if (isEmptySnapshot(configSnapshot)) {
+  if (entries.length === 0) {
     return (
       <p className="text-muted-foreground text-sm" data-testid="config-empty">
         Нет snapshot
@@ -43,56 +84,22 @@ export function ConfigSnapshotPanel({
     )
   }
 
-  const entries = Object.entries(configSnapshot!)
-
-  const copyField = async (key: string, value: unknown) => {
-    await navigator.clipboard.writeText(formatValue(value))
-    toast.success('Скопировано', { description: key })
-  }
-
   return (
-    <div className={cn('space-y-2', className)} data-testid="config-snapshot">
-      <h2 className="text-sm font-semibold">Config snapshot</h2>
-      <div className="space-y-1">
-        {entries.map(([key, value]) => {
-          const isOpen = openKey === key
-          const display = formatValue(value)
-          const truncated =
-            display.length > 80 ? `${display.slice(0, 80)}…` : display
-
-          return (
-            <div key={key} className="border-border rounded-md border">
-              <button
-                type="button"
-                className="hover:bg-muted/50 flex w-full items-center justify-between px-3 py-2 text-left text-sm"
-                aria-expanded={isOpen}
-                onClick={() => setOpenKey(isOpen ? null : key)}
-              >
-                <span className="font-medium">{key}</span>
-                <span className="text-muted-foreground font-mono text-xs tabular-nums">
-                  {isOpen ? display : truncated}
-                </span>
-              </button>
-              {isOpen ? (
-                <div className="border-border flex items-start justify-between gap-2 border-t px-3 py-2">
-                  <pre className="font-mono text-xs break-all whitespace-pre-wrap">
-                    {display}
-                  </pre>
-                  <Button
-                    type="button"
-                    size="icon-sm"
-                    variant="outline"
-                    aria-label={`Копировать ${key}`}
-                    onClick={() => void copyField(key, value)}
-                  >
-                    <Copy className="size-3.5" />
-                  </Button>
-                </div>
-              ) : null}
-            </div>
-          )
-        })}
-      </div>
+    <div className={cn('space-y-3', className)} data-testid="config-snapshot">
+      <h2 className="text-sm font-semibold">Настройки конфига</h2>
+      <dl className="grid gap-2 text-sm">
+        {entries.map(([key, value]) => (
+          <div
+            key={key}
+            className="flex items-baseline justify-between gap-4"
+          >
+            <dt className="text-muted-foreground">{getFieldLabel(key)}</dt>
+            <dd className="font-mono text-right tabular-nums">
+              {formatValue(value)}
+            </dd>
+          </div>
+        ))}
+      </dl>
     </div>
   )
 }
