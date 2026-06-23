@@ -31,7 +31,14 @@ const STATE_OPTIONS: { value: DeepChatStateFilter; label: string }[] = [
 ]
 
 const inputClassName =
-  'border-input bg-background focus:border-ring/40 focus:ring-ring/20 h-9 rounded-md border px-3 text-sm transition-colors outline-none focus:ring-1'
+  'border-input bg-background focus:border-ring/40 focus:ring-ring/20 h-9 w-full rounded-md border px-3 text-sm transition-colors duration-200 outline-none focus:ring-1'
+
+const dateInputClassName = cn(
+  inputClassName,
+  'text-foreground placeholder:text-muted-foreground/70',
+  'hover:border-border/70 hover:bg-muted/25',
+  'disabled:hover:border-input disabled:hover:bg-background',
+)
 
 /**
  * Панель фильтров списка deep cases: gate, state, период.
@@ -55,21 +62,21 @@ export function DeepCasesFilters({
 
   return (
     <form
-      className={cn(
-        'flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between',
-        className,
-      )}
+      className={cn('flex w-full flex-col gap-4', className)}
       onSubmit={handleApply}
       data-testid="deep-cases-filters"
     >
-      <div className="grid flex-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <label className="flex flex-col gap-1 text-sm">
+      <div className="grid w-full grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <label className="flex w-full flex-col gap-1 text-sm">
           <span className="text-muted-foreground text-xs">Gate</span>
           <input
             type="text"
             inputMode="numeric"
             pattern="[0-9]*"
-            className={cn(inputClassName, 'font-mono')}
+            className={cn(
+              inputClassName,
+              'font-mono hover:border-border/70 hover:bg-muted/25',
+            )}
             value={values.gate_id}
             onChange={(event) => handleGateChange(event.target.value)}
             placeholder="42"
@@ -78,10 +85,10 @@ export function DeepCasesFilters({
           />
         </label>
 
-        <label className="flex flex-col gap-1 text-sm">
+        <label className="flex w-full flex-col gap-1 text-sm">
           <span className="text-muted-foreground text-xs">State</span>
           <select
-            className={inputClassName}
+            className={cn(inputClassName, 'hover:border-border/70 hover:bg-muted/25')}
             value={values.state}
             onChange={(event) =>
               onChange({
@@ -100,36 +107,40 @@ export function DeepCasesFilters({
           </select>
         </label>
 
-        <label className="flex flex-col gap-1 text-sm">
+        <label className="flex w-full flex-col gap-1 text-sm">
           <span className="text-muted-foreground text-xs">From</span>
           <input
-            type="date"
-            className={inputClassName}
+            type="text"
+            inputMode="numeric"
+            className={dateInputClassName}
             value={values.from}
             onChange={(event) =>
               onChange({ ...values, from: event.target.value })
             }
+            placeholder="гггг-мм-дд"
             aria-label="Период от"
             disabled={isLoading}
           />
         </label>
 
-        <label className="flex flex-col gap-1 text-sm">
+        <label className="flex w-full flex-col gap-1 text-sm">
           <span className="text-muted-foreground text-xs">To</span>
           <input
-            type="date"
-            className={inputClassName}
+            type="text"
+            inputMode="numeric"
+            className={dateInputClassName}
             value={values.to}
             onChange={(event) =>
               onChange({ ...values, to: event.target.value })
             }
+            placeholder="гггг-мм-дд"
             aria-label="Период до"
             disabled={isLoading}
           />
         </label>
       </div>
 
-      <div className="flex shrink-0 justify-end gap-2 lg:ml-4">
+      <div className="flex w-full justify-end gap-2">
         <Button type="submit" size="sm" disabled={isLoading}>
           Применить
         </Button>
