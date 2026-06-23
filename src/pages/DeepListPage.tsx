@@ -71,7 +71,7 @@ function readFiltersFromSearchParams(
   ])
 
   return {
-    gate_id: searchParams.get('gate_id') ?? '',
+    gate_id: (searchParams.get('gate_id') ?? '').replace(/\D/g, ''),
     state: allowedStates.has(state)
       ? (state as DeepCasesFilterValues['state'])
       : '',

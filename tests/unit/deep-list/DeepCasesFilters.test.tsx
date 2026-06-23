@@ -81,6 +81,21 @@ describe('DeepCasesFilters', () => {
     expect(onApply).toHaveBeenCalledTimes(1)
   })
 
+  it('blocks onApply for invalid date format', async () => {
+    const user = userEvent.setup()
+    const onApply = vi.fn()
+
+    renderFilters({
+      values: { gate_id: '', state: '', from: 'bad-date', to: '' },
+      onApply,
+    })
+
+    await user.click(screen.getByRole('button', { name: 'Применить' }))
+
+    expect(onApply).not.toHaveBeenCalled()
+    expect(screen.getByText('Формат yyyy-mm-dd')).toBeInTheDocument()
+  })
+
   it('updates state filter via onChange', async () => {
     const user = userEvent.setup()
     const onChange = vi.fn()
