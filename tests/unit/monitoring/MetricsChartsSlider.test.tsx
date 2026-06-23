@@ -26,7 +26,9 @@ describe('MetricsChartsSlider', () => {
           { label: '10:00', value: 120 },
           { label: '11:00', value: 184 },
         ],
-        series: [{ key: 'value', label: 'Транзакции', color: 'var(--primary)' }],
+        series: [
+          { key: 'value', label: 'Транзакции', color: 'var(--primary)' },
+        ],
       },
       {
         key: 'decline_rate',
@@ -38,7 +40,11 @@ describe('MetricsChartsSlider', () => {
           { label: '11:00', approved: 120, declined: 3 },
         ],
         series: [
-          { key: 'approved', label: 'Approved', color: 'var(--status-success)' },
+          {
+            key: 'approved',
+            label: 'Approved',
+            color: 'var(--status-success)',
+          },
           { key: 'declined', label: 'Declined', color: 'var(--status-error)' },
         ],
       },

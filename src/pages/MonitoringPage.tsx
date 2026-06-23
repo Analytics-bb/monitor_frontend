@@ -1,6 +1,10 @@
 import { useState } from 'react'
 
-import { getStatusGateId, getStatusGateName, getStatusMetricsChartSlides } from '@/api/fixtures/statusResponse'
+import {
+  getStatusGateId,
+  getStatusGateName,
+  getStatusMetricsChartSlides,
+} from '@/api/fixtures/statusResponse'
 import { useMonitoringPolling } from '@/hooks/useMonitoringPolling'
 import { cn } from '@/lib/utils'
 
@@ -33,10 +37,7 @@ function MonitoringZone({
     <section
       aria-label={label}
       data-testid={testId}
-      className={cn(
-        'border-border bg-card rounded-lg border p-4',
-        className,
-      )}
+      className={cn('border-border bg-card rounded-lg border p-4', className)}
     >
       {children}
     </section>
@@ -64,7 +65,9 @@ export function MonitoringPage() {
       </MonitoringZone>
 
       <MonitoringZone label="Metrics charts" testId="monitoring-charts">
-        <MetricsChartsSlider metricsCharts={getStatusMetricsChartSlides(data)} />
+        <MetricsChartsSlider
+          metricsCharts={getStatusMetricsChartSlides(data)}
+        />
       </MonitoringZone>
 
       <DegradedBanner visible={isDegraded} onRetry={refetch} />
@@ -76,11 +79,7 @@ export function MonitoringPage() {
           />
         </MonitoringZone>
         <MonitoringZone label="Статус" testId="monitoring-status">
-          <StatusPanel
-            data={data}
-            isStale={isStale}
-            isDegraded={isDegraded}
-          />
+          <StatusPanel data={data} isStale={isStale} isDegraded={isDegraded} />
         </MonitoringZone>
       </div>
 
@@ -96,7 +95,10 @@ export function MonitoringPage() {
             }
           />
         </MonitoringZone>
-        <MonitoringZone label="Сводка по конверсии" testId="monitoring-sr-state">
+        <MonitoringZone
+          label="Сводка по конверсии"
+          testId="monitoring-sr-state"
+        >
           <SrStatePanel
             srState={
               (data?.event?.sr_state as Record<string, unknown> | undefined) ??
@@ -107,10 +109,7 @@ export function MonitoringPage() {
       </div>
 
       <MonitoringZone label="Вывод агента" testId="monitoring-conclusion">
-        <ConclusionPanel
-          data={data}
-          onExpand={() => setConclusionOpen(true)}
-        />
+        <ConclusionPanel data={data} onExpand={() => setConclusionOpen(true)} />
       </MonitoringZone>
 
       <ConclusionModal

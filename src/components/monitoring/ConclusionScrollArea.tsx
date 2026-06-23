@@ -19,7 +19,7 @@ export function ConclusionScrollArea({
     <div
       className={cn(
         'conclusion-scroll overflow-y-auto pr-1',
-        variant === 'panel' && 'min-h-52 max-h-64',
+        variant === 'panel' && 'max-h-64 min-h-52',
         variant === 'modal' && 'min-h-0 flex-1',
         className,
       )}

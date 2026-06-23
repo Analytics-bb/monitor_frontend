@@ -21,7 +21,9 @@ describe('ConclusionPanel', () => {
       />,
     )
 
-    expect(screen.getByRole('heading', { name: 'Вывод агента' })).toBeInTheDocument()
+    expect(
+      screen.getByRole('heading', { name: 'Вывод агента' }),
+    ).toBeInTheDocument()
     expect(screen.getByText(/ALERT: Gate 1001 Test/)).toBeInTheDocument()
     expect(screen.getByLabelText('Развернуть вывод агента')).toBeInTheDocument()
     expect(document.querySelector('.conclusion-scroll')).toBeInTheDocument()
@@ -31,12 +33,7 @@ describe('ConclusionPanel', () => {
     const user = userEvent.setup()
     const onExpand = vi.fn()
 
-    render(
-      <ConclusionPanel
-        data={statusResponseFixture}
-        onExpand={onExpand}
-      />,
-    )
+    render(<ConclusionPanel data={statusResponseFixture} onExpand={onExpand} />)
 
     await user.click(screen.getByLabelText('Развернуть вывод агента'))
     expect(onExpand).toHaveBeenCalled()
@@ -52,11 +49,7 @@ describe('ConclusionModal', () => {
     HTMLDialogElement.prototype.close = vi.fn()
 
     renderModal(
-      <ConclusionModal
-        open
-        data={statusResponseFixture}
-        onClose={onClose}
-      />,
+      <ConclusionModal open data={statusResponseFixture} onClose={onClose} />,
     )
 
     expect(screen.getByTestId('conclusion-modal')).toBeInTheDocument()
@@ -71,11 +64,7 @@ describe('ConclusionModal', () => {
     const onClose = vi.fn()
 
     renderModal(
-      <ConclusionModal
-        open
-        data={statusResponseFixture}
-        onClose={onClose}
-      />,
+      <ConclusionModal open data={statusResponseFixture} onClose={onClose} />,
     )
 
     const dialog = document.querySelector('dialog')

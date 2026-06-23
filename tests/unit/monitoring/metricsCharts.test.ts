@@ -4,7 +4,10 @@ import {
   buildMetricsChartSlides,
   metricsToolsFixture,
 } from '@/api/fixtures/metricsCharts'
-import { getStatusMetricsChartSlides, statusResponseFixture } from '@/api/fixtures/statusResponse'
+import {
+  getStatusMetricsChartSlides,
+  statusResponseFixture,
+} from '@/api/fixtures/statusResponse'
 
 describe('metricsCharts fixtures', () => {
   it('builds seven chart slides from sql tools', () => {
@@ -47,13 +50,17 @@ describe('metricsCharts fixtures', () => {
     expect(metricsToolsFixture.tx_24h).toHaveLength(24)
     expect(metricsToolsFixture.tx_status_24h).toHaveLength(24)
     expect(metricsToolsFixture.users_tx_buckets_24h).toHaveLength(24)
-    expect(metricsToolsFixture.success_rate_by_hour_country_24h).toHaveLength(72)
+    expect(metricsToolsFixture.success_rate_by_hour_country_24h).toHaveLength(
+      72,
+    )
     expect(metricsToolsFixture.top_ips_tx_details_3h).toHaveLength(10)
   })
 
   it('includes customer details in top ip chart slide', () => {
     const slides = buildMetricsChartSlides(metricsToolsFixture)
-    const topIpSlide = slides.find((slide) => slide.key === 'top_ips_tx_details_3h')
+    const topIpSlide = slides.find(
+      (slide) => slide.key === 'top_ips_tx_details_3h',
+    )
 
     expect(topIpSlide?.data).toHaveLength(10)
     expect(topIpSlide?.tooltipFields).toEqual(

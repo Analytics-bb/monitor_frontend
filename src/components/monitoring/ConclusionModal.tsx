@@ -64,7 +64,7 @@ export function ConclusionModal({ open, data, onClose }: ConclusionModalProps) {
   return (
     <dialog
       ref={dialogRef}
-      className="conclusion-modal text-foreground fixed inset-0 z-50 m-0 h-full max-h-none w-full max-w-none border-0 bg-transparent p-0 backdrop:bg-background/80 backdrop:backdrop-blur-sm"
+      className="conclusion-modal text-foreground backdrop:bg-background/80 fixed inset-0 z-50 m-0 h-full max-h-none w-full max-w-none border-0 bg-transparent p-0 backdrop:backdrop-blur-sm"
       aria-labelledby={titleId}
       onClick={(event) => {
         if (event.target === dialogRef.current) {

@@ -56,7 +56,9 @@ function isBaselineMetrics(value: unknown): value is BaselineMetrics {
   )
 }
 
-function parseEventState(state: Record<string, unknown> | null | undefined): EventStateShape | null {
+function parseEventState(
+  state: Record<string, unknown> | null | undefined,
+): EventStateShape | null {
   if (!state || Object.keys(state).length === 0) {
     return null
   }

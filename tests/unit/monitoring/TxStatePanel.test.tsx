@@ -2,7 +2,10 @@ import { render, screen } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 
 import { statusResponseFixture } from '@/api/fixtures/statusResponse'
-import { SrStatePanel, TxStatePanel } from '@/components/monitoring/TxStatePanel'
+import {
+  SrStatePanel,
+  TxStatePanel,
+} from '@/components/monitoring/TxStatePanel'
 
 const txState = statusResponseFixture.event?.tx_state as Record<string, unknown>
 const srState = statusResponseFixture.event?.sr_state as Record<string, unknown>

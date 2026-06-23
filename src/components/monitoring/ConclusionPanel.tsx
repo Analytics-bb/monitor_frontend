@@ -19,7 +19,11 @@ export interface ConclusionPanelProps {
 /**
  * Превью вывода агента со скроллом и иконкой разворота в modal.
  */
-export function ConclusionPanel({ data, onExpand, className }: ConclusionPanelProps) {
+export function ConclusionPanel({
+  data,
+  onExpand,
+  className,
+}: ConclusionPanelProps) {
   const hasTick = Boolean(getStatusLastTickAt(data))
   const conclusion = getStatusConclusion(data)?.trim()
   const reportStatus = getStatusReportStatus(data)

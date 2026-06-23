@@ -13,7 +13,10 @@ import {
 } from 'recharts'
 
 import type { MetricsChartSlide } from '@/api/fixtures/metricsCharts'
-import { ChartTooltipContent, type ChartTooltipProps } from '@/components/monitoring/ChartTooltip'
+import {
+  ChartTooltipContent,
+  type ChartTooltipProps,
+} from '@/components/monitoring/ChartTooltip'
 import {
   CHART_LINE_PROPS,
   CHART_MARGIN,
@@ -94,8 +97,39 @@ function ChartLines({
   )
 }
 
+function LegendLineChart({
+  slide,
+  dualAxis = false,
+}: {
+  slide: MetricsChartSlide
+  dualAxis?: boolean
+}) {
+  const { hiddenSeries, legendProps } = useHiddenChartSeries()
+
+  return (
+    <LineChart data={slide.data} margin={{ ...CHART_MARGIN, right: 8 }}>
+      <XAxis dataKey={slide.xKey} {...getChartXAxisTimeProps()} />
+      <YAxis
+        yAxisId="left"
+        {...getChartYAxisProps(getLeftYAxisOptions(slide))}
+      />
+      {dualAxis ? (
+        <YAxis
+          yAxisId="right"
+          {...getChartYAxisRightProps(getRightYAxisOptions(slide))}
+        />
+      ) : null}
+      <Tooltip
+        content={getChartTooltipRenderer(slide)}
+        cursor={CHART_TOOLTIP_CURSOR}
+      />
+      <Legend {...legendProps} />
+      <ChartLines slide={slide} hiddenSeries={hiddenSeries} />
+    </LineChart>
+  )
+}
+
 function MetricsChartView({ slide }: { slide: MetricsChartSlide }) {
-  const { hiddenSeries, legendProps } = useHiddenChartSeries(slide.key)
   if (slide.type === 'bar') {
     const series = slide.series[0]
     if (!series) {
@@ -118,7 +152,10 @@ function MetricsChartView({ slide }: { slide: MetricsChartSlide }) {
             width={120}
             {...CHART_Y_AXIS_CATEGORY_PROPS}
           />
-          <Tooltip content={getChartTooltipRenderer(slide)} cursor={{ fillOpacity: 0.06 }} />
+          <Tooltip
+            content={getChartTooltipRenderer(slide)}
+            cursor={{ fillOpacity: 0.06 }}
+          />
           <Bar
             dataKey={series.key}
             name={series.label}
@@ -134,7 +171,10 @@ function MetricsChartView({ slide }: { slide: MetricsChartSlide }) {
       <BarChart data={slide.data} margin={CHART_MARGIN}>
         <XAxis dataKey={slide.xKey} {...getChartXAxisTimeProps()} />
         <YAxis {...getChartYAxisProps(getLeftYAxisOptions(slide))} />
-        <Tooltip content={getChartTooltipRenderer(slide)} cursor={{ fillOpacity: 0.06 }} />
+        <Tooltip
+          content={getChartTooltipRenderer(slide)}
+          cursor={{ fillOpacity: 0.06 }}
+        />
         <Bar
           dataKey={series.key}
           name={series.label}
@@ -147,37 +187,11 @@ function MetricsChartView({ slide }: { slide: MetricsChartSlide }) {
   }
 
   if (slide.type === 'dualAxis') {
-    return (
-      <LineChart data={slide.data} margin={{ ...CHART_MARGIN, right: 8 }}>
-        <XAxis dataKey={slide.xKey} {...getChartXAxisTimeProps()} />
-        <YAxis yAxisId="left" {...getChartYAxisProps(getLeftYAxisOptions(slide))} />
-        <YAxis
-          yAxisId="right"
-          {...getChartYAxisRightProps(getRightYAxisOptions(slide))}
-        />
-        <Tooltip
-          content={getChartTooltipRenderer(slide)}
-          cursor={CHART_TOOLTIP_CURSOR}
-        />
-        <Legend {...legendProps} />
-        <ChartLines slide={slide} hiddenSeries={hiddenSeries} />
-      </LineChart>
-    )
+    return <LegendLineChart key={slide.key} slide={slide} dualAxis />
   }
 
   if (slide.type === 'multiLine') {
-    return (
-      <LineChart data={slide.data} margin={{ ...CHART_MARGIN, right: 8 }}>
-        <XAxis dataKey={slide.xKey} {...getChartXAxisTimeProps()} />
-        <YAxis yAxisId="left" {...getChartYAxisProps(getLeftYAxisOptions(slide))} />
-        <Tooltip
-          content={getChartTooltipRenderer(slide)}
-          cursor={CHART_TOOLTIP_CURSOR}
-        />
-        <Legend {...legendProps} />
-        <ChartLines slide={slide} hiddenSeries={hiddenSeries} />
-      </LineChart>
-    )
+    return <LegendLineChart key={slide.key} slide={slide} />
   }
 
   const series = slide.series[0]
@@ -189,7 +203,10 @@ function MetricsChartView({ slide }: { slide: MetricsChartSlide }) {
     <LineChart data={slide.data} margin={CHART_MARGIN}>
       <XAxis dataKey={slide.xKey} {...getChartXAxisTimeProps()} />
       <YAxis {...getChartYAxisProps(getLeftYAxisOptions(slide))} />
-      <Tooltip content={getChartTooltipRenderer(slide)} cursor={CHART_TOOLTIP_CURSOR} />
+      <Tooltip
+        content={getChartTooltipRenderer(slide)}
+        cursor={CHART_TOOLTIP_CURSOR}
+      />
       <Line
         dataKey={series.key}
         name={series.label}

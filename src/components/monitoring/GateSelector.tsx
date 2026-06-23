@@ -77,7 +77,7 @@ export function GateSelector({
             type="text"
             inputMode="numeric"
             pattern="[0-9]*"
-            className="border-input bg-background focus:border-ring/40 focus:ring-ring/20 h-9 min-w-0 flex-1 rounded-md border px-3 text-sm outline-none transition-colors focus:ring-1"
+            className="border-input bg-background focus:border-ring/40 focus:ring-ring/20 h-9 min-w-0 flex-1 rounded-md border px-3 text-sm transition-colors outline-none focus:ring-1"
             value={inputValue}
             onChange={(event) => handleInputChange(event.target.value)}
             placeholder="1001"

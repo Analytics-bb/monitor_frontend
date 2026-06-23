@@ -96,7 +96,7 @@ export function ConfigSnapshotPanel({
             <dt className="text-muted-foreground min-w-0 leading-snug">
               {getFieldLabel(key)}
             </dt>
-            <dd className="font-mono shrink-0 text-right tabular-nums">
+            <dd className="shrink-0 text-right font-mono tabular-nums">
               {formatValue(value)}
             </dd>
           </div>

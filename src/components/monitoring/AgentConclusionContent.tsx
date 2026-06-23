@@ -19,7 +19,9 @@ export function AgentConclusionContent({
 }: AgentConclusionContentProps) {
   if (!isHtmlContent(content)) {
     return (
-      <p className={cn('text-sm leading-relaxed whitespace-pre-wrap', className)}>
+      <p
+        className={cn('text-sm leading-relaxed whitespace-pre-wrap', className)}
+      >
         {content}
       </p>
     )

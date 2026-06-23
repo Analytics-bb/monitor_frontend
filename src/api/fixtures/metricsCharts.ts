@@ -63,7 +63,9 @@ export const metricsToolsSchema = z.object({
   users_tx_buckets_24h: z.array(usersTxBuckets24hRowSchema),
   users_tx_buckets_3h_10m: z.array(usersTxBuckets3h10mRowSchema),
   top_ips_tx_details_3h: z.array(topIpsTxDetails3hRowSchema),
-  success_rate_by_hour_country_24h: z.array(successRateByHourCountry24hRowSchema),
+  success_rate_by_hour_country_24h: z.array(
+    successRateByHourCountry24hRowSchema,
+  ),
 })
 
 export type MetricsTools = z.infer<typeof metricsToolsSchema>
@@ -195,7 +197,11 @@ function buildTx24hSlide(rows: MetricsTools['tx_24h']): MetricsChartSlide {
       value: row.tx_count,
     })),
     series: [
-      { key: 'value', label: 'Транзакции', color: MONITORING_CHART_COLORS.blue },
+      {
+        key: 'value',
+        label: 'Транзакции',
+        color: MONITORING_CHART_COLORS.blue,
+      },
     ],
   }
 }
@@ -208,7 +214,9 @@ function buildTxStatus24hSlide(
     approved: row.approved_count,
     declined: row.declined_count,
   }))
-  const yMax = niceYAxisMax(getSeriesMaxFromData(data, ['approved', 'declined']))
+  const yMax = niceYAxisMax(
+    getSeriesMaxFromData(data, ['approved', 'declined']),
+  )
 
   return {
     key: 'tx_status_24h',
@@ -234,7 +242,9 @@ function buildTxStatus24hSlide(
   }
 }
 
-function buildErrors24hSlide(rows: MetricsTools['errors_24h']): MetricsChartSlide {
+function buildErrors24hSlide(
+  rows: MetricsTools['errors_24h'],
+): MetricsChartSlide {
   const descriptions = new Map<string, string>()
 
   for (const row of rows) {
@@ -347,7 +357,11 @@ function buildTopIpsTxDetails3hSlide(
       customer_country: row.customer_country ?? '—',
     })),
     series: [
-      { key: 'value', label: 'Транзакции', color: MONITORING_CHART_COLORS.blue },
+      {
+        key: 'value',
+        label: 'Транзакции',
+        color: MONITORING_CHART_COLORS.blue,
+      },
     ],
     tooltipFields: TOP_IP_TOOLTIP_FIELDS,
   }
@@ -402,7 +416,9 @@ export function buildMetricsChartSlides(
     buildUsersTxBuckets24hSlide(tools.users_tx_buckets_24h),
     buildUsersTxBuckets3h10mSlide(tools.users_tx_buckets_3h_10m),
     buildTopIpsTxDetails3hSlide(tools.top_ips_tx_details_3h),
-    buildSuccessRateByHourCountry24hSlide(tools.success_rate_by_hour_country_24h),
+    buildSuccessRateByHourCountry24hSlide(
+      tools.success_rate_by_hour_country_24h,
+    ),
   ]
 
   return slides.filter((slide) => slide.data.length > 0)
@@ -703,8 +719,16 @@ export const metricsToolsFixture: MetricsTools = {
   success_rate_by_hour_country_24h: buildSuccessRateByHourCountry24hFixture(),
 }
 
-export const metricsChartSlidesFixture = buildMetricsChartSlides(metricsToolsFixture)
+export const metricsChartSlidesFixture =
+  buildMetricsChartSlides(metricsToolsFixture)
 
+/**
+ * Парсит и валидирует `metrics_tools` из ответа status.
+ *
+ * @param data - сырой фрагмент JSON
+ * @returns типизированный `MetricsTools`
+ * @throws {import('zod').ZodError} при несоответствии схеме
+ */
 export function parseMetricsTools(data: unknown): MetricsTools {
   return metricsToolsSchema.parse(data)
 }

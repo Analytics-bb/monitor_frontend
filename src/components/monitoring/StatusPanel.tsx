@@ -100,7 +100,9 @@ export function StatusPanel({ data, isStale, isDegraded }: StatusPanelProps) {
             className={cn(
               'size-2.5 shrink-0 rounded-full',
               isDegraded && 'bg-status-skipped',
-              !isDegraded && isLive && 'bg-status-success motion-safe:animate-soft-pulse',
+              !isDegraded &&
+                isLive &&
+                'bg-status-success motion-safe:animate-soft-pulse',
               !isDegraded && !isLive && 'bg-muted-foreground/50',
             )}
             data-testid="status-live-indicator"
