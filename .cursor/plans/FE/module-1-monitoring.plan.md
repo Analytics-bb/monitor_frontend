@@ -87,12 +87,13 @@ Live-дашборд оператора: снимок последнего тик
 
 ### 2. Gate (номер и имя) — интерактивная
 
-Карточка слева в верхнем ряду.
+Карточка вверху страницы (первая зона).
 
-- Показывает `gate_id` (номер) + human-readable имя/label из `GateInfo`.
-- Интерактив: Select/Combobox со списком gates (`GET /api/gates` или аналог M17).
-- Смена gate: confirm-dialog → `POST /api/gates/{gate_id}/activate` → refetch status + gates.
-- Fail 404 → toast `gate_not_found` через `mapApiError` (module-0); UI gate не менять.
+- Показывает `gate_id` (номер) + human-readable имя из `event.gate_name`.
+- Интерактив: поле ввода только цифр + кнопка «Активировать».
+- Смена gate: `POST /api/gates/{gate_id}/activate` (без confirm-dialog) → `onActivated` / refetch status.
+- Fail 404 → toast `gate_not_found` через `mapApiError`; UI gate не менять.
+- Пустой ввод или тот же `gate_id` — submit игнорируется.
 
 ### 3. Config snapshot — интерактивная
 
@@ -116,15 +117,37 @@ Live-дашборд оператора: снимок последнего тик
 
 - TX и SR — в одном ряду 50/50 на desktop; stack на &lt;1024px.
 
-### 6. Графики — переключение через Slider
+### 6. Графики — carousel из 7 слайдов (Recharts)
 
-Широкая зона под state-панелями.
+Зона под Gate; данные из `status.metrics_tools` → `buildMetricsChartSlides`.
 
-- Несколько chart views (например: объём транзакций, decline rate, latency — по полям M17/OpenAPI).
-- Переключение: **Carousel** (shadcn) или горизонтальный **Slider** с dots/arrows; swipe на trackpad опционально.
-- Одна активная серия на экране; легенда и оси читаемы в light и dark.
-- Библиотека: **Recharts** (зафиксировано в module-0 §Библиотеки UI); без анимации layout при смене слайда — только crossfade opacity 200ms.
-- Нет данных → placeholder внутри carousel slide.
+**Источник:** поле `metrics_tools` в `GET /api/status` (Zod `metricsToolsSchema` в `src/api/fixtures/metricsCharts.ts`). Маппер `getStatusMetricsChartSlides` / `buildMetricsChartSlides` собирает слайды; пустые (`data.length === 0`) отфильтровываются.
+
+**7 слайдов (порядок):**
+
+| # | key | title | type |
+|---|-----|-------|------|
+| 1 | `tx_24h` | Объём транзакций (24ч) | `bar` |
+| 2 | `tx_status_24h` | Approved / Declined (24ч) | `multiLine` |
+| 3 | `errors_24h` | Ошибки по кодам (24ч) | `multiLine` |
+| 4 | `users_tx_buckets_24h` | Транзакции и пользователи (24ч) | `dualAxis` |
+| 5 | `users_tx_buckets_3h_10m` | Транзакции и пользователи (3ч / 10м) | `dualAxis` |
+| 6 | `top_ips_tx_details_3h` | Top IP (3ч) | `bar` (horizontal) |
+| 7 | `success_rate_by_hour_country_24h` | Success rate по странам (24ч) | `multiLine` |
+
+**UI (`MetricsChartsSlider`):**
+
+- Навигация: кнопки «Предыдущий / Следующий», индикатор `N/7`.
+- Библиотека: **Recharts** (`LineChart`, `BarChart`, `ResponsiveContainer`).
+- Стили: `chartTheme.ts` (палитра Plotly/GitHub dark, оси, легенда, tooltip, курсор).
+- Оси: левая Y + нижняя X (время); `dualAxis` — правая Y для транзакций, левая для пользователей; без горизонтальной сетки.
+- `multiLine` / `dualAxis`: `YAxis yAxisId="left"` (обязательно совпадает с `Line yAxisId`); тики Y — `tickCount: 5`, `allowDecimals: false` (кроме success rate).
+- Tooltip: `ChartTooltipContent`; для ошибок — `{code} : {cnt} — {error_description}`; нулевые серии в tooltip скрыты; Top IP — доп. поля (`TOP_IP_TOOLTIP_FIELDS`).
+- Легенда (`multiLine`, `dualAxis`): клик скрывает/показывает серию (`useHiddenChartSeries`); сброс при смене слайда.
+- Вертикальный курсор hover: `CHART_TOOLTIP_CURSOR` (цвет как у осей).
+- Нет данных → placeholder «Нет данных для графиков».
+
+**Fixtures (dev / Vitest):** `metricsToolsFixture`, `metricsChartSlidesFixture`; 24-часовые ряды — 24 точки; коды ошибок — `942405`, `950952`, `1015`, `947167`, `942427` с `error_description`.
 
 ### 7. Conclusion (вывод агента) — expand / collapse
 
@@ -148,22 +171,26 @@ Live-дашборд оператора: снимок последнего тик
 
 ## Layout (desktop 1440)
 
+Фактический порядок зон в `MonitoringPage.tsx`:
+
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│ StatusPanel — Live dot | last_tick | StatusBadge | Refresh  │
-├──────────────────┬──────────────────────────────────────────┤
-│ GateSelector     │ ConfigSnapshotPanel                      │
-├──────────────────┴──────────────────────────────────────────┤
-│ TxStatePanel              │ SrStatePanel                    │
+│ GateSelector — gate_id + имя; ввод номера + Активировать    │
 ├─────────────────────────────────────────────────────────────┤
-│ MetricsChartsSlider — [ ◀ ] Chart 2/4 [ ▶ ] ··· dots      │
+│ MetricsChartsSlider — [ ◀ ] Chart N/7 [ ▶ ]                 │
+├─────────────────────────────────────────────────────────────┤
+│ DegradedBanner (503, условно)                               │
+├──────────────────────────┬──────────────────────────────────┤
+│ ConfigSnapshotPanel      │ StatusPanel                      │
+├──────────────────────────┴──────────────────────────────────┤
+│ TxStatePanel              │ SrStatePanel                    │
 ├─────────────────────────────────────────────────────────────┤
 │ ConclusionPanel — preview … [Развернуть]                    │
 └─────────────────────────────────────────────────────────────┘
         ConclusionModal (overlay при expand)
 ```
 
-Breakpoints: 1024 — TX/SR stack; Gate + Config stack. Mobile — базовая читаемость, carousel свайп.
+Breakpoints: `lg` — Config/Status и TX/SR в 2 колонки; иначе stack.
 
 ---
 
@@ -264,22 +291,40 @@ src/
 │       ├── StatusPanel.tsx
 │       ├── GateSelector.tsx
 │       ├── ConfigSnapshotPanel.tsx
-│       ├── TxStatePanel.tsx
-│       ├── SrStatePanel.tsx
+│       ├── TxStatePanel.tsx          # TxStatePanel + SrStatePanel
 │       ├── MetricsChartsSlider.tsx
+│       ├── ChartTooltip.tsx
+│       ├── chartTheme.ts
 │       ├── ConclusionPanel.tsx
 │       ├── ConclusionModal.tsx
-│       └── DegradedBanner.tsx
+│       ├── ConclusionHeader.tsx
+│       ├── ConclusionScrollArea.tsx
+│       ├── AgentConclusionContent.tsx
+│       ├── DegradedBanner.tsx
+│       └── index.ts
 ├── api/
-│   └── monitoring.ts           # getStatus, getGates, getActiveGate, activateGate
-└── hooks/
-    └── useMonitoringPolling.ts
+│   ├── monitoring.ts               # getStatus, activateGate
+│   └── fixtures/
+│       ├── metricsCharts.ts        # metricsToolsSchema, buildMetricsChartSlides, fixtures
+│       └── statusResponse.ts       # statusResponseSchema, getStatusMetricsChartSlides
+├── hooks/
+│   ├── useMonitoringPolling.ts
+│   └── useHiddenChartSeries.ts     # toggle серий по легенде
+└── lib/
+    └── formatChartTime.ts
 tests/
 ├── unit/monitoring/
 │   ├── StatusPanel.test.tsx
 │   ├── ConclusionModal.test.tsx
 │   ├── GateSelector.test.tsx
-│   └── useMonitoringPolling.test.ts
+│   ├── useMonitoringPolling.test.ts
+│   ├── TxStatePanel.test.tsx
+│   ├── ConfigSnapshotPanel.test.tsx
+│   ├── DegradedBanner.test.tsx
+│   ├── MetricsChartsSlider.test.tsx
+│   └── metricsCharts.test.ts
+├── unit/hooks/
+│   └── useHiddenChartSeries.test.ts
 └── e2e/monitoring.spec.ts
 ```
 
@@ -289,12 +334,10 @@ tests/
 
 | HTTP (M17 §10.y) | Назначение UI | Зона |
 |------------------|---------------|------|
-| `GET /api/status` | Scheduler snapshot + config_snapshot + states + conclusion + chart data | Все зоны |
-| `GET /api/gates/active` | Текущий gate | GateSelector |
-| `GET /api/gates` (или list) | Список для select | GateSelector |
+| `GET /api/status` | Scheduler snapshot + `event` + `report` + `metrics_tools` | Все зоны |
 | `POST /api/gates/{gate_id}/activate` | Смена gate | GateSelector |
 
-Точные имена полей (`config_snapshot`, `tx_state`, `sr_state`, series для графиков) — OpenAPI anomaly-api; FE не дублирует схемы.
+Поля status: `event.config_snapshot`, `event.tx_state`, `event.sr_state`, `report.conclusion`, `metrics_tools` — Zod в `statusResponse.ts` / `metricsCharts.ts`; FE не дублирует OpenAPI-схемы вне парсинга.
 
 ---
 
@@ -303,31 +346,32 @@ tests/
 | Сценарий | Уровень | Критерий |
 |----------|---------|----------|
 | StatusPanel live/stale | unit | Успешный poll → Live; ошибка → Stale |
-| tick_in_progress pulse | unit | Pulse dot при true; static при reduced-motion |
-| GateSelector activate 404 | unit | Toast; selected gate не меняется |
-| ConfigSnapshot expand | unit | Клик секции → раскрытие; copy field |
+| tick_in_progress pulse | unit | Pulse dot при true |
+| GateSelector activate 404 | unit | Toast; gate не меняется |
+| ConfigSnapshot expand | unit | Accordion; copy field |
 | Tx/Sr empty | unit | Muted placeholder без crash |
-| Charts carousel | unit | Next/prev меняет активный slide |
-| Conclusion truncate | unit | line-clamp в panel |
-| Conclusion modal | unit | Expand → dialog + backdrop; collapse → panel visible |
-| Modal Esc | unit | Esc закрывает modal |
-| polling interval switch | unit | tick_in_progress → 2–3s interval |
+| Charts carousel | unit | Next/prev меняет `data-chart-key` |
+| Charts legend toggle | unit | `useHiddenChartSeries` hide/show + reset на смене слайда |
+| metricsCharts fixtures | unit | 7 слайдов, 24h points, error descriptions, y-axis config |
+| Conclusion truncate | unit | scroll area в panel |
+| Conclusion modal | unit | Expand → dialog; Esc закрывает |
+| polling interval switch | unit | tick_in_progress → 2.5s; 503 → backoff |
 | 503 banner | unit | DegradedBanner visible |
-| e2e tick update | e2e | После fixture poll conclusion обновляется |
+| e2e page load | e2e | `/monitoring` — page, status, conclusion preview |
 
 ---
 
 ## DoD
 
-- [ ] `/monitoring` рендерит 7 зон по §Концепция страницы.
-- [ ] Polling с ускорением при `tick_in_progress`; stop on unmount.
-- [ ] GateSelector: смена gate с confirm и обработкой 404.
-- [ ] Conclusion: превью + modal expand/collapse с затемнённым backdrop.
-- [ ] Графики переключаются carousel/slider.
-- [ ] 503 и empty states по edge-cases.
-- [ ] Light + dark корректны на всех зонах.
-- [ ] Тесты из раздела «Тесты» реализованы и проходят.
-- [ ] Acceptance M17 §9.2 monitoring tick update — готов к staging.
+- [x] `/monitoring` рендерит 7 зон (фактический порядок — §Layout).
+- [x] Polling с ускорением при `tick_in_progress`; stop on unmount.
+- [x] GateSelector: активация gate и обработка 404.
+- [x] Conclusion: превью + modal expand/collapse.
+- [x] Графики: carousel 7 слайдов Recharts, легенда, tooltip, оси Y.
+- [x] 503 и empty states по edge-cases.
+- [x] Light + dark на semantic tokens.
+- [x] Unit-тесты monitoring реализованы; e2e — базовая загрузка страницы.
+- [ ] Acceptance M17 §9.2 monitoring tick update — staging (ручная проверка).
 
 ---
 
