@@ -1,0 +1,20 @@
+import { render, screen } from '@testing-library/react'
+import { describe, expect, it } from 'vitest'
+
+import { ChatMessage } from '@/components/deep/ChatMessage'
+
+describe('ChatMessage', () => {
+  it('renders user message on the right and assistant on the left', () => {
+    const { rerender } = render(
+      <ChatMessage role="user" content="Привет" />,
+    )
+
+    const userBubble = screen.getByTestId('chat-message-user')
+    expect(userBubble.className).toContain('justify-end')
+
+    rerender(<ChatMessage role="assistant" content="Ответ" />)
+
+    const assistantBubble = screen.getByTestId('chat-message-assistant')
+    expect(assistantBubble.className).toContain('justify-start')
+  })
+})

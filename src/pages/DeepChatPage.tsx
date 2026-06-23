@@ -1,7 +1,26 @@
+import { useMemo, useState } from 'react'
 import { Link, useLocation, useParams } from 'react-router'
 
+import { isApiErrorCode, mapApiError } from '@/api/errors'
+import type { ChatSnapshot } from '@/api/fixtures/chatSnapshot'
+import { ApprovalBar } from '@/components/deep/ApprovalBar'
+import { CaseMetaStrip } from '@/components/deep/CaseMetaStrip'
+import { ChatComposer } from '@/components/deep/ChatComposer'
+import { ChatMessageList } from '@/components/deep/ChatMessageList'
 import { ChatWindow } from '@/components/deep/ChatWindow'
-import { StatusBadge } from '@/components/StatusBadge'
+import { StatusBadge, type StatusBadgeVariant } from '@/components/StatusBadge'
+import { Button } from '@/components/ui/button'
+import { useDeepChat } from '@/hooks/useDeepChat'
+
+const TERMINAL_STATES = new Set<ChatSnapshot['state']>([
+  'completed',
+  'cancelled',
+  'error',
+])
+
+interface DeepChatLocationState {
+  deepListSearch?: string
+}
 
 /**
  * Короткий префикс UUID для breadcrumb.
@@ -10,14 +29,19 @@ function shortAuditId(auditId: string): string {
   return auditId.slice(0, 8)
 }
 
-interface DeepChatLocationState {
-  deepListSearch?: string
+function toStatusBadgeVariant(state: ChatSnapshot['state']): StatusBadgeVariant {
+  return state
+}
+
+function getComposerPlaceholder(state: ChatSnapshot['state']): string {
+  if (state === 'awaiting_approval') {
+    return 'Ожидание подтверждения…'
+  }
+  return 'Напишите агенту…'
 }
 
 /**
- * Страница `/deep/{audit_id}` — shell с header и ChatWindow placeholder.
- *
- * Breadcrumb «Deep» восстанавливает query списка через `location.state.deepListSearch` (M2).
+ * Страница `/deep/{audit_id}` — deep chat с LLM-layout.
  */
 export function DeepChatPage() {
   const { auditId } = useParams()
@@ -26,8 +50,89 @@ export function DeepChatPage() {
     ?.deepListSearch
   const deepListHref = deepListSearch ? `/deep?${deepListSearch}` : '/deep'
 
+  const {
+    snapshot,
+    error,
+    openSession,
+    sendMessage,
+    approve,
+    reject,
+    refetch,
+  } = useDeepChat(auditId ?? '')
+
+  const [opening, setOpening] = useState(false)
+  const [budgetExceeded, setBudgetExceeded] = useState(false)
+
+  const isTerminal = snapshot ? TERMINAL_STATES.has(snapshot.state) : false
+  const isPending = Boolean(snapshot?.pending_action)
+  const composerDisabled =
+    isPending || isTerminal || snapshot?.state === 'awaiting_approval'
+
+  const hideApprove = budgetExceeded || snapshot?.state === 'error'
+
+  const handleOpen = async () => {
+    setOpening(true)
+    try {
+      await openSession()
+    } catch (openError) {
+      mapApiError(openError)
+    } finally {
+      setOpening(false)
+    }
+  }
+
+  const handleApprove = async (actionId: string) => {
+    try {
+      await approve(actionId)
+      setBudgetExceeded(false)
+    } catch (approveError) {
+      if (isApiErrorCode(approveError, 'budget_exceeded')) {
+        setBudgetExceeded(true)
+        mapApiError(approveError)
+      } else {
+        mapApiError(approveError)
+      }
+    }
+  }
+
+  const handleReject = async (actionId: string) => {
+    try {
+      await reject(actionId)
+    } catch (rejectError) {
+      mapApiError(rejectError)
+    }
+  }
+
+  const terminalBanner = useMemo(() => {
+    if (!isTerminal) {
+      return null
+    }
+    return (
+      <div className="bg-muted/60 text-muted-foreground border-border border-t px-4 py-2 text-center text-sm">
+        Диалог завершён
+      </div>
+    )
+  }, [isTerminal])
+
   if (!auditId) {
     return null
+  }
+
+  if (error && !snapshot) {
+    return (
+      <section
+        className="mx-auto flex max-w-lg flex-col gap-4 p-6"
+        data-testid="deep-chat-error"
+      >
+        <h1 className="text-lg font-semibold">Не удалось загрузить чат</h1>
+        <p className="text-muted-foreground text-sm">
+          Проверьте audit_id или вернитесь к списку.
+        </p>
+        <Button asChild variant="outline">
+          <Link to={deepListHref}>К списку</Link>
+        </Button>
+      </section>
+    )
   }
 
   return (
@@ -53,19 +158,72 @@ export function DeepChatPage() {
             <span className="font-mono">{shortAuditId(auditId)}</span>
           </nav>
           <div className="flex items-center gap-3">
-            <StatusBadge status="not_started" />
+            {snapshot ? (
+              <StatusBadge status={toStatusBadgeVariant(snapshot.state)} />
+            ) : (
+              <StatusBadge status="not_started" />
+            )}
+            <Link
+              to={`/usage?audit_id=${encodeURIComponent(auditId)}`}
+              className="text-primary text-sm hover:underline"
+            >
+              Расход токенов
+            </Link>
           </div>
         </div>
-        <div
-          data-testid="case-meta-strip-slot"
-          className="text-muted-foreground min-h-4 text-xs"
-          aria-hidden
-        />
+        {snapshot ? (
+          <CaseMetaStrip
+            gateId={snapshot.gate_id}
+            createdAt={snapshot.created_at}
+            conclusion={snapshot.conclusion}
+          />
+        ) : null}
       </header>
 
       <ChatWindow
         messages={
-          <p className="text-muted-foreground text-sm">Сообщений пока нет</p>
+          snapshot && snapshot.state !== 'not_started' ? (
+            <ChatMessageList messages={snapshot.messages} />
+          ) : (
+            <p className="text-muted-foreground text-sm">Сообщений пока нет</p>
+          )
+        }
+        emptyState={
+          snapshot?.state === 'not_started' ? (
+            <Button
+              type="button"
+              onClick={() => void handleOpen()}
+              disabled={opening}
+              data-testid="deep-chat-open-cta"
+            >
+              {opening ? 'Открываем…' : 'Открыть анализ'}
+            </Button>
+          ) : undefined
+        }
+        approval={
+          snapshot?.pending_action ? (
+            <ApprovalBar
+              pendingAction={snapshot.pending_action}
+              onApprove={handleApprove}
+              onReject={handleReject}
+              hideApprove={hideApprove}
+            />
+          ) : undefined
+        }
+        terminalBanner={terminalBanner ?? undefined}
+        composer={
+          snapshot && !isTerminal ? (
+            <ChatComposer
+              disabled={composerDisabled}
+              placeholder={getComposerPlaceholder(snapshot.state)}
+              onSend={async (content) => {
+                const sent = await sendMessage(content)
+                if (!sent) {
+                  await refetch()
+                }
+              }}
+            />
+          ) : undefined
         }
       />
     </div>

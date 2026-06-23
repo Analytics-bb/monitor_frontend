@@ -27,6 +27,8 @@ export const chatSnapshotSchema = z.object({
   pending_action: pendingActionSchema.nullable(),
 })
 
+export type ChatMessage = z.infer<typeof chatMessageSchema>
+export type PendingAction = z.infer<typeof pendingActionSchema>
 export type ChatSnapshot = z.infer<typeof chatSnapshotSchema>
 
 /** Fixture ChatSnapshot для dev и Vitest. */
