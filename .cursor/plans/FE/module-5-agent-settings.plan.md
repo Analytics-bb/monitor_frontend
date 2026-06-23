@@ -10,7 +10,7 @@ todos:
     status: completed
   - id: m5-instruction-editor
     content: "Create/edit prompt_template — POST/PATCH/DELETE по OpenAPI M6"
-    status: pending
+    status: completed
   - id: m5-contexts-list
     content: "GET /agent/contexts?agent_kind&gate_id — split hypothesis/deep"
     status: completed
