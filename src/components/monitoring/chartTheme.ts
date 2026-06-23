@@ -23,7 +23,19 @@ export const MONITORING_CHART_PALETTE = [
 const GRID_STROKE = 'color-mix(in oklab, var(--foreground) 9%, transparent)'
 const AXIS_TICK = 'var(--muted-foreground)'
 
-export const CHART_MARGIN = { top: 12, right: 16, left: 0, bottom: 4 }
+/** Линии осей — тот же цвет, что и горизонтальная сетка (без акцента). */
+export const CHART_AXIS_LINE = {
+  stroke: GRID_STROKE,
+  strokeWidth: 1,
+}
+
+/** Цвета серий, читаемые в light и dark. */
+export const CHART_SERIES_THEME_COLORS = {
+  approved: 'var(--status-success)',
+  declined: 'var(--accent-warn)',
+} as const
+
+export const CHART_MARGIN = { top: 12, right: 16, left: 4, bottom: 4 }
 
 export const CHART_TOOLTIP_STYLE = {
   background: 'var(--elevated)',
@@ -39,13 +51,8 @@ export const CHART_AXIS_TICK = {
   fontSize: 11,
 }
 
-export const CHART_GRID_PROPS = {
-  vertical: false,
-  stroke: GRID_STROKE,
-}
-
-export const CHART_X_AXIS_PROPS = {
-  axisLine: false,
+export const CHART_X_AXIS_TIME_PROPS = {
+  axisLine: CHART_AXIS_LINE,
   tickLine: false,
   tick: CHART_AXIS_TICK,
   tickMargin: 8,
@@ -55,11 +62,62 @@ export const CHART_X_AXIS_PROPS = {
   minTickGap: 12,
 }
 
-export const CHART_Y_AXIS_PROPS = {
-  axisLine: false,
+export const CHART_X_AXIS_VALUE_PROPS = {
+  axisLine: CHART_AXIS_LINE,
   tickLine: false,
   tick: CHART_AXIS_TICK,
-  width: 42,
+  tickMargin: 8,
+}
+
+export const CHART_Y_AXIS_PROPS = {
+  axisLine: CHART_AXIS_LINE,
+  tickLine: false,
+  tick: CHART_AXIS_TICK,
+  width: 44,
+}
+
+export const CHART_Y_AXIS_CATEGORY_PROPS = {
+  axisLine: CHART_AXIS_LINE,
+  tickLine: false,
+  tick: CHART_AXIS_TICK,
+}
+
+export interface ChartYAxisOptions {
+  domain?: [number, number]
+  tickFormatter?: (value: number) => string
+  width?: number
+}
+
+/** Пропсы нижней оси X (время). */
+export function getChartXAxisTimeProps() {
+  return CHART_X_AXIS_TIME_PROPS
+}
+
+/** Пропсы нижней оси X (числовые значения). */
+export function getChartXAxisValueProps() {
+  return CHART_X_AXIS_VALUE_PROPS
+}
+
+/** Пропсы левой оси Y — только тики, без названия единицы. */
+export function getChartYAxisProps(options?: ChartYAxisOptions) {
+  return {
+    ...CHART_Y_AXIS_PROPS,
+    width: options?.width ?? CHART_Y_AXIS_PROPS.width,
+    ...(options?.domain ? { domain: options.domain } : {}),
+    ...(options?.tickFormatter ? { tickFormatter: options.tickFormatter } : {}),
+  }
+}
+
+/** Правая ось dualAxis: без линии рамки, только тики. */
+export function getChartYAxisRightProps(options?: ChartYAxisOptions) {
+  return {
+    ...CHART_Y_AXIS_PROPS,
+    axisLine: false,
+    orientation: 'right' as const,
+    width: options?.width ?? CHART_Y_AXIS_PROPS.width,
+    ...(options?.domain ? { domain: options.domain } : {}),
+    ...(options?.tickFormatter ? { tickFormatter: options.tickFormatter } : {}),
+  }
 }
 
 export const CHART_LEGEND_PROPS = {
@@ -80,3 +138,7 @@ export const CHART_LINE_PROPS = {
   dot: { r: 3, strokeWidth: 0 },
   activeDot: { r: 5, strokeWidth: 0 },
 }
+
+/** Кнопки навигации слайдера — нейтральные на светлой теме. */
+export const CHART_NAV_BUTTON_CLASS =
+  'text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:ring-1 focus-visible:ring-border/80'

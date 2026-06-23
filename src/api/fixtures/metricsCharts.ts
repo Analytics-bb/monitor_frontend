@@ -1,6 +1,7 @@
 import { z } from 'zod'
 
 import {
+  CHART_SERIES_THEME_COLORS,
   MONITORING_CHART_COLORS,
   MONITORING_CHART_PALETTE,
 } from '@/components/monitoring/chartTheme'
@@ -84,6 +85,12 @@ export interface MetricsChartSlide {
   xKey: string
   data: Array<Record<string, string | number>>
   series: MetricsChartSeries[]
+  /** Фиксированный диапазон левой оси Y. */
+  yAxisDomain?: [number, number]
+  /** Формат тиков левой оси Y. */
+  yAxisTickFormatter?: (value: number) => string
+  yAxisDomainRight?: [number, number]
+  yAxisTickFormatterRight?: (value: number) => string
 }
 
 const CHART_COLORS = MONITORING_CHART_PALETTE
@@ -145,8 +152,16 @@ function buildTxStatus24hSlide(
       declined: row.declined_count,
     })),
     series: [
-      { key: 'approved', label: 'Approved', color: MONITORING_CHART_COLORS.green },
-      { key: 'declined', label: 'Declined', color: MONITORING_CHART_COLORS.orange },
+      {
+        key: 'approved',
+        label: 'Approved',
+        color: CHART_SERIES_THEME_COLORS.approved,
+      },
+      {
+        key: 'declined',
+        label: 'Declined',
+        color: CHART_SERIES_THEME_COLORS.declined,
+      },
     ],
   }
 }
@@ -258,7 +273,7 @@ function buildSuccessRateByHourCountry24hSlide(
     rows.map((row) => ({
       hour_bucket: row.hour_bucket,
       customer_country: row.customer_country,
-      success_rate: row.success_rate ?? 0,
+      success_rate: (row.success_rate ?? 0) / 100,
     })),
     'hour_bucket',
     'success_rate',
@@ -276,6 +291,8 @@ function buildSuccessRateByHourCountry24hSlide(
       label: group.toUpperCase(),
       color: CHART_COLORS[index % CHART_COLORS.length]!,
     })),
+    yAxisDomain: [0, 1],
+    yAxisTickFormatter: (value) => value.toFixed(1),
   }
 }
 

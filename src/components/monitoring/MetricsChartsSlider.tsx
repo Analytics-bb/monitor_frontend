@@ -3,7 +3,6 @@ import { ChevronLeft, ChevronRight } from 'lucide-react'
 import {
   Bar,
   BarChart,
-  CartesianGrid,
   Legend,
   Line,
   LineChart,
@@ -14,15 +13,17 @@ import {
 } from 'recharts'
 
 import type { MetricsChartSlide } from '@/api/fixtures/metricsCharts'
+import { ChartTooltipContent } from '@/components/monitoring/ChartTooltip'
 import {
-  CHART_AXIS_TICK,
-  CHART_GRID_PROPS,
   CHART_LEGEND_PROPS,
   CHART_LINE_PROPS,
   CHART_MARGIN,
-  CHART_TOOLTIP_STYLE,
-  CHART_X_AXIS_PROPS,
-  CHART_Y_AXIS_PROPS,
+  CHART_NAV_BUTTON_CLASS,
+  CHART_Y_AXIS_CATEGORY_PROPS,
+  getChartXAxisTimeProps,
+  getChartXAxisValueProps,
+  getChartYAxisProps,
+  getChartYAxisRightProps,
 } from '@/components/monitoring/chartTheme'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
@@ -33,6 +34,20 @@ export interface MetricsChartsSliderProps {
 }
 
 export type { MetricsChartSlide }
+
+function getLeftYAxisOptions(slide: MetricsChartSlide) {
+  return {
+    domain: slide.yAxisDomain,
+    tickFormatter: slide.yAxisTickFormatter,
+  }
+}
+
+function getRightYAxisOptions(slide: MetricsChartSlide) {
+  return {
+    domain: slide.yAxisDomainRight,
+    tickFormatter: slide.yAxisTickFormatterRight,
+  }
+}
 
 function ChartLines({ slide }: { slide: MetricsChartSlide }) {
   return (
@@ -67,17 +82,14 @@ function MetricsChartView({ slide }: { slide: MetricsChartSlide }) {
           layout="vertical"
           margin={{ ...CHART_MARGIN, left: 4 }}
         >
-          <CartesianGrid {...CHART_GRID_PROPS} horizontal={false} />
-          <XAxis type="number" {...CHART_Y_AXIS_PROPS} />
+          <XAxis type="number" {...getChartXAxisValueProps()} />
           <YAxis
             type="category"
             dataKey={slide.xKey}
             width={112}
-            tick={CHART_AXIS_TICK}
-            axisLine={false}
-            tickLine={false}
+            {...CHART_Y_AXIS_CATEGORY_PROPS}
           />
-          <Tooltip contentStyle={CHART_TOOLTIP_STYLE} cursor={{ fillOpacity: 0.06 }} />
+          <Tooltip content={<ChartTooltipContent />} cursor={{ fillOpacity: 0.06 }} />
           <Bar
             dataKey={series.key}
             name={series.label}
@@ -91,10 +103,9 @@ function MetricsChartView({ slide }: { slide: MetricsChartSlide }) {
 
     return (
       <BarChart data={slide.data} margin={CHART_MARGIN}>
-        <CartesianGrid {...CHART_GRID_PROPS} />
-        <XAxis dataKey={slide.xKey} {...CHART_X_AXIS_PROPS} />
-        <YAxis {...CHART_Y_AXIS_PROPS} />
-        <Tooltip contentStyle={CHART_TOOLTIP_STYLE} cursor={{ fillOpacity: 0.06 }} />
+        <XAxis dataKey={slide.xKey} {...getChartXAxisTimeProps()} />
+        <YAxis {...getChartYAxisProps(getLeftYAxisOptions(slide))} />
+        <Tooltip content={<ChartTooltipContent />} cursor={{ fillOpacity: 0.06 }} />
         <Bar
           dataKey={series.key}
           name={series.label}
@@ -109,16 +120,13 @@ function MetricsChartView({ slide }: { slide: MetricsChartSlide }) {
   if (slide.type === 'dualAxis') {
     return (
       <LineChart data={slide.data} margin={{ ...CHART_MARGIN, right: 8 }}>
-        <CartesianGrid {...CHART_GRID_PROPS} />
-        <XAxis dataKey={slide.xKey} {...CHART_X_AXIS_PROPS} />
-        <YAxis yAxisId="left" {...CHART_Y_AXIS_PROPS} />
+        <XAxis dataKey={slide.xKey} {...getChartXAxisTimeProps()} />
+        <YAxis yAxisId="left" {...getChartYAxisProps(getLeftYAxisOptions(slide))} />
         <YAxis
           yAxisId="right"
-          orientation="right"
-          {...CHART_Y_AXIS_PROPS}
-          width={42}
+          {...getChartYAxisRightProps(getRightYAxisOptions(slide))}
         />
-        <Tooltip contentStyle={CHART_TOOLTIP_STYLE} />
+        <Tooltip content={<ChartTooltipContent />} />
         <Legend {...CHART_LEGEND_PROPS} />
         <ChartLines slide={slide} />
       </LineChart>
@@ -128,10 +136,9 @@ function MetricsChartView({ slide }: { slide: MetricsChartSlide }) {
   if (slide.type === 'multiLine') {
     return (
       <LineChart data={slide.data} margin={CHART_MARGIN}>
-        <CartesianGrid {...CHART_GRID_PROPS} />
-        <XAxis dataKey={slide.xKey} {...CHART_X_AXIS_PROPS} />
-        <YAxis {...CHART_Y_AXIS_PROPS} />
-        <Tooltip contentStyle={CHART_TOOLTIP_STYLE} />
+        <XAxis dataKey={slide.xKey} {...getChartXAxisTimeProps()} />
+        <YAxis {...getChartYAxisProps(getLeftYAxisOptions(slide))} />
+        <Tooltip content={<ChartTooltipContent />} />
         <Legend {...CHART_LEGEND_PROPS} />
         <ChartLines slide={slide} />
       </LineChart>
@@ -145,10 +152,9 @@ function MetricsChartView({ slide }: { slide: MetricsChartSlide }) {
 
   return (
     <LineChart data={slide.data} margin={CHART_MARGIN}>
-      <CartesianGrid {...CHART_GRID_PROPS} />
-      <XAxis dataKey={slide.xKey} {...CHART_X_AXIS_PROPS} />
-      <YAxis {...CHART_Y_AXIS_PROPS} />
-      <Tooltip contentStyle={CHART_TOOLTIP_STYLE} />
+      <XAxis dataKey={slide.xKey} {...getChartXAxisTimeProps()} />
+      <YAxis {...getChartYAxisProps(getLeftYAxisOptions(slide))} />
+      <Tooltip content={<ChartTooltipContent />} />
       <Line
         dataKey={series.key}
         name={series.label}
@@ -202,8 +208,9 @@ export function MetricsChartsSlider({
         <div className="flex items-center gap-2">
           <Button
             type="button"
-            variant="outline"
+            variant="ghost"
             size="icon-sm"
+            className={CHART_NAV_BUTTON_CLASS}
             aria-label="Предыдущий график"
             onClick={goPrev}
           >
@@ -217,8 +224,9 @@ export function MetricsChartsSlider({
           </span>
           <Button
             type="button"
-            variant="outline"
+            variant="ghost"
             size="icon-sm"
+            className={CHART_NAV_BUTTON_CLASS}
             aria-label="Следующий график"
             onClick={goNext}
           >
