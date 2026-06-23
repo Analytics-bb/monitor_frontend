@@ -4,7 +4,7 @@ overview: "Страница /settings/agents: две секции Instructions (
 todos:
   - id: m5-page-tabs
     content: "AgentSettingsPage: tabs Instructions | Contexts; route /settings/agents"
-    status: pending
+    status: completed
   - id: m5-instructions-list
     content: "GET /settings/instructions — table + enabled toggle → PATCH"
     status: pending
