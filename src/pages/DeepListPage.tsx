@@ -182,10 +182,10 @@ export function DeepListPage() {
 
   return (
     <div
-      className="mx-auto flex w-full max-w-[1440px] flex-col gap-4"
+      className="mx-auto flex min-h-[calc(100svh-3rem)] w-full max-w-[1440px] flex-col gap-4"
       data-testid="deep-list-page"
     >
-      <header>
+      <header className="shrink-0">
         <h1 className="text-2xl font-semibold tracking-tight">
           Deep Analytics — каталог audits
         </h1>
@@ -194,7 +194,7 @@ export function DeepListPage() {
       <DeepListZone
         label="Фильтры deep cases"
         testId="deep-list-filters"
-        className="sticky top-0 z-10 shadow-sm"
+        className="sticky top-0 z-10 shrink-0 shadow-sm"
       >
         <DeepCasesFilters
           values={draftFilters}
@@ -205,52 +205,58 @@ export function DeepListPage() {
         />
       </DeepListZone>
 
-      <DeepListZone label="Список audits" testId="deep-list-table">
-        {isLoading ? <TableSkeletonRows /> : null}
+      <DeepListZone
+        label="Список audits"
+        testId="deep-list-table"
+        className="flex min-h-0 flex-1 flex-col overflow-hidden"
+      >
+        <div className="deep-table-scroll -mr-1 min-h-0 flex-1 overflow-auto pr-1">
+          {isLoading ? <TableSkeletonRows /> : null}
 
-        {!isLoading && error ? (
-          <div
-            className="border-destructive/30 bg-destructive/5 space-y-3 rounded-md border p-4"
-            data-testid="deep-list-error"
-            role="alert"
-          >
-            <p className="text-destructive text-sm">{error}</p>
-            <Button type="button" size="sm" variant="outline" onClick={() => void refetch()}>
-              Retry
-            </Button>
-          </div>
-        ) : null}
-
-        {showGlobalEmpty ? (
-          <p className="text-muted-foreground text-sm" data-testid="deep-list-table-empty">
-            Нет deep cases
-          </p>
-        ) : null}
-
-        {showFilteredEmpty ? (
-          <div className="space-y-3" data-testid="deep-list-table-filtered-empty">
-            <p className="text-muted-foreground text-sm">Нет audits по фильтру</p>
-            <Button
-              type="button"
-              size="sm"
-              variant="ghost"
-              className="hover:bg-muted/60"
-              onClick={handleReset}
+          {!isLoading && error ? (
+            <div
+              className="border-destructive/30 bg-destructive/5 space-y-3 rounded-md border p-4"
+              data-testid="deep-list-error"
+              role="alert"
             >
-              Сбросить
-            </Button>
-          </div>
-        ) : null}
+              <p className="text-destructive text-sm">{error}</p>
+              <Button type="button" size="sm" variant="outline" onClick={() => void refetch()}>
+                Retry
+              </Button>
+            </div>
+          ) : null}
 
-        {!isLoading && !error && items.length > 0 ? (
-          <DeepCasesTable items={items} onRowClick={handleRowClick} />
-        ) : null}
+          {showGlobalEmpty ? (
+            <p className="text-muted-foreground text-sm" data-testid="deep-list-table-empty">
+              Нет deep cases
+            </p>
+          ) : null}
+
+          {showFilteredEmpty ? (
+            <div className="space-y-3" data-testid="deep-list-table-filtered-empty">
+              <p className="text-muted-foreground text-sm">Нет audits по фильтру</p>
+              <Button
+                type="button"
+                size="sm"
+                variant="ghost"
+                className="hover:bg-muted/60"
+                onClick={handleReset}
+              >
+                Сбросить
+              </Button>
+            </div>
+          ) : null}
+
+          {!isLoading && !error && items.length > 0 ? (
+            <DeepCasesTable items={items} onRowClick={handleRowClick} />
+          ) : null}
+        </div>
       </DeepListZone>
 
       <DeepListZone
         label="Pagination"
         testId="deep-list-pagination"
-        className="py-3"
+        className="shrink-0 py-3"
       >
         <DeepCasesPagination
           total={total}

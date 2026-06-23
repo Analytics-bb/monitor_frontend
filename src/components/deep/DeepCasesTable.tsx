@@ -1,5 +1,3 @@
-import { ChevronRight } from 'lucide-react'
-
 import type { DeepCaseSummary } from '@/api/deep'
 import { StatusBadge, type StatusBadgeVariant } from '@/components/StatusBadge'
 import { cn } from '@/lib/utils'
@@ -10,13 +8,11 @@ export interface DeepCasesTableProps {
   className?: string
 }
 
-function shortAuditId(auditId: string): string {
-  return auditId.slice(0, 8)
-}
-
 function mapChatStateToBadge(state: DeepCaseSummary['deep_chat_state']): StatusBadgeVariant {
   return state
 }
+
+const headerCellClassName = 'px-3 py-2 text-center font-medium'
 
 /**
  * Таблица deep cases: основные поля audit и статус чата.
@@ -25,21 +21,17 @@ export function DeepCasesTable({ items, onRowClick, className }: DeepCasesTableP
   return (
     <div className={cn('overflow-x-auto', className)}>
       <table
-        className="w-full min-w-[960px] border-collapse text-sm"
+        className="w-full min-w-[720px] border-collapse text-sm"
         aria-label="Deep audits"
         data-testid="deep-cases-table"
       >
         <thead className="bg-muted/40 sticky top-0 z-[1]">
-          <tr className="border-border border-b text-left">
-            <th className="px-3 py-2 font-medium">Time</th>
-            <th className="px-3 py-2 font-medium">Audit</th>
-            <th className="px-3 py-2 font-medium">Gate</th>
-            <th className="px-3 py-2 font-medium">Event</th>
-            <th className="px-3 py-2 font-medium">Conclusion</th>
-            <th className="px-3 py-2 font-medium">State</th>
-            <th className="px-3 py-2 font-medium" aria-hidden>
-              →
-            </th>
+          <tr className="border-border border-b">
+            <th className={headerCellClassName}>Time</th>
+            <th className={headerCellClassName}>Gate</th>
+            <th className={headerCellClassName}>Event</th>
+            <th className={headerCellClassName}>Conclusion</th>
+            <th className={headerCellClassName}>State</th>
           </tr>
         </thead>
         <tbody>
@@ -68,10 +60,7 @@ export function DeepCasesTable({ items, onRowClick, className }: DeepCasesTableP
               <td className="text-muted-foreground px-3 py-2 font-mono text-xs whitespace-nowrap">
                 {item.created_at}
               </td>
-              <td className="px-3 py-2 font-mono text-xs">
-                <span title={item.audit_id}>{shortAuditId(item.audit_id)}</span>
-              </td>
-              <td className="px-3 py-2">
+              <td className="px-3 py-2 text-center">
                 <span className="bg-muted text-foreground inline-flex rounded-full px-2 py-0.5 font-mono text-xs">
                   {item.gate_id}
                 </span>
@@ -86,11 +75,8 @@ export function DeepCasesTable({ items, onRowClick, className }: DeepCasesTableP
                   {item.conclusion}
                 </span>
               </td>
-              <td className="px-3 py-2">
+              <td className="px-3 py-2 text-center">
                 <StatusBadge status={mapChatStateToBadge(item.deep_chat_state)} />
-              </td>
-              <td className="text-muted-foreground px-3 py-2">
-                <ChevronRight className="h-4 w-4" aria-hidden />
               </td>
             </tr>
           ))}
