@@ -135,6 +135,7 @@ export const CHART_LEGEND_PROPS = {
     paddingTop: 12,
     fontSize: 12,
     color: AXIS_TICK,
+    cursor: 'pointer',
   },
 }
 

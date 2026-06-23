@@ -15,7 +15,6 @@ import {
 import type { MetricsChartSlide } from '@/api/fixtures/metricsCharts'
 import { ChartTooltipContent, type ChartTooltipProps } from '@/components/monitoring/ChartTooltip'
 import {
-  CHART_LEGEND_PROPS,
   CHART_LINE_PROPS,
   CHART_MARGIN,
   CHART_NAV_BUTTON_CLASS,
@@ -27,6 +26,7 @@ import {
   getChartYAxisRightProps,
 } from '@/components/monitoring/chartTheme'
 import { Button } from '@/components/ui/button'
+import { useHiddenChartSeries } from '@/hooks/useHiddenChartSeries'
 import { cn } from '@/lib/utils'
 
 export interface MetricsChartsSliderProps {
@@ -66,7 +66,13 @@ function getChartTooltipRenderer(slide: MetricsChartSlide) {
   )
 }
 
-function ChartLines({ slide }: { slide: MetricsChartSlide }) {
+function ChartLines({
+  slide,
+  hiddenSeries,
+}: {
+  slide: MetricsChartSlide
+  hiddenSeries: Set<string>
+}) {
   return (
     <>
       {slide.series.map((series) => (
@@ -76,6 +82,7 @@ function ChartLines({ slide }: { slide: MetricsChartSlide }) {
           name={series.label}
           stroke={series.color}
           yAxisId={series.yAxisId ?? 'left'}
+          hide={hiddenSeries.has(series.key)}
           {...CHART_LINE_PROPS}
         />
       ))}
@@ -84,6 +91,7 @@ function ChartLines({ slide }: { slide: MetricsChartSlide }) {
 }
 
 function MetricsChartView({ slide }: { slide: MetricsChartSlide }) {
+  const { hiddenSeries, legendProps } = useHiddenChartSeries(slide.key)
   if (slide.type === 'bar') {
     const series = slide.series[0]
     if (!series) {
@@ -147,8 +155,8 @@ function MetricsChartView({ slide }: { slide: MetricsChartSlide }) {
           content={getChartTooltipRenderer(slide)}
           cursor={CHART_TOOLTIP_CURSOR}
         />
-        <Legend {...CHART_LEGEND_PROPS} />
-        <ChartLines slide={slide} />
+        <Legend {...legendProps} />
+        <ChartLines slide={slide} hiddenSeries={hiddenSeries} />
       </LineChart>
     )
   }
@@ -162,8 +170,8 @@ function MetricsChartView({ slide }: { slide: MetricsChartSlide }) {
           content={getChartTooltipRenderer(slide)}
           cursor={CHART_TOOLTIP_CURSOR}
         />
-        <Legend {...CHART_LEGEND_PROPS} />
-        <ChartLines slide={slide} />
+        <Legend {...legendProps} />
+        <ChartLines slide={slide} hiddenSeries={hiddenSeries} />
       </LineChart>
     )
   }
