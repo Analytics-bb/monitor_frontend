@@ -48,5 +48,27 @@ describe('metricsCharts fixtures', () => {
     expect(metricsToolsFixture.tx_status_24h).toHaveLength(24)
     expect(metricsToolsFixture.users_tx_buckets_24h).toHaveLength(24)
     expect(metricsToolsFixture.success_rate_by_hour_country_24h).toHaveLength(72)
+    expect(metricsToolsFixture.top_ips_tx_details_3h).toHaveLength(10)
+  })
+
+  it('includes customer details in top ip chart slide', () => {
+    const slides = buildMetricsChartSlides(metricsToolsFixture)
+    const topIpSlide = slides.find((slide) => slide.key === 'top_ips_tx_details_3h')
+
+    expect(topIpSlide?.data).toHaveLength(10)
+    expect(topIpSlide?.tooltipFields).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ label: 'Почта', key: 'customer_email' }),
+        expect.objectContaining({ label: 'Страна', key: 'customer_country' }),
+      ]),
+    )
+    expect(topIpSlide?.data[0]).toMatchObject({
+      label: '185.220.101.42',
+      customer_email: 'xmarcusx89@googlemail.com',
+      customer_first_name: 'Marcus',
+      customer_last_name: 'Junge',
+      card_number: '454793XXXXXX0072',
+      customer_country: 'DEU',
+    })
   })
 })

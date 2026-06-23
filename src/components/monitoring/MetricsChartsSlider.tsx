@@ -13,7 +13,7 @@ import {
 } from 'recharts'
 
 import type { MetricsChartSlide } from '@/api/fixtures/metricsCharts'
-import { ChartTooltipContent } from '@/components/monitoring/ChartTooltip'
+import { ChartTooltipContent, type ChartTooltipProps } from '@/components/monitoring/ChartTooltip'
 import {
   CHART_LEGEND_PROPS,
   CHART_LINE_PROPS,
@@ -47,6 +47,22 @@ function getRightYAxisOptions(slide: MetricsChartSlide) {
     domain: slide.yAxisDomainRight,
     tickFormatter: slide.yAxisTickFormatterRight,
   }
+}
+
+function getChartTooltipRenderer(slide: MetricsChartSlide) {
+  return (props: {
+    active?: boolean
+    payload?: unknown
+    label?: string | number
+  }) => (
+    <ChartTooltipContent
+      active={props.active}
+      payload={props.payload as ChartTooltipProps['payload']}
+      label={props.label}
+      tooltipFields={slide.tooltipFields}
+      tooltipFieldsOnly={slide.tooltipFieldsOnly}
+    />
+  )
 }
 
 function ChartLines({ slide }: { slide: MetricsChartSlide }) {
@@ -86,10 +102,10 @@ function MetricsChartView({ slide }: { slide: MetricsChartSlide }) {
           <YAxis
             type="category"
             dataKey={slide.xKey}
-            width={112}
+            width={120}
             {...CHART_Y_AXIS_CATEGORY_PROPS}
           />
-          <Tooltip content={<ChartTooltipContent />} cursor={{ fillOpacity: 0.06 }} />
+          <Tooltip content={getChartTooltipRenderer(slide)} cursor={{ fillOpacity: 0.06 }} />
           <Bar
             dataKey={series.key}
             name={series.label}
@@ -105,7 +121,7 @@ function MetricsChartView({ slide }: { slide: MetricsChartSlide }) {
       <BarChart data={slide.data} margin={CHART_MARGIN}>
         <XAxis dataKey={slide.xKey} {...getChartXAxisTimeProps()} />
         <YAxis {...getChartYAxisProps(getLeftYAxisOptions(slide))} />
-        <Tooltip content={<ChartTooltipContent />} cursor={{ fillOpacity: 0.06 }} />
+        <Tooltip content={getChartTooltipRenderer(slide)} cursor={{ fillOpacity: 0.06 }} />
         <Bar
           dataKey={series.key}
           name={series.label}
@@ -126,7 +142,7 @@ function MetricsChartView({ slide }: { slide: MetricsChartSlide }) {
           yAxisId="right"
           {...getChartYAxisRightProps(getRightYAxisOptions(slide))}
         />
-        <Tooltip content={<ChartTooltipContent />} />
+        <Tooltip content={getChartTooltipRenderer(slide)} />
         <Legend {...CHART_LEGEND_PROPS} />
         <ChartLines slide={slide} />
       </LineChart>
@@ -138,7 +154,7 @@ function MetricsChartView({ slide }: { slide: MetricsChartSlide }) {
       <LineChart data={slide.data} margin={CHART_MARGIN}>
         <XAxis dataKey={slide.xKey} {...getChartXAxisTimeProps()} />
         <YAxis {...getChartYAxisProps(getLeftYAxisOptions(slide))} />
-        <Tooltip content={<ChartTooltipContent />} />
+        <Tooltip content={getChartTooltipRenderer(slide)} />
         <Legend {...CHART_LEGEND_PROPS} />
         <ChartLines slide={slide} />
       </LineChart>
@@ -154,7 +170,7 @@ function MetricsChartView({ slide }: { slide: MetricsChartSlide }) {
     <LineChart data={slide.data} margin={CHART_MARGIN}>
       <XAxis dataKey={slide.xKey} {...getChartXAxisTimeProps()} />
       <YAxis {...getChartYAxisProps(getLeftYAxisOptions(slide))} />
-      <Tooltip content={<ChartTooltipContent />} />
+      <Tooltip content={getChartTooltipRenderer(slide)} />
       <Line
         dataKey={series.key}
         name={series.label}

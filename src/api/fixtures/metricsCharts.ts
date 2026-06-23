@@ -78,6 +78,20 @@ export interface MetricsChartSeries {
   yAxisId?: 'left' | 'right'
 }
 
+/** Дополнительные поля во всплывающей подсказке графика. */
+export interface MetricsChartTooltipField {
+  label: string
+  key: string
+}
+
+export const TOP_IP_TOOLTIP_FIELDS: MetricsChartTooltipField[] = [
+  { label: 'Почта', key: 'customer_email' },
+  { label: 'Страна', key: 'customer_country' },
+  { label: 'Имя', key: 'customer_first_name' },
+  { label: 'Фамилия', key: 'customer_last_name' },
+  { label: 'Номер карты', key: 'card_number' },
+]
+
 export interface MetricsChartSlide {
   key: string
   title: string
@@ -91,6 +105,9 @@ export interface MetricsChartSlide {
   yAxisTickFormatter?: (value: number) => string
   yAxisDomainRight?: [number, number]
   yAxisTickFormatterRight?: (value: number) => string
+  tooltipFields?: MetricsChartTooltipField[]
+  /** Только поля tooltipFields, без IP и значений серий. */
+  tooltipFieldsOnly?: boolean
 }
 
 const CHART_COLORS = MONITORING_CHART_PALETTE
@@ -259,10 +276,16 @@ function buildTopIpsTxDetails3hSlide(
     data: rows.map((row) => ({
       label: row.ip,
       value: row.tx_count,
+      customer_email: row.customer_email ?? '—',
+      customer_first_name: row.customer_first_name ?? '—',
+      customer_last_name: row.customer_last_name ?? '—',
+      card_number: row.card_number ?? '—',
+      customer_country: row.customer_country ?? '—',
     })),
     series: [
       { key: 'value', label: 'Транзакции', color: MONITORING_CHART_COLORS.blue },
     ],
+    tooltipFields: TOP_IP_TOOLTIP_FIELDS,
   }
 }
 
@@ -457,6 +480,101 @@ function buildSuccessRateByHourCountry24hFixture(): MetricsTools['success_rate_b
   return rows
 }
 
+function buildTopIpsTxDetails3hFixture(): MetricsTools['top_ips_tx_details_3h'] {
+  return [
+    {
+      ip: '185.220.101.42',
+      tx_count: 18,
+      customer_email: 'xmarcusx89@googlemail.com',
+      customer_country: 'DEU',
+      customer_first_name: 'Marcus',
+      customer_last_name: 'Junge',
+      card_number: '454793XXXXXX0072',
+    },
+    {
+      ip: '91.198.174.192',
+      tx_count: 17,
+      customer_email: 'rocky92@web.de',
+      customer_country: 'DEU',
+      customer_first_name: 'Dennis',
+      customer_last_name: 'Wiemken',
+      card_number: '999999XXXXXX9999',
+    },
+    {
+      ip: '178.63.89.11',
+      tx_count: 16,
+      customer_email: 'rouven1025@gmail.com',
+      customer_country: 'DEU',
+      customer_first_name: 'Rouven',
+      customer_last_name: 'Ulbricht',
+      card_number: '462761XXXXXX0474',
+    },
+    {
+      ip: '194.232.104.55',
+      tx_count: 15,
+      customer_email: 'galyas.jennifer@gmail.com',
+      customer_country: 'AUT',
+      customer_first_name: 'Jennifer',
+      customer_last_name: 'Regina Galyas',
+      card_number: '999999XXXXXX9999',
+    },
+    {
+      ip: '87.122.241.88',
+      tx_count: 14,
+      customer_email: 'kevin210392@web.de',
+      customer_country: 'DEU',
+      customer_first_name: 'Kevin',
+      customer_last_name: 'Dippel',
+      card_number: '530351XXXXXX7675',
+    },
+    {
+      ip: '212.102.63.77',
+      tx_count: 13,
+      customer_email: 'kenansabic321@gmail.com',
+      customer_country: 'DEU',
+      customer_first_name: 'Kenan',
+      customer_last_name: 'Sabic',
+      card_number: '534964XXXXXX6844',
+    },
+    {
+      ip: '46.5.78.203',
+      tx_count: 12,
+      customer_email: 'luanapex18@gmx.de',
+      customer_country: 'DEU',
+      customer_first_name: 'Luan-Luca',
+      customer_last_name: 'Böhnlein',
+      card_number: '454793XXXXXX2930',
+    },
+    {
+      ip: '77.117.168.34',
+      tx_count: 11,
+      customer_email: 'stefan.wallner1@gmx.net',
+      customer_country: 'AUT',
+      customer_first_name: 'Stefan Josef',
+      customer_last_name: 'Wallner',
+      card_number: '447634XXXXXX5178',
+    },
+    {
+      ip: '93.104.214.19',
+      tx_count: 10,
+      customer_email: 'jm.amato@icloud.com',
+      customer_country: 'DEU',
+      customer_first_name: 'Justin-Mike',
+      customer_last_name: 'Amato',
+      card_number: '427665XXXXXX0834',
+    },
+    {
+      ip: '84.236.112.66',
+      tx_count: 9,
+      customer_email: 'balladaniel17@gmail.com',
+      customer_country: 'HUN',
+      customer_first_name: 'Balla',
+      customer_last_name: 'Daniel',
+      card_number: '531596XXXXXX2626',
+    },
+  ]
+}
+
 /** Fixture SQL-tools для dev и Vitest (gate 1001, падение трафика ~12:00). */
 export const metricsToolsFixture: MetricsTools = {
   tx_24h: buildTx24hFixture(),
@@ -479,53 +597,7 @@ export const metricsToolsFixture: MetricsTools = {
     { time_bucket: '2026-06-10 12:20:00', tx_count: 4, user_count: 4 },
     { time_bucket: '2026-06-10 12:30:00', tx_count: 2, user_count: 2 },
   ],
-  top_ips_tx_details_3h: [
-    {
-      ip: '198.51.100.31',
-      tx_count: 18,
-      customer_email: 'u1@example.com',
-      customer_country: 'DE',
-      customer_first_name: 'Anna',
-      customer_last_name: 'Müller',
-      card_number: '4242',
-    },
-    {
-      ip: '198.51.100.35',
-      tx_count: 16,
-      customer_email: 'u2@example.com',
-      customer_country: 'US',
-      customer_first_name: 'John',
-      customer_last_name: 'Doe',
-      card_number: '1111',
-    },
-    {
-      ip: '198.51.100.38',
-      tx_count: 14,
-      customer_email: 'u3@example.com',
-      customer_country: 'DE',
-      customer_first_name: 'Karl',
-      customer_last_name: 'Schmidt',
-      card_number: '5555',
-    },
-    {
-      ip: '198.51.100.41',
-      tx_count: 12,
-      customer_email: 'u4@example.com',
-      customer_country: 'US',
-      customer_first_name: 'Jane',
-      customer_last_name: 'Roe',
-      card_number: '9999',
-    },
-    {
-      ip: '198.51.100.33',
-      tx_count: 10,
-      customer_email: 'u5@example.com',
-      customer_country: 'FR',
-      customer_first_name: 'Pierre',
-      customer_last_name: 'Dupont',
-      card_number: '3333',
-    },
-  ],
+  top_ips_tx_details_3h: buildTopIpsTxDetails3hFixture(),
   success_rate_by_hour_country_24h: buildSuccessRateByHourCountry24hFixture(),
 }
 
