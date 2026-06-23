@@ -19,10 +19,10 @@ todos:
     status: completed
   - id: m5-conflict-handling
     content: "409 upsert → toast error_code; form state preserved"
-    status: pending
+    status: completed
   - id: m5-tests
     content: "Vitest: toggle instruction mock; context PUT roundtrip; 409 display"
-    status: pending
+    status: completed
 isProject: false
 ---
 

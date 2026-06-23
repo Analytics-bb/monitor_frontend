@@ -3,6 +3,8 @@ import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import * as contextsApi from '@/api/contexts'
+import { contextConflict409 } from '@/api/fixtures/conflictEnvelope'
+import { mapApiError } from '@/api/errors'
 import { ContextEditor } from '@/components/settings/ContextEditor'
 
 vi.mock('@/api/contexts', async (importOriginal) => {
@@ -23,6 +25,7 @@ vi.mock('@/api/errors', async (importOriginal) => {
 })
 
 const upsertContextMock = vi.mocked(contextsApi.upsertContext)
+const mapApiErrorMock = vi.mocked(mapApiError)
 
 describe('ContextEditor', () => {
   beforeEach(() => {
@@ -70,5 +73,40 @@ describe('ContextEditor', () => {
 
     expect(onSaved).toHaveBeenCalled()
     expect(onClose).toHaveBeenCalled()
+  })
+
+  it('preserves form on 409 and calls mapApiError', async () => {
+    const user = userEvent.setup()
+    const onSaved = vi.fn(async () => undefined)
+    const onClose = vi.fn()
+
+    upsertContextMock.mockRejectedValue(contextConflict409)
+
+    render(
+      <ContextEditor
+        mode="create"
+        defaultAgentKind="deep"
+        defaultGateId={null}
+        onClose={onClose}
+        onSaved={onSaved}
+      />,
+    )
+
+    await user.type(screen.getByLabelText('key'), 'conflict_key')
+    await user.type(
+      screen.getByTestId('context-content-input'),
+      'Conflict content',
+    )
+    await user.click(screen.getByRole('button', { name: 'Save' }))
+
+    await waitFor(() => {
+      expect(mapApiErrorMock).toHaveBeenCalledWith(contextConflict409)
+    })
+
+    expect(screen.getByTestId('context-content-input')).toHaveValue(
+      'Conflict content',
+    )
+    expect(screen.getByTestId('context-editor')).toBeInTheDocument()
+    expect(onClose).not.toHaveBeenCalled()
   })
 })
