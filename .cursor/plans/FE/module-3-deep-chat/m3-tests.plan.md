@@ -50,8 +50,8 @@ N/A
 | approve flow | `tests/unit/deep-chat/ApprovalBar.test.tsx` | refetch |
 | polling stop | `tests/unit/deep-chat/useDeepChat.test.ts` | terminal |
 | unmount stop | `tests/unit/deep-chat/useDeepChat.test.ts` | clearInterval |
-| breadcrumb back | `tests/unit/deep-chat/DeepChatPage.test.tsx` | saved query |
-| e2e full flow | `tests/e2e/deep-chat.spec.ts` | list → chat → message |
+| breadcrumb back | `tests/unit/deep-chat/DeepChatPage.test.tsx` | `Deep` href `/deep?gate_id=42&page=1` при `state.deepListSearch` |
+| e2e full flow | `tests/e2e/deep-chat.spec.ts` | list row → chat → breadcrumb back с тем же query |
 
 ## DoD
 - [ ] Все сценарии из §Тесты плана модуля зелёные
