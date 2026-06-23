@@ -1,7 +1,4 @@
-import {
-  ContextsTabPlaceholder,
-  InstructionsTab,
-} from '@/components/settings'
+import { ContextsTab, InstructionsTab } from '@/components/settings'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
 /**
@@ -29,7 +26,7 @@ export function AgentSettingsPage() {
           <InstructionsTab />
         </TabsContent>
         <TabsContent value="contexts" className="pt-4">
-          <ContextsTabPlaceholder />
+          <ContextsTab />
         </TabsContent>
       </Tabs>
     </div>
