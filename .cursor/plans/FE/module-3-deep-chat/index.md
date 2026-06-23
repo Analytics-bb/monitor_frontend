@@ -4,13 +4,13 @@
 
 **Внешние зависимости (module-0, completed):** `m0-app-layout`, `m0-status-badge`, `m0-api-client`, `m0-use-polling`, `m0-toast-provider`, `m0-mock-samples`.
 
-**Upstream:** `m2-filters` (saved query для breadcrumb back); module-1 `ConclusionModal` → `/deep/{audit_id}`; `useMonitoringPolling` как образец domain hook.
+**Upstream (module-2, completed):** `m2-filters` — `location.state.deepListSearch` для breadcrumb back (`docs/modules/module-2-deep-list.md`); module-1 `ConclusionModal` → `/deep/{audit_id}` без state; `useMonitoringPolling` как образец domain hook.
 
 ## Задачи
 
 | id | Содержание | depends_on | Статус |
 |----|------------|------------|--------|
-| m3-page-shell | DeepChatPage header + breadcrumb + slots | m0-app-layout, m0-status-badge, m2-filters | pending |
+| m3-page-shell | DeepChatPage header + breadcrumb + slots | m0-app-layout, m0-status-badge, m2-filters (done) | pending |
 | m3-use-deep-chat | useDeepChat + api/deepChat.ts | m0-api-client, m0-use-polling, m0-mock-samples | pending |
 | m3-open-session | CTA «Открыть анализ» + POST open | m3-page-shell, m3-use-deep-chat | pending |
 | m3-chat-window | ChatWindow LLM layout shell | m3-page-shell | pending |
@@ -34,7 +34,7 @@ flowchart TB
     M0FX[m0-mock-samples]
   end
 
-  subgraph m2["module-2 (external)"]
+  subgraph m2["module-2 (completed)"]
     M2FI[m2-filters]
   end
 

@@ -3,7 +3,7 @@ name: fe-deep-chat
 overview: "Страница /deep/{audit_id}: стандартное окно общения с LLM-агентом по audit; polling ChatSnapshot, open/message/approve/reject, pending блокирует ввод."
 todos:
   - id: m3-page-shell
-    content: "DeepChatPage: header (breadcrumb + state) + ChatWindow full-height; breadcrumb ← /deep с сохранением filters"
+    content: "DeepChatPage: header (breadcrumb + state) + ChatWindow full-height; breadcrumb Deep → /deep?deepListSearch из location.state"
     status: pending
   - id: m3-open-session
     content: "not_started → empty state + CTA «Открыть анализ» → POST .../chat/open → snapshot"
@@ -39,7 +39,17 @@ isProject: false
 
 Провал в audit: **стандартное окно общения с LLM-агентом** по snapshot case. HTTP polling + human-in-the-loop approve. Контракт — M17 §7.3, §10.s.
 
-**Зависит от:** [module-0-index.plan.md](./module-0-index.plan.md), [module-2-deep-list.plan.md](./module-2-deep-list.plan.md)
+**Зависит от:** [module-0-index.plan.md](./module-0-index.plan.md), [module-2-deep-list.plan.md](./module-2-deep-list.plan.md) (**completed**)
+
+### Контракт входа из module-2 (read-only)
+
+Владелец — M2 (`docs/modules/module-2-deep-list.md`). M3 **не** меняет list, только потребляет:
+
+| Событие | Реализация M2 | Ожидание M3 |
+|---------|---------------|-------------|
+| Клик по строке списка | `navigate(/deep/{audit_id}, { state: { deepListSearch } })` | Breadcrumb «Deep» → `/deep?${deepListSearch}` |
+| `deepListSearch` | `searchParams.toString()` на момент клика (`gate_id`, `state`, `from`, `to`, `page`, `page_size`) | Читать из `location.state.deepListSearch` |
+| Прямой URL / ConclusionModal | Без `location.state` | Breadcrumb «Deep» → `/deep` (без query) |
 
 ---
 
@@ -104,7 +114,7 @@ isProject: false
 
 #### Header
 
-- Breadcrumb: `Deep` (link → `/deep?savedFilters`) / `{audit_id short}`.
+- Breadcrumb: `Deep` (link → `/deep?${deepListSearch}` если есть `location.state.deepListSearch`, иначе `/deep`) / `{audit_id short}` (первые 8 символов UUID).
 - `StatusBadge(chat.state)` — варианты module-0 §Deep chat (`not_started` … `cancelled`).
 - Link «Расход токенов» → `/usage?audit_id=`.
 
@@ -179,7 +189,7 @@ Out of scope: markdown editor, file upload, voice input, sidebar case panel.
 7. **409 message + pending:** refetch; draft preserved.
 8. **409 budget_exceeded:** toast; hide approve.
 9. **Unmount:** stop polling.
-10. **Back to list:** сохранить filter query params.
+10. **Back to list:** восстановить query списка через `location.state.deepListSearch` (контракт M2).
 
 ---
 
@@ -237,7 +247,7 @@ stateDiagram-v2
 4. User пишет → `POST .../messages` → immediate GET → poll while active.
 5. Pending → ApprovalBar → Approve/Reject → POST → GET.
 6. Terminal → stop poll; read-only.
-7. Back → `/deep?${savedSearch}`.
+7. Back → `/deep?${deepListSearch}` если `location.state.deepListSearch` задан (из списка), иначе `/deep`.
 8. Unmount → stop polling.
 
 ---
@@ -250,16 +260,22 @@ src/
 │   └── DeepChatPage.tsx
 ├── components/
 │   └── deep/
-│       ├── ChatWindow.tsx          # messages + approval + composer shell
+│       ├── DeepCasesFilters.tsx      # M2 (list)
+│       ├── DeepCasesTable.tsx        # M2
+│       ├── DeepCasesPagination.tsx   # M2
+│       ├── ChatWindow.tsx            # messages + approval + composer shell
 │       ├── ChatMessage.tsx
 │       ├── ChatComposer.tsx
 │       ├── ApprovalBar.tsx
-│       └── CaseMetaStrip.tsx       # compact 1-line meta, не sidebar
+│       └── CaseMetaStrip.tsx         # compact 1-line meta, не sidebar
 ├── hooks/
-│   └── useDeepChat.ts            # паттерн как useMonitoringPolling (module-1)
+│   ├── useDeepCasesList.ts           # M2
+│   └── useDeepChat.ts                # паттерн как useMonitoringPolling (module-1)
 ├── api/
+│   ├── deep.ts                       # M2 listDeepCases
 │   └── deepChat.ts
 tests/
+├── unit/deep-list/                   # M2
 ├── unit/deep-chat/
 └── e2e/deep-chat.spec.ts
 ```
@@ -290,8 +306,8 @@ OpenAPI tag: `deep_analyst`. Тип: `ChatSnapshot`.
 | approve flow mock | unit | POST approve → refetch |
 | polling stop terminal | unit | completed → no GET |
 | unmount stop | unit | clearInterval |
-| breadcrumb back | unit | Link содержит saved query |
-| e2e list → chat → message | e2e | Full flow fixture |
+| breadcrumb back | unit | Link `Deep` → `/deep?gate_id=42&page=1` при `state.deepListSearch` |
+| e2e list → chat → message | e2e | Row click → chat; breadcrumb back → тот же query |
 
 ---
 
@@ -301,7 +317,7 @@ OpenAPI tag: `deep_analyst`. Тип: `ChatSnapshot`.
 - [ ] Open / message / approve / reject на mock/fixture.
 - [ ] Polling §10.s; stop terminal + unmount.
 - [ ] `pending_action` блокирует composer.
-- [ ] Back сохраняет фильтры списка.
+- [ ] Back восстанавливает query списка через `deepListSearch` (M2 contract).
 - [ ] Тесты проходят; M17 §9.2 deep chat готов.
 
 ---
@@ -310,7 +326,7 @@ OpenAPI tag: `deep_analyst`. Тип: `ChatSnapshot`.
 
 - module-0-index (StatusBadge, usePolling, api client, theme)
 - module-1-monitoring (completed): cross-link `ConclusionModal` → `/deep/{audit_id}`; образец domain polling hook (`useMonitoringPolling`)
-- module-2-deep-list (entry: список → провал; saved filter query)
+- module-2-deep-list (**completed**): drill-down из списка; `location.state.deepListSearch` для breadcrumb back; `listDeepCases` / `DeepCaseSummary` — read-only
 - M17 §7.3, §10.s; M16 ChatSnapshot
 
 ---
