@@ -13,7 +13,7 @@ todos:
     status: completed
   - id: m3-chat-window
     content: "ChatWindow: scroll messages + composer снизу — стандартный LLM layout (user right, assistant left)"
-    status: pending
+    status: completed
   - id: m3-message-list
     content: "ChatMessage list: roles user/assistant/system/tool; scroll-to-bottom on new; tool без секретов"
     status: pending

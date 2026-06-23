@@ -1,5 +1,6 @@
 import { Link, useLocation, useParams } from 'react-router'
 
+import { ChatWindow } from '@/components/deep/ChatWindow'
 import { StatusBadge } from '@/components/StatusBadge'
 
 /**
@@ -14,7 +15,7 @@ interface DeepChatLocationState {
 }
 
 /**
- * Страница `/deep/{audit_id}` — shell с header и placeholder чата.
+ * Страница `/deep/{audit_id}` — shell с header и ChatWindow placeholder.
  *
  * Breadcrumb «Deep» восстанавливает query списка через `location.state.deepListSearch` (M2).
  */
@@ -62,14 +63,11 @@ export function DeepChatPage() {
         />
       </header>
 
-      <div
-        className="border-border bg-card flex min-h-0 flex-1 flex-col rounded-lg border"
-        data-testid="chat-window-placeholder"
-      >
-        <div className="text-muted-foreground flex flex-1 items-center justify-center text-sm">
-          Чат
-        </div>
-      </div>
+      <ChatWindow
+        messages={
+          <p className="text-muted-foreground text-sm">Сообщений пока нет</p>
+        }
+      />
     </div>
   )
 }
