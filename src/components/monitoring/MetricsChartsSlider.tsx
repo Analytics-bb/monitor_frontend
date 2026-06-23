@@ -40,6 +40,9 @@ function getLeftYAxisOptions(slide: MetricsChartSlide) {
   return {
     domain: slide.yAxisDomain,
     tickFormatter: slide.yAxisTickFormatter,
+    tickCount: slide.yAxisTickCount,
+    allowDecimals: slide.yAxisAllowDecimals,
+    ticks: slide.yAxisTicks,
   }
 }
 
@@ -164,9 +167,9 @@ function MetricsChartView({ slide }: { slide: MetricsChartSlide }) {
 
   if (slide.type === 'multiLine') {
     return (
-      <LineChart data={slide.data} margin={CHART_MARGIN}>
+      <LineChart data={slide.data} margin={{ ...CHART_MARGIN, right: 8 }}>
         <XAxis dataKey={slide.xKey} {...getChartXAxisTimeProps()} />
-        <YAxis {...getChartYAxisProps(getLeftYAxisOptions(slide))} />
+        <YAxis yAxisId="left" {...getChartYAxisProps(getLeftYAxisOptions(slide))} />
         <Tooltip
           content={getChartTooltipRenderer(slide)}
           cursor={CHART_TOOLTIP_CURSOR}

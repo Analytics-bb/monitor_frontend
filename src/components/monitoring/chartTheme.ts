@@ -92,6 +92,9 @@ export interface ChartYAxisOptions {
   domain?: [number, number]
   tickFormatter?: (value: number) => string
   width?: number
+  tickCount?: number
+  allowDecimals?: boolean
+  ticks?: number[]
 }
 
 /** Пропсы нижней оси X (время). */
@@ -109,7 +112,10 @@ export function getChartYAxisProps(options?: ChartYAxisOptions) {
   return {
     ...CHART_Y_AXIS_PROPS,
     width: options?.width ?? CHART_Y_AXIS_PROPS.width,
+    tickCount: options?.tickCount ?? 5,
+    allowDecimals: options?.allowDecimals ?? false,
     ...(options?.domain ? { domain: options.domain } : {}),
+    ...(options?.ticks ? { ticks: options.ticks } : {}),
     ...(options?.tickFormatter ? { tickFormatter: options.tickFormatter } : {}),
   }
 }
@@ -121,7 +127,10 @@ export function getChartYAxisRightProps(options?: ChartYAxisOptions) {
     axisLine: false,
     orientation: 'right' as const,
     width: options?.width ?? CHART_Y_AXIS_PROPS.width,
+    tickCount: options?.tickCount ?? 5,
+    allowDecimals: options?.allowDecimals ?? false,
     ...(options?.domain ? { domain: options.domain } : {}),
+    ...(options?.ticks ? { ticks: options.ticks } : {}),
     ...(options?.tickFormatter ? { tickFormatter: options.tickFormatter } : {}),
   }
 }

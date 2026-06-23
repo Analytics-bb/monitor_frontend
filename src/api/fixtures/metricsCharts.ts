@@ -105,6 +105,12 @@ export interface MetricsChartSlide {
   yAxisDomain?: [number, number]
   /** Формат тиков левой оси Y. */
   yAxisTickFormatter?: (value: number) => string
+  /** Число делений левой оси Y. */
+  yAxisTickCount?: number
+  /** Дробные тики левой оси Y. */
+  yAxisAllowDecimals?: boolean
+  /** Явные значения тиков левой оси Y. */
+  yAxisTicks?: number[]
   yAxisDomainRight?: [number, number]
   yAxisTickFormatterRight?: (value: number) => string
   tooltipFields?: MetricsChartTooltipField[]
@@ -113,6 +119,43 @@ export interface MetricsChartSlide {
 }
 
 const CHART_COLORS = MONITORING_CHART_PALETTE
+
+function getSeriesMaxFromData(
+  data: MetricsChartSlide['data'],
+  seriesKeys: string[],
+): number {
+  let max = 0
+
+  for (const point of data) {
+    for (const key of seriesKeys) {
+      const value = Number(point[key] ?? 0)
+      if (!Number.isNaN(value)) {
+        max = Math.max(max, value)
+      }
+    }
+  }
+
+  return max
+}
+
+function niceYAxisMax(max: number): number {
+  if (max <= 0) {
+    return 1
+  }
+
+  if (max <= 5) {
+    return 5
+  }
+
+  if (max <= 10) {
+    return 10
+  }
+
+  const magnitude = 10 ** Math.floor(Math.log10(max))
+  const step = magnitude / 2
+
+  return Math.ceil(max / step) * step
+}
 
 function pivotByBucket<T extends Record<string, string | number>>(
   rows: T[],
@@ -160,16 +203,19 @@ function buildTx24hSlide(rows: MetricsTools['tx_24h']): MetricsChartSlide {
 function buildTxStatus24hSlide(
   rows: MetricsTools['tx_status_24h'],
 ): MetricsChartSlide {
+  const data = rows.map((row) => ({
+    label: formatChartTimeBucket(row.hour_bucket),
+    approved: row.approved_count,
+    declined: row.declined_count,
+  }))
+  const yMax = niceYAxisMax(getSeriesMaxFromData(data, ['approved', 'declined']))
+
   return {
     key: 'tx_status_24h',
     title: 'Approved / Declined (24ч)',
     type: 'multiLine',
     xKey: 'label',
-    data: rows.map((row) => ({
-      label: formatChartTimeBucket(row.hour_bucket),
-      approved: row.approved_count,
-      declined: row.declined_count,
-    })),
+    data,
     series: [
       {
         key: 'approved',
@@ -182,6 +228,9 @@ function buildTxStatus24hSlide(
         color: CHART_SERIES_THEME_COLORS.declined,
       },
     ],
+    yAxisDomain: [0, yMax],
+    yAxisTickCount: 5,
+    yAxisAllowDecimals: false,
   }
 }
 
@@ -200,6 +249,7 @@ function buildErrors24hSlide(rows: MetricsTools['errors_24h']): MetricsChartSlid
     'cnt',
     'error_code',
   )
+  const yMax = niceYAxisMax(getSeriesMaxFromData(data, groups))
 
   return {
     key: 'errors_24h',
@@ -213,6 +263,9 @@ function buildErrors24hSlide(rows: MetricsTools['errors_24h']): MetricsChartSlid
       description: descriptions.get(group),
       color: CHART_COLORS[index % CHART_COLORS.length]!,
     })),
+    yAxisDomain: [0, yMax],
+    yAxisTickCount: 5,
+    yAxisAllowDecimals: false,
   }
 }
 
@@ -326,6 +379,8 @@ function buildSuccessRateByHourCountry24hSlide(
       color: CHART_COLORS[index % CHART_COLORS.length]!,
     })),
     yAxisDomain: [0, 1],
+    yAxisTicks: [0, 0.25, 0.5, 0.75, 1],
+    yAxisAllowDecimals: true,
     yAxisTickFormatter: (value) => value.toFixed(1),
   }
 }

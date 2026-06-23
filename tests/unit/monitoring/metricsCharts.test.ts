@@ -72,6 +72,25 @@ describe('metricsCharts fixtures', () => {
     })
   })
 
+  it('configures y-axis ticks on multi-line chart slides', () => {
+    const slides = buildMetricsChartSlides(metricsToolsFixture)
+    const txStatusSlide = slides.find((slide) => slide.key === 'tx_status_24h')
+    const errorsSlide = slides.find((slide) => slide.key === 'errors_24h')
+    const successRateSlide = slides.find(
+      (slide) => slide.key === 'success_rate_by_hour_country_24h',
+    )
+
+    expect(txStatusSlide?.yAxisDomain?.[0]).toBe(0)
+    expect(txStatusSlide?.yAxisDomain?.[1]).toBeGreaterThan(0)
+    expect(txStatusSlide?.yAxisAllowDecimals).toBe(false)
+
+    expect(errorsSlide?.yAxisDomain).toEqual([0, 5])
+    expect(errorsSlide?.yAxisAllowDecimals).toBe(false)
+
+    expect(successRateSlide?.yAxisDomain).toEqual([0, 1])
+    expect(successRateSlide?.yAxisTicks).toEqual([0, 0.25, 0.5, 0.75, 1])
+  })
+
   it('includes error descriptions in errors by code slide', () => {
     const slides = buildMetricsChartSlides(metricsToolsFixture)
     const errorsSlide = slides.find((slide) => slide.key === 'errors_24h')
