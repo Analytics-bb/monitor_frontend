@@ -12,6 +12,9 @@ export const pendingActionSchema = z.object({
 })
 
 export const chatSnapshotSchema = z.object({
+  gate_id: z.string(),
+  created_at: z.string(),
+  conclusion: z.string().optional(),
   state: z.enum([
     'not_started',
     'active',
@@ -28,6 +31,9 @@ export type ChatSnapshot = z.infer<typeof chatSnapshotSchema>
 
 /** Fixture ChatSnapshot для dev и Vitest. */
 export const chatSnapshotFixture: ChatSnapshot = {
+  gate_id: '42',
+  created_at: '2025-07-14 12:30:00',
+  conclusion: 'Порог превышен; рекомендован deep analysis.',
   state: 'active',
   messages: [
     {
@@ -35,6 +41,16 @@ export const chatSnapshotFixture: ChatSnapshot = {
       content: 'Начинаю deep analysis по snapshot audit.',
     },
   ],
+  pending_action: null,
+}
+
+/** Snapshot для состояния `not_started` (пустой чат до open). */
+export const chatSnapshotNotStartedFixture: ChatSnapshot = {
+  gate_id: '42',
+  created_at: '2025-07-14 12:30:00',
+  conclusion: 'Порог превышен; рекомендован deep analysis.',
+  state: 'not_started',
+  messages: [],
   pending_action: null,
 }
 

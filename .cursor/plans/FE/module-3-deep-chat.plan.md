@@ -10,7 +10,7 @@ todos:
     status: pending
   - id: m3-use-deep-chat
     content: "hooks/useDeepChat: polling по state §10.s, immediate refetch after POST, stop terminal/unmount"
-    status: pending
+    status: completed
   - id: m3-chat-window
     content: "ChatWindow: scroll messages + composer снизу — стандартный LLM layout (user right, assistant left)"
     status: pending
