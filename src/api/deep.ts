@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-import { apiGetJson, getApiBaseUrl } from './client'
+import { apiGetJson } from './client'
 import {
   deepCaseSummaryFixture,
   parseDeepCaseSummary,
@@ -95,7 +95,7 @@ export async function listDeepCases(
   const page = params.page ?? 1
   const pageSize = params.page_size ?? 20
 
-  if (!getApiBaseUrl()) {
+  if (!import.meta.env.VITE_ANOMALY_API_BASE_URL) {
     const filtered = filterFixtureItems(params)
     return paginateFixture(filtered, page, pageSize)
   }

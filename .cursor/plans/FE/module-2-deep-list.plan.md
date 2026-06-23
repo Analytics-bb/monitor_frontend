@@ -19,7 +19,7 @@ todos:
     status: completed
   - id: m2-tests
     content: "Vitest: pagination; gate URL sync; audit UUID shortcut; row navigate; e2e list + filter"
-    status: pending
+    status: completed
 isProject: false
 ---
 

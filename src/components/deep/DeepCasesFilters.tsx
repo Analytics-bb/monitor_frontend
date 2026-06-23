@@ -1,10 +1,8 @@
 import { toast } from 'sonner'
 
+import { isFullAuditId } from '@/lib/auditId'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
-
-const AUDIT_ID_UUID_PATTERN =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
 export interface DeepCasesFilterValues {
   audit_id: string
@@ -21,13 +19,6 @@ export interface DeepCasesFiltersProps {
   onAuditNavigate: (auditId: string) => void
   className?: string
   isLoading?: boolean
-}
-
-/**
- * Проверяет, является ли строка полным UUID audit_id.
- */
-export function isFullAuditId(value: string): boolean {
-  return AUDIT_ID_UUID_PATTERN.test(value.trim())
 }
 
 /**

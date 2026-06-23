@@ -1,7 +1,7 @@
 /**
  * Компоненты страницы `/deep` (список audits).
  */
-export { DeepCasesFilters, isFullAuditId } from './DeepCasesFilters'
+export { DeepCasesFilters } from './DeepCasesFilters'
 export type {
   DeepCasesFilterValues,
   DeepCasesFiltersProps,

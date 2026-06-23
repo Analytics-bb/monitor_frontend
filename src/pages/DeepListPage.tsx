@@ -1,14 +1,13 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router'
 
-import { listDeepCases, type DeepCaseSummary } from '@/api/deep'
-import { mapApiError } from '@/api/errors'
 import {
   DeepCasesFilters,
   type DeepCasesFilterValues,
 } from '@/components/deep/DeepCasesFilters'
 import { DeepCasesTable } from '@/components/deep/DeepCasesTable'
 import { DeepCasesPagination } from '@/components/deep/DeepCasesPagination'
+import { useDeepCasesList } from '@/hooks/useDeepCasesList'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
@@ -73,9 +72,9 @@ function hasServerFilters(filters: DeepCasesFilterValues): boolean {
 }
 
 function filterItemsByAuditPrefix(
-  items: DeepCaseSummary[],
+  items: ReturnType<typeof useDeepCasesList>['items'],
   auditIdPrefix: string,
-): DeepCaseSummary[] {
+) {
   const prefix = auditIdPrefix.trim().toLowerCase()
   if (!prefix) {
     return items
@@ -92,13 +91,9 @@ function filterItemsByAuditPrefix(
 export function DeepListPage() {
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
-  const [draftFilters, setDraftFilters] = useState<DeepCasesFilterValues>(() =>
-    readFiltersFromSearchParams(searchParams),
+  const [filterDraft, setFilterDraft] = useState<DeepCasesFilterValues | null>(
+    null,
   )
-  const [items, setItems] = useState<DeepCaseSummary[]>([])
-  const [total, setTotal] = useState(0)
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
 
   const page = Number(searchParams.get('page') ?? '1') || 1
   const pageSize = Number(searchParams.get('page_size') ?? '20') || 20
@@ -106,43 +101,31 @@ export function DeepListPage() {
     () => readFiltersFromSearchParams(searchParams),
     [searchParams],
   )
+  const draftFilters = filterDraft ?? appliedFilters
+
+  const listParams = useMemo(
+    () => ({
+      gate_id: appliedFilters.gate_id || undefined,
+      from: appliedFilters.from || undefined,
+      to: appliedFilters.to || undefined,
+      page,
+      page_size: pageSize,
+    }),
+    [
+      appliedFilters.from,
+      appliedFilters.gate_id,
+      appliedFilters.to,
+      page,
+      pageSize,
+    ],
+  )
+
+  const { items, total, isLoading, error, refetch } = useDeepCasesList(listParams)
 
   const visibleItems = useMemo(
     () => filterItemsByAuditPrefix(items, appliedFilters.audit_id),
     [appliedFilters.audit_id, items],
   )
-
-  const fetchCases = useCallback(async () => {
-    setIsLoading(true)
-    setError(null)
-
-    try {
-      const response = await listDeepCases({
-        gate_id: appliedFilters.gate_id || undefined,
-        from: appliedFilters.from || undefined,
-        to: appliedFilters.to || undefined,
-        page,
-        page_size: pageSize,
-      })
-      setItems(response.items)
-      setTotal(response.total)
-    } catch (fetchError) {
-      mapApiError(fetchError)
-      setError('Не удалось загрузить список deep cases')
-      setItems([])
-      setTotal(0)
-    } finally {
-      setIsLoading(false)
-    }
-  }, [appliedFilters.from, appliedFilters.gate_id, appliedFilters.to, page, pageSize])
-
-  useEffect(() => {
-    setDraftFilters(readFiltersFromSearchParams(searchParams))
-  }, [searchParams])
-
-  useEffect(() => {
-    void fetchCases()
-  }, [fetchCases])
 
   useEffect(() => {
     if (isLoading || total === 0) {
@@ -164,14 +147,6 @@ export function DeepListPage() {
     setSearchParams(next)
   }
 
-  const handlePageChange = (nextPage: number) => {
-    updatePageParams(nextPage)
-  }
-
-  const handlePageSizeChange = (nextPageSize: number) => {
-    updatePageParams(1, nextPageSize)
-  }
-
   const handleApply = () => {
     const next = new URLSearchParams()
     if (draftFilters.audit_id) {
@@ -188,11 +163,12 @@ export function DeepListPage() {
     }
     next.set('page', '1')
     next.set('page_size', String(pageSize))
+    setFilterDraft(null)
     setSearchParams(next)
   }
 
   const handleReset = () => {
-    setDraftFilters(EMPTY_FILTERS)
+    setFilterDraft(EMPTY_FILTERS)
     setSearchParams(new URLSearchParams({ page: '1', page_size: String(pageSize) }))
   }
 
@@ -233,7 +209,7 @@ export function DeepListPage() {
       >
         <DeepCasesFilters
           values={draftFilters}
-          onChange={setDraftFilters}
+          onChange={setFilterDraft}
           onApply={handleApply}
           onReset={handleReset}
           onAuditNavigate={handleRowClick}
@@ -251,7 +227,7 @@ export function DeepListPage() {
             role="alert"
           >
             <p className="text-destructive text-sm">{error}</p>
-            <Button type="button" size="sm" variant="outline" onClick={() => void fetchCases()}>
+            <Button type="button" size="sm" variant="outline" onClick={() => void refetch()}>
               Retry
             </Button>
           </div>
@@ -287,8 +263,8 @@ export function DeepListPage() {
           page={page}
           pageSize={pageSize}
           itemsOnPage={items.length}
-          onPageChange={handlePageChange}
-          onPageSizeChange={handlePageSizeChange}
+          onPageChange={(nextPage) => updatePageParams(nextPage)}
+          onPageSizeChange={(nextPageSize) => updatePageParams(1, nextPageSize)}
         />
       </DeepListZone>
     </div>
