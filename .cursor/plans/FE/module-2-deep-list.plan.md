@@ -20,7 +20,7 @@ todos:
   - id: m2-tests
     content: "Vitest: pagination; gate/state/date validation URL sync; row navigate; e2e list + gate filter"
     status: completed
-isProject: false
+isProject: true
 ---
 
 # FE Module 2 — Deep List (`/deep`)
