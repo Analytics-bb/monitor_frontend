@@ -7,6 +7,7 @@ import {
   DeepCasesFilters,
   type DeepCasesFilterValues,
 } from '@/components/deep/DeepCasesFilters'
+import { DeepCasesTable } from '@/components/deep/DeepCasesTable'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
@@ -241,17 +242,7 @@ export function DeepListPage() {
         ) : null}
 
         {!isLoading && !error && visibleItems.length > 0 ? (
-          <ul className="space-y-2" data-testid="deep-list-table-data">
-            {visibleItems.map((item) => (
-              <li
-                key={item.audit_id}
-                className="font-mono text-sm"
-                data-testid="deep-list-row"
-              >
-                {item.audit_id}
-              </li>
-            ))}
-          </ul>
+          <DeepCasesTable items={visibleItems} />
         ) : null}
       </DeepListZone>
 

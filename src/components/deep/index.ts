@@ -6,3 +6,5 @@ export type {
   DeepCasesFilterValues,
   DeepCasesFiltersProps,
 } from './DeepCasesFilters'
+export { DeepCasesTable } from './DeepCasesTable'
+export type { DeepCasesTableProps } from './DeepCasesTable'

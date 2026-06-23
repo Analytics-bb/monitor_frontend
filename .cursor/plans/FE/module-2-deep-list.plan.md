@@ -10,7 +10,7 @@ todos:
     status: completed
   - id: m2-cases-table
     content: "DeepCasesTable: основные поля audit (время, gate, summary, conclusion truncate, chat state StatusBadge)"
-    status: pending
+    status: completed
   - id: m2-pagination
     content: "Envelope total/page/page_size — prev/next + page size selector"
     status: pending
