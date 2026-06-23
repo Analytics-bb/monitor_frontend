@@ -23,6 +23,7 @@ export type DeepCasesListResponse = {
 
 export interface ListDeepCasesParams {
   gate_id?: string
+  state?: DeepCaseSummary['deep_chat_state']
   from?: string
   to?: string
   page?: number
@@ -54,6 +55,10 @@ function filterFixtureItems(params: ListDeepCasesParams): DeepCaseSummary[] {
 
   if (params.gate_id) {
     items = items.filter((item) => item.gate_id === params.gate_id)
+  }
+
+  if (params.state) {
+    items = items.filter((item) => item.deep_chat_state === params.state)
   }
 
   if (params.from) {
@@ -103,6 +108,9 @@ export async function listDeepCases(
   const search = new URLSearchParams()
   if (params.gate_id) {
     search.set('gate_id', params.gate_id)
+  }
+  if (params.state) {
+    search.set('state', params.state)
   }
   if (params.from) {
     search.set('from', params.from)

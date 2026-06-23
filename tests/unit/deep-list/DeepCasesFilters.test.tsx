@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { MemoryRouter, Route, Routes, useSearchParams } from 'react-router'
 import { describe, expect, it, vi } from 'vitest'
 
-import { DeepCasesFilters } from '@/components/deep/DeepCasesFilters'
+import { DeepCasesFilters, type DeepCasesFilterValues } from '@/components/deep/DeepCasesFilters'
 
 function SearchParamsDisplay() {
   const [params] = useSearchParams()
@@ -17,22 +17,20 @@ function renderFilters(
   const onChange = vi.fn()
   const onApply = vi.fn()
   const onReset = vi.fn()
-  const onAuditNavigate = vi.fn()
 
   render(
     <MemoryRouter>
       <DeepCasesFilters
-        values={{ audit_id: '', gate_id: '', from: '', to: '' }}
+        values={{ gate_id: '', state: '', from: '', to: '' }}
         onChange={onChange}
         onApply={onApply}
         onReset={onReset}
-        onAuditNavigate={onAuditNavigate}
         {...props}
       />
     </MemoryRouter>,
   )
 
-  return { onChange, onApply, onReset, onAuditNavigate }
+  return { onChange, onApply, onReset }
 }
 
 describe('DeepCasesFilters', () => {
@@ -40,9 +38,9 @@ describe('DeepCasesFilters', () => {
     const user = userEvent.setup()
 
     function ControlledFilters() {
-      const [values, setValues] = useState({
-        audit_id: '',
+      const [values, setValues] = useState<DeepCasesFilterValues>({
         gate_id: '',
+        state: '',
         from: '',
         to: '',
       })
@@ -53,7 +51,6 @@ describe('DeepCasesFilters', () => {
           onChange={setValues}
           onApply={vi.fn()}
           onReset={vi.fn()}
-          onAuditNavigate={vi.fn()}
         />
       )
     }
@@ -70,41 +67,42 @@ describe('DeepCasesFilters', () => {
     expect(input).toHaveValue('42')
   })
 
-  it('calls onApply for gate filter without audit shortcut', async () => {
+  it('calls onApply for gate filter', async () => {
     const user = userEvent.setup()
     const onApply = vi.fn()
-    const onAuditNavigate = vi.fn()
 
     renderFilters({
-      values: { audit_id: '', gate_id: '42', from: '', to: '' },
+      values: { gate_id: '42', state: '', from: '', to: '' },
       onApply,
-      onAuditNavigate,
     })
 
-    await user.click(screen.getByRole('button', { name: 'Apply' }))
+    await user.click(screen.getByRole('button', { name: 'Применить' }))
 
     expect(onApply).toHaveBeenCalledTimes(1)
-    expect(onAuditNavigate).not.toHaveBeenCalled()
   })
 
-  it('navigates to chat on full audit UUID Apply', async () => {
+  it('updates state filter via onChange', async () => {
     const user = userEvent.setup()
-    const onAuditNavigate = vi.fn()
-    const auditId = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890'
+    const onChange = vi.fn()
 
     renderFilters({
-      values: { audit_id: auditId, gate_id: '', from: '', to: '' },
-      onAuditNavigate,
+      values: { gate_id: '', state: '', from: '', to: '' },
+      onChange,
     })
 
-    await user.click(screen.getByRole('button', { name: 'Apply' }))
+    await user.selectOptions(screen.getByLabelText('Статус чата'), 'active')
 
-    expect(onAuditNavigate).toHaveBeenCalledWith(auditId)
+    expect(onChange).toHaveBeenCalledWith({
+      gate_id: '',
+      state: 'active',
+      from: '',
+      to: '',
+    })
   })
 })
 
 describe('DeepListPage URL sync', () => {
-  it('updates ?gate_id= after Apply', async () => {
+  it('updates ?gate_id= after Применить', async () => {
     const user = userEvent.setup()
     const { DeepListPage } = await import('@/pages/DeepListPage')
 
@@ -129,7 +127,7 @@ describe('DeepListPage URL sync', () => {
     })
 
     await user.type(screen.getByLabelText('Gate ID'), '42')
-    await user.click(screen.getByRole('button', { name: 'Apply' }))
+    await user.click(screen.getByRole('button', { name: 'Применить' }))
 
     await waitFor(() => {
       expect(screen.getByTestId('search-params')).toHaveTextContent('gate_id=42')

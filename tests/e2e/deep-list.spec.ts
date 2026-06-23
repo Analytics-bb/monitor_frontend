@@ -11,7 +11,7 @@ test('deep list loads and gate filter narrows fixture rows', async ({ page }) =>
   })
 
   await page.getByLabel('Gate ID').fill('42')
-  await page.getByRole('button', { name: 'Apply' }).click()
+  await page.getByRole('button', { name: 'Применить' }).click()
 
   await expect(page).toHaveURL(/gate_id=42/)
   await expect(page.getByTestId('deep-cases-table-row')).toHaveCount(2)

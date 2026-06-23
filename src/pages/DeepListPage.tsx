@@ -50,8 +50,8 @@ function TableSkeletonRows({ rows = 8 }: { rows?: number }) {
 }
 
 const EMPTY_FILTERS: DeepCasesFilterValues = {
-  audit_id: '',
   gate_id: '',
+  state: '',
   from: '',
   to: '',
 }
@@ -59,30 +59,29 @@ const EMPTY_FILTERS: DeepCasesFilterValues = {
 function readFiltersFromSearchParams(
   searchParams: URLSearchParams,
 ): DeepCasesFilterValues {
+  const state = searchParams.get('state') ?? ''
+  const allowedStates = new Set([
+    '',
+    'not_started',
+    'active',
+    'awaiting_approval',
+    'completed',
+    'cancelled',
+    'error',
+  ])
+
   return {
-    audit_id: searchParams.get('audit_id') ?? '',
     gate_id: searchParams.get('gate_id') ?? '',
+    state: allowedStates.has(state)
+      ? (state as DeepCasesFilterValues['state'])
+      : '',
     from: searchParams.get('from') ?? '',
     to: searchParams.get('to') ?? '',
   }
 }
 
-function hasServerFilters(filters: DeepCasesFilterValues): boolean {
-  return Boolean(filters.gate_id || filters.from || filters.to)
-}
-
-function filterItemsByAuditPrefix(
-  items: ReturnType<typeof useDeepCasesList>['items'],
-  auditIdPrefix: string,
-) {
-  const prefix = auditIdPrefix.trim().toLowerCase()
-  if (!prefix) {
-    return items
-  }
-
-  return items.filter((item) =>
-    item.audit_id.toLowerCase().startsWith(prefix),
-  )
+function hasActiveFilters(filters: DeepCasesFilterValues): boolean {
+  return Boolean(filters.gate_id || filters.state || filters.from || filters.to)
 }
 
 /**
@@ -106,6 +105,7 @@ export function DeepListPage() {
   const listParams = useMemo(
     () => ({
       gate_id: appliedFilters.gate_id || undefined,
+      state: appliedFilters.state || undefined,
       from: appliedFilters.from || undefined,
       to: appliedFilters.to || undefined,
       page,
@@ -114,6 +114,7 @@ export function DeepListPage() {
     [
       appliedFilters.from,
       appliedFilters.gate_id,
+      appliedFilters.state,
       appliedFilters.to,
       page,
       pageSize,
@@ -121,11 +122,6 @@ export function DeepListPage() {
   )
 
   const { items, total, isLoading, error, refetch } = useDeepCasesList(listParams)
-
-  const visibleItems = useMemo(
-    () => filterItemsByAuditPrefix(items, appliedFilters.audit_id),
-    [appliedFilters.audit_id, items],
-  )
 
   useEffect(() => {
     if (isLoading || total === 0) {
@@ -149,11 +145,11 @@ export function DeepListPage() {
 
   const handleApply = () => {
     const next = new URLSearchParams()
-    if (draftFilters.audit_id) {
-      next.set('audit_id', draftFilters.audit_id)
-    }
     if (draftFilters.gate_id) {
       next.set('gate_id', draftFilters.gate_id)
+    }
+    if (draftFilters.state) {
+      next.set('state', draftFilters.state)
     }
     if (draftFilters.from) {
       next.set('from', draftFilters.from)
@@ -179,17 +175,10 @@ export function DeepListPage() {
   }
 
   const showFilteredEmpty =
-    !isLoading &&
-    !error &&
-    visibleItems.length === 0 &&
-    (hasServerFilters(appliedFilters) || Boolean(appliedFilters.audit_id))
+    !isLoading && !error && items.length === 0 && hasActiveFilters(appliedFilters)
 
   const showGlobalEmpty =
-    !isLoading &&
-    !error &&
-    visibleItems.length === 0 &&
-    !hasServerFilters(appliedFilters) &&
-    !appliedFilters.audit_id
+    !isLoading && !error && items.length === 0 && !hasActiveFilters(appliedFilters)
 
   return (
     <div
@@ -212,7 +201,6 @@ export function DeepListPage() {
           onChange={setFilterDraft}
           onApply={handleApply}
           onReset={handleReset}
-          onAuditNavigate={handleRowClick}
           isLoading={isLoading}
         />
       </DeepListZone>
@@ -242,14 +230,20 @@ export function DeepListPage() {
         {showFilteredEmpty ? (
           <div className="space-y-3" data-testid="deep-list-table-filtered-empty">
             <p className="text-muted-foreground text-sm">Нет audits по фильтру</p>
-            <Button type="button" size="sm" variant="outline" onClick={handleReset}>
-              Reset
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              className="hover:bg-muted/60"
+              onClick={handleReset}
+            >
+              Сбросить
             </Button>
           </div>
         ) : null}
 
-        {!isLoading && !error && visibleItems.length > 0 ? (
-          <DeepCasesTable items={visibleItems} onRowClick={handleRowClick} />
+        {!isLoading && !error && items.length > 0 ? (
+          <DeepCasesTable items={items} onRowClick={handleRowClick} />
         ) : null}
       </DeepListZone>
 

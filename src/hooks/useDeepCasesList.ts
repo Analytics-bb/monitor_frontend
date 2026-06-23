@@ -5,6 +5,7 @@ import { mapApiError } from '@/api/errors'
 
 export interface UseDeepCasesListParams {
   gate_id?: string
+  state?: DeepCaseSummary['deep_chat_state']
   from?: string
   to?: string
   page: number
