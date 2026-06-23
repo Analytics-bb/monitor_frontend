@@ -8,16 +8,16 @@
 
 | id | Содержание | depends_on | Статус |
 |----|------------|------------|--------|
-| m1-page-shell | MonitoringPage grid 7 зон, responsive | m0-app-layout, m0-design-tokens | pending |
-| m1-status-polling | `getStatus` + `useMonitoringPolling` | m0-api-client, m0-use-polling, m0-mock-samples | pending |
-| m1-status-panel | StatusPanel live/stale/pulse/refresh | m1-page-shell, m1-status-polling, m0-status-badge | pending |
-| m1-gate-selector | Gate select, confirm, activate, 404 toast | m1-page-shell, m1-status-polling, m0-toast-provider | pending |
-| m1-config-snapshot | Config tree/accordion, copy | m1-page-shell, m1-status-polling | pending |
-| m1-state-panels | TxStatePanel + SrStatePanel | m1-page-shell, m1-status-polling | pending |
-| m1-charts-slider | MetricsChartsSlider carousel + Recharts | m1-page-shell, m1-status-polling, m0-design-tokens | pending |
-| m1-conclusion-modal | ConclusionPanel + ConclusionModal | m1-page-shell, m1-status-polling, m0-status-badge | pending |
-| m1-degraded-banner | DegradedBanner 503 + empty first tick | m1-page-shell, m1-status-polling, m1-status-panel | pending |
-| m1-tests | Vitest gaps + e2e monitoring | все m1-* выше | pending |
+| m1-page-shell | MonitoringPage grid 7 зон, responsive | m0-app-layout, m0-design-tokens | completed |
+| m1-status-polling | `getStatus` + `useMonitoringPolling` | m0-api-client, m0-use-polling, m0-mock-samples | completed |
+| m1-status-panel | StatusPanel live/stale/pulse/refresh | m1-page-shell, m1-status-polling, m0-status-badge | completed |
+| m1-gate-selector | Gate input, activate, 404 toast | m1-page-shell, m1-status-polling, m0-toast-provider | completed |
+| m1-config-snapshot | Config tree/accordion, copy | m1-page-shell, m1-status-polling | completed |
+| m1-state-panels | TxStatePanel + SrStatePanel | m1-page-shell, m1-status-polling | completed |
+| m1-charts-slider | MetricsChartsSlider 7 slides Recharts | m1-page-shell, m1-status-polling, m0-design-tokens | completed |
+| m1-conclusion-modal | ConclusionPanel + ConclusionModal | m1-page-shell, m1-status-polling, m0-status-badge | completed |
+| m1-degraded-banner | DegradedBanner 503 + empty first tick | m1-page-shell, m1-status-polling, m1-status-panel | completed |
+| m1-tests | Vitest + e2e monitoring | все m1-* выше | completed |
 
 ## Граф зависимостей
 
