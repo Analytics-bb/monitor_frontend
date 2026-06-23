@@ -5,6 +5,12 @@ import { cn } from '@/lib/utils'
 
 const PAGE_SIZE_OPTIONS = [20, 50] as const
 
+const paginationNavButtonClassName =
+  'h-8 w-8 border-border/60 transition-colors duration-200 hover:border-border/70 hover:bg-muted/25'
+
+const pageSizeSelectClassName =
+  'border-input bg-background focus:border-ring/40 focus:ring-ring/20 h-8 rounded-md border px-2 text-sm transition-colors duration-200 outline-none focus:ring-1 hover:border-border/70 hover:bg-muted/25'
+
 export interface DeepCasesPaginationProps {
   total: number
   page: number
@@ -63,7 +69,7 @@ export function DeepCasesPagination({
           type="button"
           variant="outline"
           size="icon"
-          className="h-8 w-8"
+          className={paginationNavButtonClassName}
           aria-label="Предыдущая страница"
           disabled={!canGoPrev}
           onClick={() => onPageChange(page - 1)}
@@ -77,7 +83,7 @@ export function DeepCasesPagination({
           type="button"
           variant="outline"
           size="icon"
-          className="h-8 w-8"
+          className={paginationNavButtonClassName}
           aria-label="Следующая страница"
           disabled={!canGoNext}
           onClick={() => onPageChange(page + 1)}
@@ -88,7 +94,7 @@ export function DeepCasesPagination({
         <label className="text-muted-foreground flex items-center gap-2 text-sm">
           <span>на стр.</span>
           <select
-            className="border-input bg-background h-8 rounded-md border px-2 text-sm"
+            className={pageSizeSelectClassName}
             value={pageSize}
             aria-label="Размер страницы"
             onChange={(event) => onPageSizeChange(Number(event.target.value))}
