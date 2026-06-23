@@ -17,6 +17,15 @@ export const agentInstructionPatchSchema = agentInstructionSchema
 
 export type AgentInstructionPatch = z.infer<typeof agentInstructionPatchSchema>
 
+export const agentInstructionCreateSchema = z.object({
+  name: z.string().min(1),
+  prompt_template: z.string(),
+  enabled: z.boolean().optional(),
+  agent_kind: z.enum(['hypothesis', 'deep']).optional(),
+})
+
+export type AgentInstructionCreate = z.infer<typeof agentInstructionCreateSchema>
+
 /** Fixture AgentInstruction для dev и Vitest. */
 export const agentInstructionFixture: AgentInstruction = {
   id: '11111111-1111-4111-8111-111111111111',

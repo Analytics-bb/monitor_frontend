@@ -5,6 +5,7 @@ import {
   parseAgentInstruction,
   parseAgentInstructionList,
   type AgentInstruction,
+  type AgentInstructionCreate,
   type AgentInstructionPatch,
 } from './fixtures/agentInstruction'
 
@@ -75,4 +76,71 @@ export async function patchInstruction(
   return parseAgentInstruction(json)
 }
 
-export type { AgentInstruction, AgentInstructionPatch }
+/**
+ * Создаёт instruction (`POST /api/settings/instructions`).
+ *
+ * @throws {ApiClientError} При HTTP-ошибке
+ */
+export async function createInstruction(
+  body: AgentInstructionCreate,
+): Promise<AgentInstruction> {
+  if (!getApiBaseUrl()) {
+    const created: AgentInstruction = {
+      id: crypto.randomUUID(),
+      name: body.name,
+      prompt_template: body.prompt_template,
+      enabled: body.enabled ?? true,
+      agent_kind: body.agent_kind,
+      updated_at: '2025-07-14 12:00:00',
+    }
+    instructionsFixtureStore = [...instructionsFixtureStore, created]
+    return { ...created }
+  }
+
+  const response = await apiFetch('/api/settings/instructions', {
+    method: 'POST',
+    body: JSON.stringify(body),
+  })
+  const json = (await response.json()) as unknown
+  return parseAgentInstruction(json)
+}
+
+/**
+ * Обновляет instruction (`PATCH /api/settings/instructions/{id}`).
+ *
+ * @throws {ApiClientError} При HTTP-ошибке
+ */
+export async function updateInstruction(
+  id: string,
+  patch: AgentInstructionPatch,
+): Promise<AgentInstruction> {
+  return patchInstruction(id, patch)
+}
+
+/**
+ * Удаляет instruction (`DELETE /api/settings/instructions/{id}`).
+ *
+ * @throws {ApiClientError} При HTTP-ошибке
+ */
+export async function deleteInstruction(id: string): Promise<void> {
+  if (!getApiBaseUrl()) {
+    const index = instructionsFixtureStore.findIndex((item) => item.id === id)
+    if (index === -1) {
+      throw new ApiClientError(404, {
+        error_code: 'instruction_not_found',
+        message: 'Instruction not found',
+      })
+    }
+
+    instructionsFixtureStore = instructionsFixtureStore.filter(
+      (item) => item.id !== id,
+    )
+    return
+  }
+
+  await apiFetch(`/api/settings/instructions/${encodeURIComponent(id)}`, {
+    method: 'DELETE',
+  })
+}
+
+export type { AgentInstruction, AgentInstructionCreate, AgentInstructionPatch }

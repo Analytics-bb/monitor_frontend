@@ -6,6 +6,7 @@ import {
   patchInstruction,
   type AgentInstruction,
 } from '@/api/instructions'
+import { InstructionEditor } from '@/components/settings/InstructionEditor'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
 import { cn } from '@/lib/utils'
@@ -14,14 +15,20 @@ export interface InstructionsTabProps {
   className?: string
 }
 
+type EditorState =
+  | { mode: 'closed' }
+  | { mode: 'create' }
+  | { mode: 'edit'; instruction: AgentInstruction }
+
 /**
- * Вкладка Instructions: список и toggle enabled.
+ * Вкладка Instructions: список, toggle enabled и editor.
  */
 export function InstructionsTab({ className }: InstructionsTabProps) {
   const [items, setItems] = useState<AgentInstruction[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [loadError, setLoadError] = useState<string | null>(null)
   const [togglingId, setTogglingId] = useState<string | null>(null)
+  const [editor, setEditor] = useState<EditorState>({ mode: 'closed' })
 
   const loadList = useCallback(async () => {
     setIsLoading(true)
@@ -108,14 +115,27 @@ export function InstructionsTab({ className }: InstructionsTabProps) {
             ? 'Нет instructions'
             : `Всего: ${items.length}`}
         </p>
-        <Button type="button" disabled aria-label="New instruction">
+        <Button
+          type="button"
+          aria-label="New instruction"
+          onClick={() => setEditor({ mode: 'create' })}
+        >
           + New instruction
         </Button>
       </div>
 
+      {editor.mode !== 'closed' ? (
+        <InstructionEditor
+          mode={editor.mode}
+          instruction={editor.mode === 'edit' ? editor.instruction : undefined}
+          onClose={() => setEditor({ mode: 'closed' })}
+          onSaved={loadList}
+        />
+      ) : null}
+
       {items.length === 0 ? (
         <p className="text-muted-foreground text-sm">
-          Создание instructions будет доступно в следующей задаче.
+          Нажмите «+ New instruction», чтобы создать первую запись.
         </p>
       ) : (
         <div className="border-border overflow-x-auto rounded-lg border">
@@ -154,15 +174,24 @@ export function InstructionsTab({ className }: InstructionsTabProps) {
                     {item.updated_at}
                   </td>
                   <td className="px-3 py-2 text-right">
-                    <Button type="button" variant="ghost" size="sm" disabled>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() =>
+                        setEditor({ mode: 'edit', instruction: item })
+                      }
+                    >
                       Edit
                     </Button>
                     <Button
                       type="button"
                       variant="ghost"
                       size="sm"
-                      disabled
                       className="text-destructive"
+                      onClick={() =>
+                        setEditor({ mode: 'edit', instruction: item })
+                      }
                     >
                       Delete
                     </Button>

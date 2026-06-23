@@ -13,7 +13,7 @@ todos:
     status: pending
   - id: m5-contexts-list
     content: "GET /agent/contexts?agent_kind&gate_id — split hypothesis/deep"
-    status: pending
+    status: completed
   - id: m5-context-upsert
     content: "PUT /agent/contexts global (gate_id null) и per-gate; DELETE context"
     status: pending
