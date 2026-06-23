@@ -35,7 +35,7 @@ alwaysApply: true
 |---------|----------------|--------|-------------------|
 | Layout + Sidebar | `src/app/` | pending | FE `module-0-index` (Phase 3) |
 | StatusBadge | `src/components/` | pending | единая система: success/error/skipped/active/awaiting_approval/completed |
-| Monitoring | `/monitoring` | pending | live polling `GET /status` |
+| Monitoring | `/monitoring` | done | `docs/modules/module-1-monitoring.md` |
 | Deep list | `/deep` | pending | `GET /deep/cases` |
 | Deep chat | `/deep/{audit_id}` | pending | polling + mutations M16 |
 | Usage | `/usage`, `/usage/{run_id}` | pending | M14 runs API |
@@ -48,7 +48,7 @@ alwaysApply: true
 | Deploy | `deploy/` | pending | nginx SPA + `/api/*` proxy (M0 §3.3) |
 | `.cursor` адаптация | `.cursor/` | in progress | Phase 1 setup-плана |
 
-**Критический путь реализации:** `.cursor` адаптация → скаффолд → FE-планы (апрув) → layout/sidebar/badge → страницы на mock → тесты → подключение API → deploy.
+**Критический путь реализации:** M0 (index) done → **M1 monitoring done** → следующий: M2 deep list (`/deep`) → M3 deep chat → остальные страницы → deploy.
 
 ## Архитектурные решения (ADR)
 

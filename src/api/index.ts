@@ -14,3 +14,4 @@ export {
 } from './errors'
 export type { ApiError } from './errors'
 export * from './fixtures'
+export { activateGate, getStatus, type StatusResponse } from './monitoring'
