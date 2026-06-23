@@ -7,7 +7,7 @@ todos:
     status: completed
   - id: m3-open-session
     content: "not_started → empty state + CTA «Открыть анализ» → POST .../chat/open → snapshot"
-    status: pending
+    status: completed
   - id: m3-use-deep-chat
     content: "hooks/useDeepChat: polling по state §10.s, immediate refetch after POST, stop terminal/unmount"
     status: completed
@@ -16,22 +16,22 @@ todos:
     status: completed
   - id: m3-message-list
     content: "ChatMessage list: roles user/assistant/system/tool; scroll-to-bottom on new; tool без секретов"
-    status: pending
+    status: completed
   - id: m3-composer
     content: "ChatComposer: textarea + Send внизу; disabled при pending_action/terminal; 409 → refetch, draft"
-    status: pending
+    status: completed
   - id: m3-approval-bar
     content: "ApprovalBar над composer при pending_action: Approve/Reject; budget_exceeded 409 → toast"
-    status: pending
+    status: completed
   - id: m3-case-header
     content: "Compact case strip: audit_id, gate, время — collapsible или одна строка под breadcrumb"
-    status: pending
+    status: completed
   - id: m3-usage-link
     content: "Link «Расход токенов» → /usage?audit_id="
-    status: pending
+    status: completed
   - id: m3-tests
     content: "Vitest: LLM layout render; pending blocks input; approve flow; polling stop; unmount clear"
-    status: pending
+    status: completed
 isProject: false
 ---
 
