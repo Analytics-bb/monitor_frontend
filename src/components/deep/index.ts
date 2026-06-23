@@ -8,3 +8,5 @@ export type {
 } from './DeepCasesFilters'
 export { DeepCasesTable } from './DeepCasesTable'
 export type { DeepCasesTableProps } from './DeepCasesTable'
+export { DeepCasesPagination } from './DeepCasesPagination'
+export type { DeepCasesPaginationProps } from './DeepCasesPagination'

@@ -8,6 +8,7 @@ import {
   type DeepCasesFilterValues,
 } from '@/components/deep/DeepCasesFilters'
 import { DeepCasesTable } from '@/components/deep/DeepCasesTable'
+import { DeepCasesPagination } from '@/components/deep/DeepCasesPagination'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
@@ -143,6 +144,34 @@ export function DeepListPage() {
     void fetchCases()
   }, [fetchCases])
 
+  useEffect(() => {
+    if (isLoading || total === 0) {
+      return
+    }
+
+    const totalPages = Math.max(1, Math.ceil(total / pageSize))
+    if (page > totalPages) {
+      const next = new URLSearchParams(searchParams)
+      next.set('page', String(totalPages))
+      setSearchParams(next, { replace: true })
+    }
+  }, [isLoading, page, pageSize, searchParams, setSearchParams, total])
+
+  const updatePageParams = (nextPage: number, nextPageSize = pageSize) => {
+    const next = new URLSearchParams(searchParams)
+    next.set('page', String(nextPage))
+    next.set('page_size', String(nextPageSize))
+    setSearchParams(next)
+  }
+
+  const handlePageChange = (nextPage: number) => {
+    updatePageParams(nextPage)
+  }
+
+  const handlePageSizeChange = (nextPageSize: number) => {
+    updatePageParams(1, nextPageSize)
+  }
+
   const handleApply = () => {
     const next = new URLSearchParams()
     if (draftFilters.audit_id) {
@@ -251,9 +280,14 @@ export function DeepListPage() {
         testId="deep-list-pagination"
         className="py-3"
       >
-        <p className="text-muted-foreground text-sm" data-testid="deep-list-pagination-summary">
-          Показано {visibleItems.length > 0 ? `1–${visibleItems.length}` : '0'} из {total}
-        </p>
+        <DeepCasesPagination
+          total={total}
+          page={page}
+          pageSize={pageSize}
+          itemsOnPage={items.length}
+          onPageChange={handlePageChange}
+          onPageSizeChange={handlePageSizeChange}
+        />
       </DeepListZone>
     </div>
   )

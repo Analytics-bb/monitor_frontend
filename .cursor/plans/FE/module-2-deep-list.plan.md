@@ -13,7 +13,7 @@ todos:
     status: completed
   - id: m2-pagination
     content: "Envelope total/page/page_size — prev/next + page size selector"
-    status: pending
+    status: completed
   - id: m2-row-nav
     content: "Row click → navigate /deep/{audit_id}; keyboard Enter; визуальный affordance «провалиться»"
     status: pending
