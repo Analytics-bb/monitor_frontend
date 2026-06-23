@@ -32,7 +32,7 @@ todos:
   - id: m1-tests
     content: "Vitest: state panels render; conclusion expand/collapse modal; polling interval; gate activate 404"
     status: completed
-isProject: false
+isProject: true
 ---
 
 # FE Module 1 — Monitoring (`/monitoring`)
@@ -371,7 +371,7 @@ tests/
 - [x] 503 и empty states по edge-cases.
 - [x] Light + dark на semantic tokens.
 - [x] Unit-тесты monitoring реализованы; e2e — базовая загрузка страницы.
-- [ ] Acceptance M17 §9.2 monitoring tick update — staging (ручная проверка).
+- [x] Acceptance M17 §9.2 monitoring tick update — staging (ручная проверка).
 
 ---
 
