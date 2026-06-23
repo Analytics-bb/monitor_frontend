@@ -4,7 +4,7 @@ overview: "Страница /deep/{audit_id}: стандартное окно о
 todos:
   - id: m3-page-shell
     content: "DeepChatPage: header (breadcrumb + state) + ChatWindow full-height; breadcrumb Deep → /deep?deepListSearch из location.state"
-    status: pending
+    status: completed
   - id: m3-open-session
     content: "not_started → empty state + CTA «Открыть анализ» → POST .../chat/open → snapshot"
     status: pending
