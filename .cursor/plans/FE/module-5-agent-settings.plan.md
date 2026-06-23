@@ -7,7 +7,7 @@ todos:
     status: completed
   - id: m5-instructions-list
     content: "GET /settings/instructions — table + enabled toggle → PATCH"
-    status: pending
+    status: completed
   - id: m5-instruction-editor
     content: "Create/edit prompt_template — POST/PATCH/DELETE по OpenAPI M6"
     status: pending

@@ -1,6 +1,6 @@
 import {
   ContextsTabPlaceholder,
-  InstructionsTabPlaceholder,
+  InstructionsTab,
 } from '@/components/settings'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
@@ -26,7 +26,7 @@ export function AgentSettingsPage() {
           <TabsTrigger value="contexts">Contexts</TabsTrigger>
         </TabsList>
         <TabsContent value="instructions" className="pt-4">
-          <InstructionsTabPlaceholder />
+          <InstructionsTab />
         </TabsContent>
         <TabsContent value="contexts" className="pt-4">
           <ContextsTabPlaceholder />
