@@ -1,9 +1,12 @@
+import { ChevronRight } from 'lucide-react'
+
 import type { DeepCaseSummary } from '@/api/deep'
 import { StatusBadge, type StatusBadgeVariant } from '@/components/StatusBadge'
 import { cn } from '@/lib/utils'
 
 export interface DeepCasesTableProps {
   items: DeepCaseSummary[]
+  onRowClick?: (auditId: string) => void
   className?: string
 }
 
@@ -18,7 +21,7 @@ function mapChatStateToBadge(state: DeepCaseSummary['deep_chat_state']): StatusB
 /**
  * Таблица deep cases: основные поля audit и статус чата.
  */
-export function DeepCasesTable({ items, className }: DeepCasesTableProps) {
+export function DeepCasesTable({ items, onRowClick, className }: DeepCasesTableProps) {
   return (
     <div className={cn('overflow-x-auto', className)}>
       <table
@@ -34,14 +37,33 @@ export function DeepCasesTable({ items, className }: DeepCasesTableProps) {
             <th className="px-3 py-2 font-medium">Event</th>
             <th className="px-3 py-2 font-medium">Conclusion</th>
             <th className="px-3 py-2 font-medium">State</th>
+            <th className="px-3 py-2 font-medium" aria-hidden>
+              →
+            </th>
           </tr>
         </thead>
         <tbody>
           {items.map((item) => (
             <tr
               key={item.audit_id}
-              className="border-border hover:bg-muted/40 h-9 border-b transition-colors"
+              className={cn(
+                'border-border hover:bg-muted/40 h-9 border-b transition-colors',
+                onRowClick && 'cursor-pointer',
+              )}
               data-testid="deep-cases-table-row"
+              tabIndex={onRowClick ? 0 : undefined}
+              role={onRowClick ? 'button' : undefined}
+              onClick={() => onRowClick?.(item.audit_id)}
+              onKeyDown={(event) => {
+                if (!onRowClick) {
+                  return
+                }
+
+                if (event.key === 'Enter' || event.key === ' ') {
+                  event.preventDefault()
+                  onRowClick(item.audit_id)
+                }
+              }}
             >
               <td className="text-muted-foreground px-3 py-2 font-mono text-xs whitespace-nowrap">
                 {item.created_at}
@@ -66,6 +88,9 @@ export function DeepCasesTable({ items, className }: DeepCasesTableProps) {
               </td>
               <td className="px-3 py-2">
                 <StatusBadge status={mapChatStateToBadge(item.deep_chat_state)} />
+              </td>
+              <td className="text-muted-foreground px-3 py-2">
+                <ChevronRight className="h-4 w-4" aria-hidden />
               </td>
             </tr>
           ))}

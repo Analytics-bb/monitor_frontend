@@ -196,8 +196,10 @@ export function DeepListPage() {
     setSearchParams(new URLSearchParams({ page: '1', page_size: String(pageSize) }))
   }
 
-  const handleAuditNavigate = (auditId: string) => {
-    navigate(`/deep/${auditId}`)
+  const handleRowClick = (auditId: string) => {
+    navigate(`/deep/${auditId}`, {
+      state: { deepListSearch: searchParams.toString() },
+    })
   }
 
   const showFilteredEmpty =
@@ -234,7 +236,7 @@ export function DeepListPage() {
           onChange={setDraftFilters}
           onApply={handleApply}
           onReset={handleReset}
-          onAuditNavigate={handleAuditNavigate}
+          onAuditNavigate={handleRowClick}
           isLoading={isLoading}
         />
       </DeepListZone>
@@ -271,7 +273,7 @@ export function DeepListPage() {
         ) : null}
 
         {!isLoading && !error && visibleItems.length > 0 ? (
-          <DeepCasesTable items={visibleItems} />
+          <DeepCasesTable items={visibleItems} onRowClick={handleRowClick} />
         ) : null}
       </DeepListZone>
 

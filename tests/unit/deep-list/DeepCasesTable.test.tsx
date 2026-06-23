@@ -1,5 +1,6 @@
 import { render, screen } from '@testing-library/react'
-import { describe, expect, it } from 'vitest'
+import userEvent from '@testing-library/user-event'
+import { describe, expect, it, vi } from 'vitest'
 
 import { deepCaseSummaryFixture } from '@/api/fixtures/deepCaseSummary'
 import { DeepCasesTable } from '@/components/deep/DeepCasesTable'
@@ -47,5 +48,39 @@ describe('DeepCasesTable', () => {
     const conclusionCell = screen.getByTitle(longConclusion)
     expect(conclusionCell).toHaveClass('truncate')
     expect(screen.getByTestId('deep-cases-table')).toBeInTheDocument()
+  })
+
+  it('navigates on row click when handler provided', async () => {
+    const user = userEvent.setup()
+    const onRowClick = vi.fn()
+
+    render(
+      <DeepCasesTable
+        items={[deepCaseSummaryFixture]}
+        onRowClick={onRowClick}
+      />,
+    )
+
+    await user.click(screen.getByTestId('deep-cases-table-row'))
+
+    expect(onRowClick).toHaveBeenCalledWith(deepCaseSummaryFixture.audit_id)
+  })
+
+  it('calls onRowClick on Enter for not_started row', async () => {
+    const user = userEvent.setup()
+    const onRowClick = vi.fn()
+
+    render(
+      <DeepCasesTable
+        items={[{ ...deepCaseSummaryFixture, deep_chat_state: 'not_started' }]}
+        onRowClick={onRowClick}
+      />,
+    )
+
+    const row = screen.getByTestId('deep-cases-table-row')
+    row.focus()
+    await user.keyboard('{Enter}')
+
+    expect(onRowClick).toHaveBeenCalledWith(deepCaseSummaryFixture.audit_id)
   })
 })
