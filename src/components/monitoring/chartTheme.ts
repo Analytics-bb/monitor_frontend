@@ -29,6 +29,12 @@ export const CHART_AXIS_LINE = {
   strokeWidth: 1,
 }
 
+/** Вертикальная линия курсора tooltip на line-графиках. */
+export const CHART_TOOLTIP_CURSOR = {
+  stroke: GRID_STROKE,
+  strokeWidth: 1,
+}
+
 /** Цвета серий, читаемые в light и dark. */
 export const CHART_SERIES_THEME_COLORS = {
   approved: 'var(--status-success)',

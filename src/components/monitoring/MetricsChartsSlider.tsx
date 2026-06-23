@@ -19,6 +19,7 @@ import {
   CHART_LINE_PROPS,
   CHART_MARGIN,
   CHART_NAV_BUTTON_CLASS,
+  CHART_TOOLTIP_CURSOR,
   CHART_Y_AXIS_CATEGORY_PROPS,
   getChartXAxisTimeProps,
   getChartXAxisValueProps,
@@ -142,7 +143,10 @@ function MetricsChartView({ slide }: { slide: MetricsChartSlide }) {
           yAxisId="right"
           {...getChartYAxisRightProps(getRightYAxisOptions(slide))}
         />
-        <Tooltip content={getChartTooltipRenderer(slide)} />
+        <Tooltip
+          content={getChartTooltipRenderer(slide)}
+          cursor={CHART_TOOLTIP_CURSOR}
+        />
         <Legend {...CHART_LEGEND_PROPS} />
         <ChartLines slide={slide} />
       </LineChart>
@@ -154,7 +158,10 @@ function MetricsChartView({ slide }: { slide: MetricsChartSlide }) {
       <LineChart data={slide.data} margin={CHART_MARGIN}>
         <XAxis dataKey={slide.xKey} {...getChartXAxisTimeProps()} />
         <YAxis {...getChartYAxisProps(getLeftYAxisOptions(slide))} />
-        <Tooltip content={getChartTooltipRenderer(slide)} />
+        <Tooltip
+          content={getChartTooltipRenderer(slide)}
+          cursor={CHART_TOOLTIP_CURSOR}
+        />
         <Legend {...CHART_LEGEND_PROPS} />
         <ChartLines slide={slide} />
       </LineChart>
@@ -170,7 +177,7 @@ function MetricsChartView({ slide }: { slide: MetricsChartSlide }) {
     <LineChart data={slide.data} margin={CHART_MARGIN}>
       <XAxis dataKey={slide.xKey} {...getChartXAxisTimeProps()} />
       <YAxis {...getChartYAxisProps(getLeftYAxisOptions(slide))} />
-      <Tooltip content={getChartTooltipRenderer(slide)} />
+      <Tooltip content={getChartTooltipRenderer(slide)} cursor={CHART_TOOLTIP_CURSOR} />
       <Line
         dataKey={series.key}
         name={series.label}
