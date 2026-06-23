@@ -14,7 +14,10 @@ test('list row opens chat and breadcrumb restores list query', async ({
   await expect(page).toHaveURL(/\/deep\/[0-9a-f-]+$/)
   await expect(page.getByTestId('deep-chat-page')).toBeVisible()
 
-  await page.getByRole('link', { name: 'Deep' }).click()
+  await page
+    .getByTestId('deep-chat-page')
+    .getByRole('link', { name: 'Deep' })
+    .click()
 
   await expect(page).toHaveURL(/\/deep\?/)
   await expect(page).toHaveURL(/gate_id=42/)

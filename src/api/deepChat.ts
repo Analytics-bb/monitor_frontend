@@ -1,4 +1,4 @@
-import { apiFetch, apiGetJson, getApiBaseUrl } from './client'
+import { apiFetch, apiGetJson } from './client'
 import { ApiClientError } from './errors'
 import {
   chatSnapshotFixture,
@@ -17,6 +17,10 @@ const TERMINAL_STATES = new Set<ChatSnapshot['state']>([
 interface FixtureChatState {
   snapshot: ChatSnapshot
   budgetExceeded: boolean
+}
+
+function useFixtureMode(): boolean {
+  return !import.meta.env.VITE_ANOMALY_API_BASE_URL
 }
 
 const fixtureStore = new Map<string, FixtureChatState>()
@@ -63,7 +67,7 @@ function chatPath(auditId: string, suffix = ''): string {
  * В dev без `VITE_ANOMALY_API_BASE_URL` возвращает fixture из in-memory store.
  */
 export async function getChat(auditId: string): Promise<ChatSnapshot> {
-  if (!getApiBaseUrl()) {
+  if (useFixtureMode()) {
     return cloneSnapshot(getFixtureState(auditId).snapshot)
   }
 
@@ -77,7 +81,7 @@ export async function getChat(auditId: string): Promise<ChatSnapshot> {
  * Идемпотентен: повторный вызов возвращает текущий snapshot.
  */
 export async function openChat(auditId: string): Promise<ChatSnapshot> {
-  if (!getApiBaseUrl()) {
+  if (useFixtureMode()) {
     const state = getFixtureState(auditId)
     if (state.snapshot.state === 'not_started') {
       state.snapshot = cloneSnapshot({
@@ -110,7 +114,7 @@ export async function sendChatMessage(
   auditId: string,
   content: string,
 ): Promise<ChatSnapshot> {
-  if (!getApiBaseUrl()) {
+  if (useFixtureMode()) {
     const state = getFixtureState(auditId)
     if (state.snapshot.pending_action) {
       throw new ApiClientError(409, {
@@ -150,7 +154,7 @@ export async function approveChatAction(
   auditId: string,
   actionId: string,
 ): Promise<ChatSnapshot> {
-  if (!getApiBaseUrl()) {
+  if (useFixtureMode()) {
     const state = getFixtureState(auditId)
     if (state.budgetExceeded) {
       throw new ApiClientError(409, {
@@ -178,7 +182,7 @@ export async function rejectChatAction(
   auditId: string,
   actionId: string,
 ): Promise<ChatSnapshot> {
-  if (!getApiBaseUrl()) {
+  if (useFixtureMode()) {
     const state = getFixtureState(auditId)
     state.snapshot = applyActionResolution(state.snapshot, actionId, 'reject')
     return cloneSnapshot(state.snapshot)
