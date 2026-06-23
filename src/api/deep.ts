@@ -2,7 +2,7 @@ import { z } from 'zod'
 
 import { apiGetJson } from './client'
 import {
-  deepCaseSummaryFixture,
+  deepCasesListFixture,
   parseDeepCaseSummary,
   type DeepCaseSummary,
 } from './fixtures/deepCaseSummary'
@@ -29,26 +29,6 @@ export interface ListDeepCasesParams {
   page?: number
   page_size?: number
 }
-
-const deepCasesListFixture: DeepCaseSummary[] = [
-  deepCaseSummaryFixture,
-  {
-    audit_id: 'b2c3d4e5-f6a7-8901-bcde-f12345678901',
-    gate_id: '43',
-    event_summary: 'Unusual traffic pattern on gate 43',
-    conclusion: 'Требуется ручная проверка.',
-    deep_chat_state: 'active',
-    created_at: '2025-07-15 09:15:00',
-  },
-  {
-    audit_id: 'c3d4e5f6-a7b8-9012-cdef-123456789012',
-    gate_id: '42',
-    event_summary: 'Secondary event on gate 42',
-    conclusion: 'Повторное срабатывание.',
-    deep_chat_state: 'completed',
-    created_at: '2025-07-13 18:00:00',
-  },
-]
 
 function filterFixtureItems(params: ListDeepCasesParams): DeepCaseSummary[] {
   let items = [...deepCasesListFixture]

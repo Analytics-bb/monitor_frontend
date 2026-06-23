@@ -6,7 +6,7 @@ test('deep list loads and gate filter narrows fixture rows', async ({ page }) =>
   await expect(page.getByTestId('deep-list-page')).toBeVisible()
   await expect(page.getByRole('heading', { name: /Deep Analytics/ })).toBeVisible()
 
-  await expect(page.getByTestId('deep-cases-table-row')).toHaveCount(3, {
+  await expect(page.getByTestId('deep-cases-table-row')).toHaveCount(20, {
     timeout: 10_000,
   })
 
@@ -14,5 +14,5 @@ test('deep list loads and gate filter narrows fixture rows', async ({ page }) =>
   await page.getByRole('button', { name: 'Применить' }).click()
 
   await expect(page).toHaveURL(/gate_id=42/)
-  await expect(page.getByTestId('deep-cases-table-row')).toHaveCount(2)
+  await expect(page.getByTestId('deep-cases-table-row')).toHaveCount(15)
 })
