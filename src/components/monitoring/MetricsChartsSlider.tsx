@@ -60,6 +60,7 @@ function getChartTooltipRenderer(slide: MetricsChartSlide) {
       active={props.active}
       payload={props.payload as ChartTooltipProps['payload']}
       label={props.label}
+      series={slide.series}
       tooltipFields={slide.tooltipFields}
       tooltipFieldsOnly={slide.tooltipFieldsOnly}
     />

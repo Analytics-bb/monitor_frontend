@@ -74,6 +74,8 @@ export interface MetricsChartSeries {
   key: string
   label: string
   color: string
+  /** Текст ошибки для tooltip (например, error_description). */
+  description?: string
   /** Ось Y для dualAxis: left — пользователи, right — транзакции. */
   yAxisId?: 'left' | 'right'
 }
@@ -184,6 +186,14 @@ function buildTxStatus24hSlide(
 }
 
 function buildErrors24hSlide(rows: MetricsTools['errors_24h']): MetricsChartSlide {
+  const descriptions = new Map<string, string>()
+
+  for (const row of rows) {
+    if (row.error_description) {
+      descriptions.set(row.error_code, row.error_description)
+    }
+  }
+
   const { data, groups } = pivotByBucket(
     rows,
     'hour_bucket',
@@ -200,6 +210,7 @@ function buildErrors24hSlide(rows: MetricsTools['errors_24h']): MetricsChartSlid
     series: groups.map((group, index) => ({
       key: group,
       label: group,
+      description: descriptions.get(group),
       color: CHART_COLORS[index % CHART_COLORS.length]!,
     })),
   }
@@ -382,54 +393,90 @@ function buildTxStatus24hFixture(): MetricsTools['tx_status_24h'] {
   })
 }
 
+const ERROR_CODE_FIXTURES = [
+  {
+    error_code: '942405',
+    error_description: '[784094] Insufficient funds/over credit limit',
+  },
+  {
+    error_code: '950952',
+    error_description: 'Canceled by timeout',
+  },
+  {
+    error_code: '1015',
+    error_description: 'SECURE_3D_TIMEOUT',
+  },
+  {
+    error_code: '947167',
+    error_description: 'Payment form canceled',
+  },
+  {
+    error_code: '942427',
+    error_description: '[784005] Do not honor',
+  },
+] as const
+
+type ErrorCodeFixture = (typeof ERROR_CODE_FIXTURES)[number]
+type ErrorCode = ErrorCodeFixture['error_code']
+
+function fixtureErrorCountsByHour(hour: number): Record<ErrorCode, number> {
+  const counts = Object.fromEntries(
+    ERROR_CODE_FIXTURES.map(({ error_code }) => [error_code, 0]),
+  ) as Record<ErrorCode, number>
+
+  if (hour === 23) {
+    counts['942405'] = 4
+    counts['950952'] = 3
+    counts['1015'] = 2
+    counts['947167'] = 1
+    counts['942427'] = 1
+    return counts
+  }
+
+  if (hour === 12) {
+    counts['942405'] = 2
+    counts['950952'] = 2
+    counts['1015'] = 1
+    return counts
+  }
+
+  if (hour === 13) {
+    counts['942405'] = 1
+    counts['950952'] = 1
+    counts['947167'] = 1
+    return counts
+  }
+
+  if (hour % 6 === 0) {
+    counts['942405'] = 1
+  }
+
+  if (hour % 8 === 3) {
+    counts['950952'] = 1
+  }
+
+  if (hour % 10 === 7) {
+    counts['1015'] = 1
+  }
+
+  return counts
+}
+
 function buildErrors24hFixture(): MetricsTools['errors_24h'] {
   const rows: MetricsTools['errors_24h'] = []
 
   for (let hour = 0; hour < 24; hour += 1) {
     const hour_bucket = fixtureHourBucket(hour)
+    const counts = fixtureErrorCountsByHour(hour)
 
-    if (hour === 12) {
-      rows.push(
-        {
-          hour_bucket,
-          error_code: 'E001',
-          error_description: 'Provider timeout',
-          cnt: 3,
-        },
-        {
-          hour_bucket,
-          error_code: 'E002',
-          error_description: 'Issuer decline',
-          cnt: 2,
-        },
-      )
-      continue
+    for (const { error_code, error_description } of ERROR_CODE_FIXTURES) {
+      rows.push({
+        hour_bucket,
+        error_code,
+        error_description,
+        cnt: counts[error_code],
+      })
     }
-
-    if (hour === 13) {
-      rows.push(
-        {
-          hour_bucket,
-          error_code: 'E001',
-          error_description: 'Provider timeout',
-          cnt: 2,
-        },
-        {
-          hour_bucket,
-          error_code: 'E002',
-          error_description: 'Issuer decline',
-          cnt: 1,
-        },
-      )
-      continue
-    }
-
-    rows.push({
-      hour_bucket,
-      error_code: 'E001',
-      error_description: 'Provider timeout',
-      cnt: hour % 6 === 0 ? 1 : 0,
-    })
   }
 
   return rows

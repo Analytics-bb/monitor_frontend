@@ -1,6 +1,12 @@
 import type { MetricsChartTooltipField } from '@/api/fixtures/metricsCharts'
 import { CHART_TOOLTIP_STYLE } from '@/components/monitoring/chartTheme'
 
+interface ChartTooltipSeries {
+  key: string
+  label: string
+  description?: string
+}
+
 interface ChartTooltipPayload {
   color?: string
   dataKey?: string | number
@@ -13,6 +19,7 @@ export interface ChartTooltipProps {
   active?: boolean
   payload?: readonly ChartTooltipPayload[]
   label?: string | number
+  series?: readonly ChartTooltipSeries[]
   tooltipFields?: readonly MetricsChartTooltipField[]
   /** Скрыть IP/время и строки серий — только tooltipFields. */
   tooltipFieldsOnly?: boolean
@@ -33,6 +40,7 @@ export function ChartTooltipContent({
   active,
   payload,
   label,
+  series,
   tooltipFields,
   tooltipFieldsOnly = false,
 }: ChartTooltipProps) {
@@ -43,6 +51,10 @@ export function ChartTooltipContent({
   const row = payload[0]?.payload
   const showHeader = !tooltipFieldsOnly && label != null && label !== ''
   const showSeries = !tooltipFieldsOnly
+  const hasSeriesDescriptions = series?.some((item) => item.description)
+  const seriesPayload = hasSeriesDescriptions
+    ? payload.filter((entry) => Number(entry.value ?? 0) > 0)
+    : payload
 
   return (
     <div style={CHART_TOOLTIP_STYLE}>
@@ -70,19 +82,27 @@ export function ChartTooltipContent({
         }}
       >
         {showSeries
-          ? payload.map((entry) => (
-              <li
-                key={String(entry.dataKey)}
-                style={{
-                  margin: 0,
-                  fontSize: 12,
-                  color: entry.color,
-                  lineHeight: 1.3,
-                }}
-              >
-                {entry.name} : {entry.value}
-              </li>
-            ))
+          ? seriesPayload.map((entry) => {
+              const seriesMeta = series?.find(
+                (item) => item.key === String(entry.dataKey),
+              )
+              const description = seriesMeta?.description
+
+              return (
+                <li
+                  key={String(entry.dataKey)}
+                  style={{
+                    margin: 0,
+                    fontSize: 12,
+                    color: entry.color,
+                    lineHeight: 1.3,
+                  }}
+                >
+                  {entry.name} : {entry.value}
+                  {description ? ` — ${description}` : ''}
+                </li>
+              )
+            })
           : null}
         {tooltipFields?.map((field) => (
           <li

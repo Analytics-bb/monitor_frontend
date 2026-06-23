@@ -13,23 +13,23 @@ describe('useHiddenChartSeries', () => {
 
     act(() => {
       result.current.legendProps.onClick?.(
-        { dataKey: 'E001', value: 'E001' },
+        { dataKey: '942405', value: '942405' },
         0,
         {} as MouseEvent<HTMLElement>,
       )
     })
 
-    expect(result.current.hiddenSeries.has('E001')).toBe(true)
+    expect(result.current.hiddenSeries.has('942405')).toBe(true)
 
     act(() => {
       result.current.legendProps.onClick?.(
-        { dataKey: 'E001', value: 'E001' },
+        { dataKey: '942405', value: '942405' },
         0,
         {} as MouseEvent<HTMLElement>,
       )
     })
 
-    expect(result.current.hiddenSeries.has('E001')).toBe(false)
+    expect(result.current.hiddenSeries.has('942405')).toBe(false)
 
     rerender({ slideKey: 'success_rate_by_hour_country_24h' })
 

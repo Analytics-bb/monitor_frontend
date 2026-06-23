@@ -71,4 +71,23 @@ describe('metricsCharts fixtures', () => {
       customer_country: 'DEU',
     })
   })
+
+  it('includes error descriptions in errors by code slide', () => {
+    const slides = buildMetricsChartSlides(metricsToolsFixture)
+    const errorsSlide = slides.find((slide) => slide.key === 'errors_24h')
+
+    expect(errorsSlide?.series).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          key: '942405',
+          description: '[784094] Insufficient funds/over credit limit',
+        }),
+        expect.objectContaining({
+          key: '950952',
+          description: 'Canceled by timeout',
+        }),
+      ]),
+    )
+    expect(metricsToolsFixture.errors_24h).toHaveLength(24 * 5)
+  })
 })
