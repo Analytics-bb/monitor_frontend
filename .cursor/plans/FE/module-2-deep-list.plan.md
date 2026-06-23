@@ -7,7 +7,7 @@ todos:
     status: completed
   - id: m2-filters
     content: "DeepCasesFilters: audit_id shortcut (UUID→navigate), gate_id digits, period; URL sync; Apply + Reset"
-    status: pending
+    status: completed
   - id: m2-cases-table
     content: "DeepCasesTable: основные поля audit (время, gate, summary, conclusion truncate, chat state StatusBadge)"
     status: pending

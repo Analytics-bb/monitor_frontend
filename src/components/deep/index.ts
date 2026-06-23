@@ -1,4 +1,8 @@
 /**
  * Компоненты страницы `/deep` (список audits).
- * Re-export по мере реализации задач module-2.
  */
+export { DeepCasesFilters, isFullAuditId } from './DeepCasesFilters'
+export type {
+  DeepCasesFilterValues,
+  DeepCasesFiltersProps,
+} from './DeepCasesFilters'
