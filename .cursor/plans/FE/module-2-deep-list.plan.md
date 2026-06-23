@@ -6,7 +6,7 @@ todos:
     content: "DeepListPage: filter bar сверху + список/таблица audits + empty/error states"
     status: pending
   - id: m2-filters
-    content: "DeepCasesFilters: audit_id, gate_id, period (from/to); sync URL; Apply + Reset"
+    content: "DeepCasesFilters: audit_id shortcut (UUID→navigate), gate_id digits, period; URL sync; Apply + Reset"
     status: pending
   - id: m2-cases-table
     content: "DeepCasesTable: основные поля audit (время, gate, summary, conclusion truncate, chat state StatusBadge)"
@@ -18,7 +18,7 @@ todos:
     content: "Row click → navigate /deep/{audit_id}; keyboard Enter; визуальный affordance «провалиться»"
     status: pending
   - id: m2-tests
-    content: "Vitest: pagination; filter URL sync (audit_id); row navigate; e2e list + filter"
+    content: "Vitest: pagination; gate URL sync; audit UUID shortcut; row navigate; e2e list + filter"
     status: pending
 isProject: false
 ---
@@ -72,8 +72,8 @@ isProject: false
 
 | Фильтр | Тип | Query param | Поведение |
 |--------|-----|-------------|-----------|
-| Audit | Input / search | `audit_id` | Поиск по id (полный UUID или prefix, если API поддерживает) |
-| Gate | Combobox | `gate_id` | Список gates |
+| Audit | Input / search | `audit_id` (URL only) | **Не** server query (M8): полный UUID + Apply → `navigate(/deep/{audit_id})`; prefix — client-side filter строк текущей страницы |
+| Gate | Input (только цифры) | `gate_id` | Как M1 `GateSelector` — нет `GET /gates` list в M17; server filter по `gate_id` |
 | Период | Date from / to | `from`, `to` | Naive MSK, без TZ-конвертации |
 | Действия | Apply + Reset | — | Apply → refetch `page=1`; Reset → очистка + URL |
 
@@ -94,7 +94,7 @@ isProject: false
 
 - Row height ~36px; sticky header.
 - Row **кликабельна** целиком → `navigate(/deep/{audit_id})`; hover `bg-muted/40`, cursor pointer, chevron `→` справа.
-- `deep_chat_state=not_started` — строка всё равно кликабельна; на чате будет CTA «Начать диалог».
+- `deep_chat_state=not_started` — строка всё равно кликабельна; на чате будет CTA «Открыть анализ».
 
 **Pagination** внизу: «Показано X–Y из total» + prev/next + page size 20/50.
 
@@ -112,7 +112,7 @@ isProject: false
 ┌─────────────────────────────────────────────────────────────┐
 │ Deep Analytics — каталог audits                             │
 ├─────────────────────────────────────────────────────────────┤
-│ [ Audit id ___ ] [ Gate ▼ ] [ From ] [ To ]  Apply  Reset  │  ← фильтры
+│ [ Audit id ___ ] [ Gate ___ ] [ From ] [ To ]  Apply  Reset  │  ← фильтры
 ├─────────────────────────────────────────────────────────────┤
 │ Time      │ Audit    │ Gate │ Event    │ Conclusion │ State │ →
 │ ...       │ ...      │ ...  │ ...      │ ...        │ Badge │
@@ -152,7 +152,7 @@ Out of scope: inline chat preview, bulk actions, export.
 
 1. **Snapshot catalog:** список ≠ live monitoring; данные M8 deep cases API.
 2. **Основная информация** в списке — без полного conclusion; полный текст в чате / snapshot meta.
-3. **Фильтр audit_id** — primary search; gate и period — secondary.
+3. **Фильтр audit_id** — shortcut в чат (полный UUID) или client-side на странице; **не** query param `GET /deep/cases` (M8).
 4. **Pagination** server-side из envelope; не client-side slice.
 5. **URL sync** для всех фильтров и `page`.
 6. **Каждый audit кликабелен** независимо от `deep_chat_state`.
@@ -166,7 +166,8 @@ Out of scope: inline chat preview, bulk actions, export.
 |----------|---------------------|
 | Пустой список без фильтров | «Нет deep cases» |
 | Пустой список с фильтром | «Нет audits по фильтру» + Reset |
-| Невалидный `audit_id` в фильтре | Empty result или API validation error → toast |
+| Невалидный `audit_id` в фильтре | Toast «Некорректный audit_id»; не navigate |
+| Полный UUID в audit_id + Apply | `navigate(/deep/{audit_id})` без list refetch |
 | Invalid page > total | Clamp last page или reset `page=1` |
 | API error | Inline error + Retry |
 | Длинный conclusion | Truncate в таблице |
@@ -193,7 +194,8 @@ flowchart LR
 1. Mount: parse URL → filters + page.
 2. `GET /api/deep/cases` с query params.
 3. Render filter bar + table + pagination.
-4. User меняет фильтр → Apply → URL update → refetch `page=1`.
+4. User меняет gate/period → Apply → URL update → refetch `page=1`.
+4a. User вводит полный `audit_id` → Apply → `navigate(/deep/{audit_id})` (shortcut).
 5. User кликает audit → `navigate(/deep/${audit_id})`.
 6. На чате «Назад» → `navigate(/deep?${savedSearch})`.
 
@@ -211,7 +213,9 @@ src/
 │       ├── DeepCasesTable.tsx
 │       └── DeepCasesPagination.tsx
 ├── api/
-│   └── deep.ts                 # listDeepCases
+│   └── deep.ts                 # listDeepCases (+ Zod parseDeepCaseSummary)
+└── api/fixtures/
+    └── deepCaseSummary.ts      # уже в m0-mock-samples
 tests/
 ├── unit/deep-list/
 └── e2e/deep-list.spec.ts
@@ -225,7 +229,9 @@ tests/
 |------|------------|-------|
 | `GET /api/deep/cases` | Список audits + pagination | M8 |
 
-Query: `audit_id`, `gate_id`, `from`, `to`, `page`, `page_size`. Тип строки: `DeepCaseSummary`.
+Query (server, M8): `gate_id`, `from`, `to`, `page`, `page_size`. Тип строки: `DeepCaseSummary` (`parseDeepCaseSummary`).
+
+`audit_id` в URL — только для client shortcut / client-side filter, не отправляется в `GET /deep/cases`.
 
 ---
 
@@ -234,8 +240,9 @@ Query: `audit_id`, `gate_id`, `from`, `to`, `page`, `page_size`. Тип стро
 | Сценарий | Уровень | Критерий |
 |----------|---------|----------|
 | Render list from fixture | unit | N rows, StatusBadge per chat state |
-| audit_id filter URL sync | unit | `?audit_id=` после Apply |
-| gate_id filter URL sync | unit | `?gate_id=` после Apply |
+| audit_id UUID shortcut | unit | Apply → navigate `/deep/uuid` |
+| audit_id prefix client filter | unit | строки таблицы сужаются без refetch |
+| gate_id filter URL sync | unit | `?gate_id=` после Apply → refetch |
 | Pagination next/prev | unit | page param меняется |
 | Row navigate | unit | click → `/deep/uuid` |
 | Back preserves filters | unit | return URL содержит query |
@@ -255,9 +262,11 @@ Query: `audit_id`, `gate_id`, `from`, `to`, `page`, `page_size`. Тип стро
 
 ## Зависимости
 
-- module-0-index
-- module-3-deep-chat (downstream: drill-down target)
+- module-0-index (layout, StatusBadge, api client, `deepCaseSummary` fixture)
+- module-1-monitoring (completed): gate input UX (digits only); cross-link «Deep analysis →» из `ConclusionModal` ведёт на `/deep/{audit_id}` (module-3)
 - M17 §7.2; M8 DeepCaseSummary
+
+**Downstream:** module-3-deep-chat (drill-down target из списка)
 
 ---
 

@@ -6,7 +6,7 @@ todos:
     content: "DeepChatPage: header (breadcrumb + state) + ChatWindow full-height; breadcrumb ← /deep с сохранением filters"
     status: pending
   - id: m3-open-session
-    content: "not_started → empty state + CTA «Начать диалог» → POST .../chat/open → snapshot"
+    content: "not_started → empty state + CTA «Открыть анализ» → POST .../chat/open → snapshot"
     status: pending
   - id: m3-use-deep-chat
     content: "hooks/useDeepChat: polling по state §10.s, immediate refetch after POST, stop terminal/unmount"
@@ -74,7 +74,9 @@ isProject: false
 
 ### Вход с списка
 
-Оператор на `/deep` выбирает audit → `/deep/{audit_id}` → сразу видит чат (или CTA начать диалог).
+Оператор на `/deep` выбирает audit → `/deep/{audit_id}` → сразу видит чат (или CTA «Открыть анализ»).
+
+Альтернативный вход: ссылка «Deep analysis →» в `ConclusionModal` на `/monitoring` (module-1) при наличии `audit_id` в status.
 
 ### Стандартное окно общения с LLM
 
@@ -139,7 +141,7 @@ isProject: false
 
 | `deep_chat_state` | UI |
 |-------------------|-----|
-| `not_started` | Пустой чат + centered CTA «Начать диалог» → POST open |
+| `not_started` | Пустой чат + centered CTA «Открыть анализ» → POST open |
 | `active` | Composer enabled; pulse на StatusBadge (module-0) |
 | `awaiting_approval` | Composer disabled; ApprovalBar visible |
 | `completed` / `cancelled` / `error` | Composer hidden; banner «Диалог завершён»; история read-only |
@@ -168,7 +170,7 @@ Out of scope: markdown editor, file upload, voice input, sidebar case panel.
 
 ## Ключевые гарантии и инварианты
 
-1. **Drill-down:** единственный вход в чат — из списка `/deep` или direct URL `/deep/{audit_id}`.
+1. **Drill-down:** вход в чат — из списка `/deep`, direct URL `/deep/{audit_id}` или ссылка «Deep analysis →» с `/monitoring` (module-1 `ConclusionModal`).
 2. **LLM layout:** composer всегда внизу; messages выше; не переставлять на mobile (stack тот же).
 3. **Immutable audit snapshot** + mutable только `deep_chat` (M17 инвариант 2).
 4. **Polling:** active 1–2s; awaiting_approval 3–5s; terminal — stop.
@@ -185,7 +187,7 @@ Out of scope: markdown editor, file upload, voice input, sidebar case panel.
 
 | Ситуация | Ожидаемое поведение |
 |----------|---------------------|
-| `not_started` | Empty chat + CTA «Начать диалог» |
+| `not_started` | Empty chat + CTA «Открыть анализ» |
 | POST message при pending | 409 → refetch; draft сохранён |
 | Approve → budget_exceeded | 409 toast; error state |
 | Terminal | Stop poll; read-only history |
@@ -200,7 +202,8 @@ Out of scope: markdown editor, file upload, voice input, sidebar case panel.
 
 ```mermaid
 flowchart TB
-  List["/deep list"] -->|click audit| Chat["/deep/{audit_id}"]
+  Mon["/monitoring ConclusionModal"] -->|Deep analysis link| Chat["/deep/{audit_id}"]
+  List["/deep list"] -->|click audit| Chat
   Chat --> CW[ChatWindow]
   CW --> ML[MessageList scroll]
   CW --> AB[ApprovalBar]
@@ -253,7 +256,7 @@ src/
 │       ├── ApprovalBar.tsx
 │       └── CaseMetaStrip.tsx       # compact 1-line meta, не sidebar
 ├── hooks/
-│   └── useDeepChat.ts
+│   └── useDeepChat.ts            # паттерн как useMonitoringPolling (module-1)
 ├── api/
 │   └── deepChat.ts
 tests/
@@ -282,7 +285,7 @@ OpenAPI tag: `deep_analyst`. Тип: `ChatSnapshot`.
 | Сценарий | Уровень | Критерий |
 |----------|---------|----------|
 | LLM layout | unit | Composer внизу; messages area flex-1 |
-| not_started CTA | unit | CTA visible; open → messages |
+| not_started CTA | unit | «Открыть анализ» visible; open → messages |
 | pending blocks input | unit | textarea disabled |
 | approve flow mock | unit | POST approve → refetch |
 | polling stop terminal | unit | completed → no GET |
@@ -306,7 +309,8 @@ OpenAPI tag: `deep_analyst`. Тип: `ChatSnapshot`.
 ## Зависимости
 
 - module-0-index (StatusBadge, usePolling, api client, theme)
-- module-2-deep-list (entry: список → провал)
+- module-1-monitoring (completed): cross-link `ConclusionModal` → `/deep/{audit_id}`; образец domain polling hook (`useMonitoringPolling`)
+- module-2-deep-list (entry: список → провал; saved filter query)
 - M17 §7.3, §10.s; M16 ChatSnapshot
 
 ---
