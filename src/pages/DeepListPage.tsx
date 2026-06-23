@@ -182,7 +182,7 @@ export function DeepListPage() {
 
   return (
     <div
-      className="mx-auto flex min-h-[calc(100svh-3rem)] w-full max-w-[1440px] flex-col gap-4"
+      className="mx-auto flex h-[calc(100svh-3rem)] w-full max-w-[1440px] flex-col gap-4 overflow-hidden"
       data-testid="deep-list-page"
     >
       <header className="shrink-0">
@@ -194,7 +194,7 @@ export function DeepListPage() {
       <DeepListZone
         label="Фильтры deep cases"
         testId="deep-list-filters"
-        className="sticky top-0 z-10 shrink-0 shadow-sm"
+        className="shrink-0 shadow-sm"
       >
         <DeepCasesFilters
           values={draftFilters}
@@ -210,7 +210,7 @@ export function DeepListPage() {
         testId="deep-list-table"
         className="flex min-h-0 flex-1 flex-col overflow-hidden"
       >
-        <div className="deep-table-scroll -mr-1 min-h-0 flex-1 overflow-auto pr-1">
+        <div className="deep-table-scroll -mr-1 min-h-0 flex-1 overflow-x-auto overflow-y-auto pr-1">
           {isLoading ? <TableSkeletonRows /> : null}
 
           {!isLoading && error ? (
