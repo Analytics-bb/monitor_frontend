@@ -302,56 +302,150 @@ export function buildMetricsChartSlides(
   return slides.filter((slide) => slide.data.length > 0)
 }
 
+const FIXTURE_DAY = '2026-06-10'
+
+function fixtureHourBucket(hour: number): string {
+  return `${FIXTURE_DAY} ${String(hour).padStart(2, '0')}:00:00`
+}
+
+/** Объём транзакций по часу: стабильный трафик до 12:00, затем падение. */
+function fixtureTxCountByHour(hour: number): number {
+  if (hour <= 11) {
+    const pattern = [220, 198, 185, 176, 210, 232, 248, 255, 240, 238, 242, 235]
+    return pattern[hour]!
+  }
+  if (hour === 12) return 48
+  if (hour === 13) return 12
+  return Math.min(55, 14 + (hour - 14) * 4)
+}
+
+function buildTx24hFixture(): MetricsTools['tx_24h'] {
+  return Array.from({ length: 24 }, (_, hour) => ({
+    hour_bucket: fixtureHourBucket(hour),
+    tx_count: fixtureTxCountByHour(hour),
+  }))
+}
+
+function buildTxStatus24hFixture(): MetricsTools['tx_status_24h'] {
+  return Array.from({ length: 24 }, (_, hour) => {
+    const tx = fixtureTxCountByHour(hour)
+    const declined =
+      hour === 12 || hour === 13
+        ? Math.min(2, Math.max(1, Math.round(tx * 0.04)))
+        : Math.round(tx * 0.058)
+
+    return {
+      hour_bucket: fixtureHourBucket(hour),
+      approved_count: tx - declined,
+      declined_count: declined,
+    }
+  })
+}
+
+function buildErrors24hFixture(): MetricsTools['errors_24h'] {
+  const rows: MetricsTools['errors_24h'] = []
+
+  for (let hour = 0; hour < 24; hour += 1) {
+    const hour_bucket = fixtureHourBucket(hour)
+
+    if (hour === 12) {
+      rows.push(
+        {
+          hour_bucket,
+          error_code: 'E001',
+          error_description: 'Provider timeout',
+          cnt: 3,
+        },
+        {
+          hour_bucket,
+          error_code: 'E002',
+          error_description: 'Issuer decline',
+          cnt: 2,
+        },
+      )
+      continue
+    }
+
+    if (hour === 13) {
+      rows.push(
+        {
+          hour_bucket,
+          error_code: 'E001',
+          error_description: 'Provider timeout',
+          cnt: 2,
+        },
+        {
+          hour_bucket,
+          error_code: 'E002',
+          error_description: 'Issuer decline',
+          cnt: 1,
+        },
+      )
+      continue
+    }
+
+    rows.push({
+      hour_bucket,
+      error_code: 'E001',
+      error_description: 'Provider timeout',
+      cnt: hour % 6 === 0 ? 1 : 0,
+    })
+  }
+
+  return rows
+}
+
+function buildUsersTxBuckets24hFixture(): MetricsTools['users_tx_buckets_24h'] {
+  return Array.from({ length: 24 }, (_, hour) => {
+    const tx_count = fixtureTxCountByHour(hour)
+    const userRatio = hour < 12 ? 0.49 : hour <= 13 ? 0.85 : 0.55
+
+    return {
+      hour_bucket: fixtureHourBucket(hour),
+      tx_count,
+      user_count: Math.round(tx_count * userRatio),
+    }
+  })
+}
+
+const SUCCESS_RATE_COUNTRIES = [
+  { country: 'DE', share: 0.45, declineRatio: 0.045 },
+  { country: 'US', share: 0.4, declineRatio: 0.067 },
+  { country: 'unknown', share: 0.15, declineRatio: 0.2 },
+] as const
+
+function buildSuccessRateByHourCountry24hFixture(): MetricsTools['success_rate_by_hour_country_24h'] {
+  const rows: MetricsTools['success_rate_by_hour_country_24h'] = []
+
+  for (let hour = 0; hour < 24; hour += 1) {
+    const tx = fixtureTxCountByHour(hour)
+
+    for (const { country, share, declineRatio } of SUCCESS_RATE_COUNTRIES) {
+      const total = Math.max(1, Math.round(tx * share))
+      const declined_count = Math.max(0, Math.round(total * declineRatio))
+      const approved_count = total - declined_count
+      const success_rate =
+        total > 0 ? Math.round((approved_count / total) * 10000) / 10000 : null
+
+      rows.push({
+        hour_bucket: fixtureHourBucket(hour),
+        customer_country: country,
+        approved_count,
+        declined_count,
+        success_rate,
+      })
+    }
+  }
+
+  return rows
+}
+
 /** Fixture SQL-tools для dev и Vitest (gate 1001, падение трафика ~12:00). */
 export const metricsToolsFixture: MetricsTools = {
-  tx_24h: [
-    { hour_bucket: '2026-06-10 00:00:00', tx_count: 220 },
-    { hour_bucket: '2026-06-10 01:00:00', tx_count: 198 },
-    { hour_bucket: '2026-06-10 02:00:00', tx_count: 185 },
-    { hour_bucket: '2026-06-10 03:00:00', tx_count: 176 },
-    { hour_bucket: '2026-06-10 04:00:00', tx_count: 210 },
-    { hour_bucket: '2026-06-10 05:00:00', tx_count: 232 },
-    { hour_bucket: '2026-06-10 06:00:00', tx_count: 248 },
-    { hour_bucket: '2026-06-10 07:00:00', tx_count: 255 },
-    { hour_bucket: '2026-06-10 08:00:00', tx_count: 240 },
-    { hour_bucket: '2026-06-10 09:00:00', tx_count: 238 },
-    { hour_bucket: '2026-06-10 10:00:00', tx_count: 242 },
-    { hour_bucket: '2026-06-10 11:00:00', tx_count: 235 },
-    { hour_bucket: '2026-06-10 12:00:00', tx_count: 48 },
-    { hour_bucket: '2026-06-10 13:00:00', tx_count: 12 },
-  ],
-  tx_status_24h: [
-    { hour_bucket: '2026-06-10 10:00:00', approved_count: 228, declined_count: 14 },
-    { hour_bucket: '2026-06-10 11:00:00', approved_count: 220, declined_count: 15 },
-    { hour_bucket: '2026-06-10 12:00:00', approved_count: 46, declined_count: 2 },
-    { hour_bucket: '2026-06-10 13:00:00', approved_count: 10, declined_count: 2 },
-  ],
-  errors_24h: [
-    {
-      hour_bucket: '2026-06-10 12:00:00',
-      error_code: 'E001',
-      error_description: 'Provider timeout',
-      cnt: 1,
-    },
-    {
-      hour_bucket: '2026-06-10 12:00:00',
-      error_code: 'E002',
-      error_description: 'Issuer decline',
-      cnt: 1,
-    },
-    {
-      hour_bucket: '2026-06-10 13:00:00',
-      error_code: 'E001',
-      error_description: 'Provider timeout',
-      cnt: 1,
-    },
-  ],
-  users_tx_buckets_24h: [
-    { hour_bucket: '2026-06-10 10:00:00', tx_count: 242, user_count: 118 },
-    { hour_bucket: '2026-06-10 11:00:00', tx_count: 235, user_count: 112 },
-    { hour_bucket: '2026-06-10 12:00:00', tx_count: 48, user_count: 41 },
-    { hour_bucket: '2026-06-10 13:00:00', tx_count: 12, user_count: 11 },
-  ],
+  tx_24h: buildTx24hFixture(),
+  tx_status_24h: buildTxStatus24hFixture(),
+  errors_24h: buildErrors24hFixture(),
+  users_tx_buckets_24h: buildUsersTxBuckets24hFixture(),
   users_tx_buckets_3h_10m: [
     { time_bucket: '2026-06-10 10:00:00', tx_count: 38, user_count: 22 },
     { time_bucket: '2026-06-10 10:10:00', tx_count: 40, user_count: 24 },
@@ -415,50 +509,7 @@ export const metricsToolsFixture: MetricsTools = {
       card_number: '3333',
     },
   ],
-  success_rate_by_hour_country_24h: [
-    {
-      hour_bucket: '2026-06-10 11:00:00',
-      customer_country: 'DE',
-      approved_count: 110,
-      declined_count: 5,
-      success_rate: 95.6522,
-    },
-    {
-      hour_bucket: '2026-06-10 11:00:00',
-      customer_country: 'US',
-      approved_count: 98,
-      declined_count: 7,
-      success_rate: 93.3333,
-    },
-    {
-      hour_bucket: '2026-06-10 11:00:00',
-      customer_country: 'unknown',
-      approved_count: 12,
-      declined_count: 3,
-      success_rate: 80.0,
-    },
-    {
-      hour_bucket: '2026-06-10 12:00:00',
-      customer_country: 'DE',
-      approved_count: 20,
-      declined_count: 1,
-      success_rate: 95.2381,
-    },
-    {
-      hour_bucket: '2026-06-10 12:00:00',
-      customer_country: 'US',
-      approved_count: 22,
-      declined_count: 1,
-      success_rate: 95.6522,
-    },
-    {
-      hour_bucket: '2026-06-10 12:00:00',
-      customer_country: 'unknown',
-      approved_count: 4,
-      declined_count: 0,
-      success_rate: 100.0,
-    },
-  ],
+  success_rate_by_hour_country_24h: buildSuccessRateByHourCountry24hFixture(),
 }
 
 export const metricsChartSlidesFixture = buildMetricsChartSlides(metricsToolsFixture)
