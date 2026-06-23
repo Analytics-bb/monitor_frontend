@@ -71,7 +71,8 @@ function buildDeepCasesListFixture(count: number): DeepCaseSummary[] {
 }
 
 /** 30 записей для dev-списка `/deep` и pagination. */
-export const deepCasesListFixture: DeepCaseSummary[] = buildDeepCasesListFixture(30)
+export const deepCasesListFixture: DeepCaseSummary[] =
+  buildDeepCasesListFixture(30)
 
 export function parseDeepCaseSummary(data: unknown): DeepCaseSummary {
   return deepCaseSummarySchema.parse(data)

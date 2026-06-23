@@ -72,7 +72,12 @@ function paginateFixture(
 /**
  * Загружает список deep cases (`GET /api/deep/cases`).
  *
- * В dev без `VITE_ANOMALY_API_BASE_URL` возвращает fixture с client-side filter/pagination.
+ * Без `VITE_ANOMALY_API_BASE_URL` возвращает `deepCasesListFixture` с
+ * client-side filter и pagination.
+ *
+ * @param params - Query-параметры списка (gate, state, период, page)
+ * @returns Envelope с `items`, `total`, `page`, `page_size`
+ * @throws Пробрасывает ошибки `apiGetJson` и Zod parse при невалидном ответе API
  */
 export async function listDeepCases(
   params: ListDeepCasesParams = {},

@@ -23,7 +23,9 @@ describe('DeepCasesPagination', () => {
     await user.click(screen.getByRole('button', { name: 'Следующая страница' }))
     expect(onPageChange).toHaveBeenCalledWith(3)
 
-    await user.click(screen.getByRole('button', { name: 'Предыдущая страница' }))
+    await user.click(
+      screen.getByRole('button', { name: 'Предыдущая страница' }),
+    )
     expect(onPageChange).toHaveBeenCalledWith(1)
   })
 
@@ -39,8 +41,8 @@ describe('DeepCasesPagination', () => {
       />,
     )
 
-    expect(screen.getByTestId('deep-cases-pagination-summary')).toHaveTextContent(
-      'Показано 1–20 из 142',
-    )
+    expect(
+      screen.getByTestId('deep-cases-pagination-summary'),
+    ).toHaveTextContent('Показано 1–20 из 142')
   })
 })

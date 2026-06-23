@@ -4,7 +4,10 @@ import { useState } from 'react'
 import { MemoryRouter, Route, Routes, useSearchParams } from 'react-router'
 import { describe, expect, it, vi } from 'vitest'
 
-import { DeepCasesFilters, type DeepCasesFilterValues } from '@/components/deep/DeepCasesFilters'
+import {
+  DeepCasesFilters,
+  type DeepCasesFilterValues,
+} from '@/components/deep/DeepCasesFilters'
 
 function SearchParamsDisplay() {
   const [params] = useSearchParams()
@@ -138,14 +141,18 @@ describe('DeepListPage URL sync', () => {
     )
 
     await waitFor(() => {
-      expect(screen.queryByTestId('deep-list-table-skeleton')).not.toBeInTheDocument()
+      expect(
+        screen.queryByTestId('deep-list-table-skeleton'),
+      ).not.toBeInTheDocument()
     })
 
     await user.type(screen.getByLabelText('Gate ID'), '42')
     await user.click(screen.getByRole('button', { name: 'Применить' }))
 
     await waitFor(() => {
-      expect(screen.getByTestId('search-params')).toHaveTextContent('gate_id=42')
+      expect(screen.getByTestId('search-params')).toHaveTextContent(
+        'gate_id=42',
+      )
     })
   })
 })

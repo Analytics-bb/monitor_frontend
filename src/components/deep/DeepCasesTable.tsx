@@ -8,7 +8,9 @@ export interface DeepCasesTableProps {
   className?: string
 }
 
-function mapChatStateToBadge(state: DeepCaseSummary['deep_chat_state']): StatusBadgeVariant {
+function mapChatStateToBadge(
+  state: DeepCaseSummary['deep_chat_state'],
+): StatusBadgeVariant {
   return state
 }
 
@@ -17,7 +19,11 @@ const headerCellClassName = 'px-3 py-2 text-center font-medium'
 /**
  * Таблица deep cases: основные поля audit и статус чата.
  */
-export function DeepCasesTable({ items, onRowClick, className }: DeepCasesTableProps) {
+export function DeepCasesTable({
+  items,
+  onRowClick,
+  className,
+}: DeepCasesTableProps) {
   return (
     <div className={cn('overflow-x-auto', className)}>
       <table
@@ -76,7 +82,9 @@ export function DeepCasesTable({ items, onRowClick, className }: DeepCasesTableP
                 </span>
               </td>
               <td className="px-3 py-2 text-center">
-                <StatusBadge status={mapChatStateToBadge(item.deep_chat_state)} />
+                <StatusBadge
+                  status={mapChatStateToBadge(item.deep_chat_state)}
+                />
               </td>
             </tr>
           ))}

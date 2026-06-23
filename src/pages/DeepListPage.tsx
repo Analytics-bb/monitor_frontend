@@ -121,7 +121,8 @@ export function DeepListPage() {
     ],
   )
 
-  const { items, total, isLoading, error, refetch } = useDeepCasesList(listParams)
+  const { items, total, isLoading, error, refetch } =
+    useDeepCasesList(listParams)
 
   useEffect(() => {
     if (isLoading || total === 0) {
@@ -165,7 +166,9 @@ export function DeepListPage() {
 
   const handleReset = () => {
     setFilterDraft(EMPTY_FILTERS)
-    setSearchParams(new URLSearchParams({ page: '1', page_size: String(pageSize) }))
+    setSearchParams(
+      new URLSearchParams({ page: '1', page_size: String(pageSize) }),
+    )
   }
 
   const handleRowClick = (auditId: string) => {
@@ -175,10 +178,16 @@ export function DeepListPage() {
   }
 
   const showFilteredEmpty =
-    !isLoading && !error && items.length === 0 && hasActiveFilters(appliedFilters)
+    !isLoading &&
+    !error &&
+    items.length === 0 &&
+    hasActiveFilters(appliedFilters)
 
   const showGlobalEmpty =
-    !isLoading && !error && items.length === 0 && !hasActiveFilters(appliedFilters)
+    !isLoading &&
+    !error &&
+    items.length === 0 &&
+    !hasActiveFilters(appliedFilters)
 
   return (
     <div
@@ -220,21 +229,34 @@ export function DeepListPage() {
               role="alert"
             >
               <p className="text-destructive text-sm">{error}</p>
-              <Button type="button" size="sm" variant="outline" onClick={() => void refetch()}>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={() => void refetch()}
+              >
                 Retry
               </Button>
             </div>
           ) : null}
 
           {showGlobalEmpty ? (
-            <p className="text-muted-foreground text-sm" data-testid="deep-list-table-empty">
+            <p
+              className="text-muted-foreground text-sm"
+              data-testid="deep-list-table-empty"
+            >
               Нет deep cases
             </p>
           ) : null}
 
           {showFilteredEmpty ? (
-            <div className="space-y-3" data-testid="deep-list-table-filtered-empty">
-              <p className="text-muted-foreground text-sm">Нет audits по фильтру</p>
+            <div
+              className="space-y-3"
+              data-testid="deep-list-table-filtered-empty"
+            >
+              <p className="text-muted-foreground text-sm">
+                Нет audits по фильтру
+              </p>
               <Button
                 type="button"
                 size="sm"

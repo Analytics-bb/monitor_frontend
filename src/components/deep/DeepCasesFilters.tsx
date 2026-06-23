@@ -117,7 +117,7 @@ export function DeepCasesFilters({
             pattern="[0-9]*"
             className={cn(
               inputClassName,
-              'font-mono hover:border-border/70 hover:bg-muted/25',
+              'hover:border-border/70 hover:bg-muted/25 font-mono',
               errors.gate_id && invalidInputClassName,
             )}
             value={values.gate_id}
@@ -135,7 +135,10 @@ export function DeepCasesFilters({
         <label className="flex w-full flex-col gap-1 text-sm">
           <span className="text-muted-foreground text-xs">State</span>
           <select
-            className={cn(inputClassName, 'hover:border-border/70 hover:bg-muted/25')}
+            className={cn(
+              inputClassName,
+              'hover:border-border/70 hover:bg-muted/25',
+            )}
             value={values.state}
             onChange={(event) =>
               onChange({
@@ -159,7 +162,10 @@ export function DeepCasesFilters({
           <input
             type="text"
             inputMode="numeric"
-            className={cn(dateInputClassName, errors.from && invalidInputClassName)}
+            className={cn(
+              dateInputClassName,
+              errors.from && invalidInputClassName,
+            )}
             value={values.from}
             onChange={(event) => handleDateChange('from', event.target.value)}
             placeholder="yyyy-mm-dd"
@@ -177,7 +183,10 @@ export function DeepCasesFilters({
           <input
             type="text"
             inputMode="numeric"
-            className={cn(dateInputClassName, errors.to && invalidInputClassName)}
+            className={cn(
+              dateInputClassName,
+              errors.to && invalidInputClassName,
+            )}
             value={values.to}
             onChange={(event) => handleDateChange('to', event.target.value)}
             placeholder="yyyy-mm-dd"
@@ -192,14 +201,19 @@ export function DeepCasesFilters({
       </div>
 
       <div className="flex w-full justify-end gap-2">
-        <Button type="submit" size="sm" className="min-w-28" disabled={isLoading}>
+        <Button
+          type="submit"
+          size="sm"
+          className="min-w-28"
+          disabled={isLoading}
+        >
           Применить
         </Button>
         <Button
           type="button"
           variant="ghost"
           size="sm"
-          className="min-w-28 hover:bg-muted/60"
+          className="hover:bg-muted/60 min-w-28"
           onClick={() => {
             setErrors({})
             onReset()

@@ -23,6 +23,10 @@ export interface UseDeepCasesListResult {
 /**
  * Загружает список deep cases с server-side pagination.
  *
+ * При смене `params` выполняет fetch в `useEffect`; при ошибке сети
+ * выставляет `error` и очищает `items`/`total`. `mapApiError` вызывается
+ * для единообразного маппинга транспортных ошибок.
+ *
  * @param params - Query-параметры `GET /api/deep/cases`
  * @returns Строки таблицы, total, флаги загрузки/ошибки и `refetch`
  */

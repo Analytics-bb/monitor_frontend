@@ -29,7 +29,9 @@ describe('DeepListPage navigation', () => {
     )
 
     await waitFor(() => {
-      expect(screen.getAllByTestId('deep-cases-table-row').length).toBeGreaterThan(0)
+      expect(
+        screen.getAllByTestId('deep-cases-table-row').length,
+      ).toBeGreaterThan(0)
     })
 
     await user.click(screen.getAllByTestId('deep-cases-table-row')[0]!)

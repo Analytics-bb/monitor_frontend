@@ -28,7 +28,9 @@ describe('DeepCasesTable', () => {
     expect(screen.getAllByTestId('deep-cases-table-row')).toHaveLength(3)
     expect(screen.getByLabelText('Статус: Не начат')).toBeInTheDocument()
     expect(screen.getByLabelText('Статус: Активен')).toBeInTheDocument()
-    expect(screen.getByLabelText('Статус: Ожидает подтверждения')).toBeInTheDocument()
+    expect(
+      screen.getByLabelText('Статус: Ожидает подтверждения'),
+    ).toBeInTheDocument()
   })
 
   it('truncates long conclusion without breaking table layout', () => {

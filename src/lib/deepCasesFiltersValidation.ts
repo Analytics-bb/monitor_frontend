@@ -25,7 +25,12 @@ function isValidIsoDate(value: string): boolean {
 
 /**
  * Проверяет значения фильтров deep list перед Apply.
- * Gate — только цифры; даты — `yyyy-mm-dd` или пусто.
+ *
+ * Gate — только цифры; даты — `yyyy-mm-dd` или пусто; при заполненных from/to
+ * проверяется, что `to` не раньше `from`.
+ *
+ * @param values - Текущие значения панели фильтров
+ * @returns Объект ошибок по полям; пустой объект — валидация пройдена
  */
 export function validateDeepCasesFilters(
   values: DeepCasesFilterValues,
@@ -57,6 +62,11 @@ export function validateDeepCasesFilters(
   return errors
 }
 
+/**
+ * Возвращает true, если в объекте ошибок фильтров есть хотя бы одно поле.
+ *
+ * @param errors - Результат `validateDeepCasesFilters`
+ */
 export function hasDeepCasesFilterErrors(
   errors: DeepCasesFilterErrors,
 ): boolean {

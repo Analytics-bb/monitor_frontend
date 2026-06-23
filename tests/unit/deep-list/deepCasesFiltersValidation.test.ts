@@ -16,13 +16,13 @@ const EMPTY: DeepCasesFilterValues = {
 describe('validateDeepCasesFilters', () => {
   it('accepts empty filters', () => {
     expect(validateDeepCasesFilters(EMPTY)).toEqual({})
-    expect(hasDeepCasesFilterErrors(validateDeepCasesFilters(EMPTY))).toBe(false)
+    expect(hasDeepCasesFilterErrors(validateDeepCasesFilters(EMPTY))).toBe(
+      false,
+    )
   })
 
   it('accepts numeric gate_id', () => {
-    expect(
-      validateDeepCasesFilters({ ...EMPTY, gate_id: '42' }),
-    ).toEqual({})
+    expect(validateDeepCasesFilters({ ...EMPTY, gate_id: '42' })).toEqual({})
   })
 
   it('rejects non-numeric gate_id', () => {

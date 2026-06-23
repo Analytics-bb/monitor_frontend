@@ -60,7 +60,10 @@ export function DeepCasesPagination({
       )}
       data-testid="deep-cases-pagination"
     >
-      <p className="text-muted-foreground text-sm" data-testid="deep-cases-pagination-summary">
+      <p
+        className="text-muted-foreground text-sm"
+        data-testid="deep-cases-pagination-summary"
+      >
         {getRangeLabel(page, pageSize, itemsOnPage, total)}
       </p>
 
