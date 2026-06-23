@@ -15,6 +15,15 @@ export const agentContextSchema = z.object({
 
 export type AgentContext = z.infer<typeof agentContextSchema>
 
+export const agentContextUpsertSchema = z.object({
+  agent_kind: agentKindSchema,
+  gate_id: z.string().nullable(),
+  key: z.string().min(1),
+  content: z.string(),
+})
+
+export type AgentContextUpsert = z.infer<typeof agentContextUpsertSchema>
+
 /** Fixture AgentContext для dev и Vitest. */
 export const agentContextFixture: AgentContext = {
   context_id: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',

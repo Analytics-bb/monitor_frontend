@@ -6,6 +6,7 @@ import {
   type AgentContext,
   type AgentKind,
 } from '@/api/contexts'
+import { ContextEditor } from '@/components/settings/ContextEditor'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
@@ -22,6 +23,11 @@ interface ContextFilterValues {
   gate_id: string
 }
 
+type EditorState =
+  | { mode: 'closed' }
+  | { mode: 'create' }
+  | { mode: 'edit'; context: AgentContext }
+
 const inputClassName =
   'border-input bg-background focus:border-ring/40 focus:ring-ring/20 h-9 w-full rounded-md border px-3 text-sm transition-colors duration-200 outline-none focus:ring-1'
 
@@ -33,8 +39,22 @@ function truncatePreview(content: string, maxLength = 120): string {
   return `${content.slice(0, maxLength)}…`
 }
 
+function resolveListGateId(
+  filters: ContextFilterValues,
+): string | null | undefined {
+  if (filters.scope === 'global') {
+    return null
+  }
+
+  if (filters.scope === 'gate') {
+    return filters.gate_id.trim() || undefined
+  }
+
+  return undefined
+}
+
 /**
- * Вкладка Contexts: фильтры и список карточек.
+ * Вкладка Contexts: фильтры, список карточек и editor.
  */
 export function ContextsTab({ className }: ContextsTabProps) {
   const [filters, setFilters] = useState<ContextFilterValues>({
@@ -46,22 +66,16 @@ export function ContextsTab({ className }: ContextsTabProps) {
   const [items, setItems] = useState<AgentContext[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [loadError, setLoadError] = useState<string | null>(null)
+  const [editor, setEditor] = useState<EditorState>({ mode: 'closed' })
 
   const loadList = useCallback(async (nextFilters: ContextFilterValues) => {
     setIsLoading(true)
     setLoadError(null)
 
-    const gateId =
-      nextFilters.scope === 'global'
-        ? null
-        : nextFilters.scope === 'gate'
-          ? nextFilters.gate_id.trim() || undefined
-          : undefined
-
     try {
       const data = await listContexts({
         agent_kind: nextFilters.agent_kind,
-        gate_id: gateId,
+        gate_id: resolveListGateId(nextFilters),
       })
       setItems(data)
     } catch (error) {
@@ -90,6 +104,13 @@ export function ContextsTab({ className }: ContextsTabProps) {
     setFilters(reset)
     setAppliedFilters(reset)
   }
+
+  const defaultGateId =
+    appliedFilters.scope === 'global'
+      ? null
+      : appliedFilters.scope === 'gate'
+        ? appliedFilters.gate_id.trim() || null
+        : null
 
   return (
     <div className={cn('space-y-4', className)} data-testid="contexts-tab">
@@ -159,6 +180,26 @@ export function ContextsTab({ className }: ContextsTabProps) {
         </div>
       </form>
 
+      <div className="flex justify-end">
+        <Button
+          type="button"
+          onClick={() => setEditor({ mode: 'create' })}
+        >
+          + Create context
+        </Button>
+      </div>
+
+      {editor.mode !== 'closed' ? (
+        <ContextEditor
+          mode={editor.mode}
+          context={editor.mode === 'edit' ? editor.context : undefined}
+          defaultAgentKind={appliedFilters.agent_kind}
+          defaultGateId={defaultGateId}
+          onClose={() => setEditor({ mode: 'closed' })}
+          onSaved={async () => loadList(appliedFilters)}
+        />
+      ) : null}
+
       {isLoading ? (
         <div className="space-y-3">
           <div className="bg-muted h-24 animate-pulse rounded-lg" />
@@ -178,17 +219,23 @@ export function ContextsTab({ className }: ContextsTabProps) {
       ) : items.length === 0 ? (
         <div className="border-border rounded-lg border border-dashed p-6 text-center">
           <p className="text-muted-foreground text-sm">Нет contexts по фильтру</p>
-          <Button type="button" className="mt-3" disabled>
-            + Create context
-          </Button>
         </div>
       ) : (
         <div className="grid gap-3" data-testid="contexts-card-list">
           {items.map((item) => (
             <article
               key={item.context_id}
-              className="border-border bg-card rounded-lg border p-4"
+              className="border-border bg-card hover:bg-muted/20 cursor-pointer rounded-lg border p-4 transition-colors"
               data-testid="context-card"
+              onClick={() => setEditor({ mode: 'edit', context: item })}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                  event.preventDefault()
+                  setEditor({ mode: 'edit', context: item })
+                }
+              }}
+              role="button"
+              tabIndex={0}
             >
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <h3 className="font-medium">{item.key}</h3>

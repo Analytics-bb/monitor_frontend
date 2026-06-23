@@ -16,7 +16,7 @@ todos:
     status: completed
   - id: m5-context-upsert
     content: "PUT /agent/contexts global (gate_id null) и per-gate; DELETE context"
-    status: pending
+    status: completed
   - id: m5-conflict-handling
     content: "409 upsert → toast error_code; form state preserved"
     status: pending
