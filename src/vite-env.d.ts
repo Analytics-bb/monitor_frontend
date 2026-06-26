@@ -2,6 +2,7 @@
 
 interface ImportMetaEnv {
   readonly VITE_ANOMALY_API_BASE_URL: string
+  readonly VITE_MOCK_AUTH_ENABLED?: string
 }
 
 interface ImportMeta {

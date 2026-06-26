@@ -3,27 +3,27 @@ name: fe-mock-auth
 overview: "Mock auth R2: /login (any credentials → localStorage → /monitoring), protected routes guard, sidebar Login/Logout, /cabinet placeholder."
 todos:
   - id: m6-auth-storage
-    content: "auth/mockSession.ts — get/set/clear mock flag; MOCK_AUTH_ENABLED env"
-    status: pending
+    content: auth/mockSession.ts — get/set/clear mock flag; MOCK_AUTH_ENABLED env
+    status: completed
   - id: m6-login-page
     content: "LoginPage: форма без API; submit → set session → redirect /monitoring"
-    status: pending
+    status: completed
   - id: m6-protected-route
     content: "ProtectedRoute wrapper: без session → redirect /login; save return URL optional"
-    status: pending
+    status: completed
   - id: m6-sidebar-auth
     content: "Sidebar: Login link или Logout button в одном слоте"
-    status: pending
+    status: completed
   - id: m6-cabinet-page
     content: "CabinetPage: static placeholder «скоро»; protected"
-    status: pending
+    status: completed
   - id: m6-route-align
     content: "Protected paths: /monitoring, /deep, /usage, /settings/agents, /cabinet"
-    status: pending
+    status: completed
   - id: m6-tests
     content: "Vitest + e2e: login redirect; guarded route without session; logout flow"
-    status: pending
-isProject: false
+    status: completed
+isProject: true
 ---
 
 # FE Module 6 — Mock Auth (`/login`, `/cabinet`, guards)
@@ -183,12 +183,12 @@ Backend API: **none**.
 
 ## DoD
 
-- [ ] Login/logout flow работает; sidebar slot корректен.
-- [ ] Все protected M17 routes guarded.
-- [ ] Cabinet placeholder без API.
-- [ ] `.env.example` документирует MOCK_AUTH_ENABLED.
-- [ ] Login уважает light/dark theme (module-0 tokens).
-- [ ] Тесты проходят; M17 §9.2 mock login/logout готов.
+- [x] Login/logout flow работает; sidebar slot корректен.
+- [x] Все protected M17 routes guarded.
+- [x] Cabinet placeholder без API.
+- [x] `.env.example` документирует MOCK_AUTH_ENABLED.
+- [x] Login уважает light/dark theme (module-0 tokens).
+- [x] Тесты проходят; M17 §9.2 mock login/logout готов.
 
 ---
 

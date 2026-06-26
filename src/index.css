@@ -38,6 +38,7 @@
   --color-status-not-started: var(--status-not-started);
   --color-status-cancelled: var(--status-cancelled);
   --animate-soft-pulse: soft-pulse 2.5s ease-in-out infinite;
+  --animate-login-card-fade-in: login-card-fade-in 200ms ease-out both;
 }
 
 :root {
@@ -116,6 +117,16 @@
   .dark input[type='number']::-webkit-outer-spin-button {
     opacity: 1;
     filter: brightness(1.75);
+  }
+}
+
+@keyframes login-card-fade-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
   }
 }
 
