@@ -1,9 +1,9 @@
 import { apiFetch, apiGetJson } from './client'
 import { ApiClientError } from './errors'
 import { auditSummaryFixtureContent } from './fixtures/auditSummaryFixture'
+import { buildFixtureSnapshotFromList } from './fixtures/deepChatFromList'
 import {
   chatSnapshotFixture,
-  chatSnapshotNotStartedFixture,
   parseChatSnapshot,
   type ChatSnapshot,
   type PendingAction,
@@ -42,10 +42,7 @@ function getFixtureState(auditId: string): FixtureChatState {
     return existing
   }
 
-  const initial = cloneSnapshot({
-    ...chatSnapshotNotStartedFixture,
-    gate_id: auditId.includes('active') ? '42' : chatSnapshotNotStartedFixture.gate_id,
-  })
+  const initial = cloneSnapshot(buildFixtureSnapshotFromList(auditId))
   const state: FixtureChatState = { snapshot: initial, budgetExceeded: false }
   fixtureStore.set(auditId, state)
   return state

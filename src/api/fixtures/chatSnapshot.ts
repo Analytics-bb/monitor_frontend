@@ -1,5 +1,7 @@
 import { z } from 'zod'
 
+import { apiErrorEnvelopeSchema } from '@/api/errors'
+
 import { auditSummaryFixtureContent } from './auditSummaryFixture'
 
 export const chatMessageSchema = z.object({
@@ -28,6 +30,7 @@ export const chatSnapshotSchema = z.object({
   ]),
   messages: z.array(chatMessageSchema),
   pending_action: pendingActionSchema.nullable(),
+  last_error: apiErrorEnvelopeSchema.optional(),
 })
 
 export type ChatMessage = z.infer<typeof chatMessageSchema>
@@ -58,6 +61,32 @@ export const chatSnapshotNotStartedFixture: ChatSnapshot = {
   conclusion: 'Порог превышен; рекомендован deep analysis.',
   state: 'not_started',
   messages: [],
+  pending_action: null,
+}
+
+/** Snapshot для terminal state `error`. */
+export const chatSnapshotErrorFixture: ChatSnapshot = {
+  ...chatSnapshotFixture,
+  state: 'error',
+  pending_action: null,
+  last_error: {
+    error_code: 'budget_exceeded',
+    message: 'Превышен лимит токенов для deep chat сессии.',
+    details: { audit_id: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890', limit_usd: 5 },
+  },
+}
+
+/** Snapshot для terminal state `completed`. */
+export const chatSnapshotCompletedFixture: ChatSnapshot = {
+  ...chatSnapshotFixture,
+  state: 'completed',
+  pending_action: null,
+}
+
+/** Snapshot для terminal state `cancelled`. */
+export const chatSnapshotCancelledFixture: ChatSnapshot = {
+  ...chatSnapshotFixture,
+  state: 'cancelled',
   pending_action: null,
 }
 

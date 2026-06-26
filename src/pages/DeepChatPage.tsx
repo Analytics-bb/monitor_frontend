@@ -2,12 +2,15 @@ import { ChevronLeft } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { Link, useLocation, useParams } from 'react-router'
 
-import { isApiErrorCode, mapApiError } from '@/api/errors'
+import type { ApiError } from '@/api/errors'
+import { ApiClientError, isApiErrorCode, mapApiError } from '@/api/errors'
 import type { ChatSnapshot } from '@/api/fixtures/chatSnapshot'
-import { ApprovalBar } from '@/components/deep/ApprovalBar'
+import { ApprovalOverlay } from '@/components/deep/ApprovalOverlay'
 import { CaseMetaStrip } from '@/components/deep/CaseMetaStrip'
 import { ChatComposer } from '@/components/deep/ChatComposer'
+import { ChatErrorPanel } from '@/components/deep/ChatErrorPanel'
 import { ChatMessageList } from '@/components/deep/ChatMessageList'
+import { ChatStateNotice } from '@/components/deep/ChatStateNotice'
 import { ChatWindow } from '@/components/deep/ChatWindow'
 import { StatusBadge, type StatusBadgeVariant } from '@/components/StatusBadge'
 import { Button } from '@/components/ui/button'
@@ -18,6 +21,8 @@ const TERMINAL_STATES = new Set<ChatSnapshot['state']>([
   'cancelled',
   'error',
 ])
+
+const CLOSED_CHAT_STATES = new Set<ChatSnapshot['state']>(['completed', 'cancelled'])
 
 interface DeepChatLocationState {
   deepListSearch?: string
@@ -32,6 +37,24 @@ function getComposerPlaceholder(state: ChatSnapshot['state']): string {
     return 'Ожидание подтверждения…'
   }
   return 'Напишите агенту…'
+}
+
+function resolveSnapshotError(
+  snapshot: ChatSnapshot,
+  fetchError: unknown,
+): ApiError {
+  if (snapshot.last_error) {
+    return snapshot.last_error
+  }
+
+  if (fetchError instanceof ApiClientError && fetchError.apiError) {
+    return fetchError.apiError
+  }
+
+  return {
+    error_code: 'chat_error',
+    message: 'Произошла ошибка при выполнении deep analysis.',
+  }
 }
 
 /**
@@ -56,7 +79,9 @@ export function DeepChatPage() {
 
   const [budgetExceeded, setBudgetExceeded] = useState(false)
 
+  const isErrorState = snapshot?.state === 'error'
   const isTerminal = snapshot ? TERMINAL_STATES.has(snapshot.state) : false
+  const isClosedChat = snapshot ? CLOSED_CHAT_STATES.has(snapshot.state) : false
   const isPending = Boolean(snapshot?.pending_action)
   const composerDisabled =
     isPending ||
@@ -65,7 +90,7 @@ export function DeepChatPage() {
     snapshot?.state === 'awaiting_approval' ||
     snapshot?.state === 'not_started'
 
-  const hideApprove = budgetExceeded || snapshot?.state === 'error'
+  const hideApprove = budgetExceeded || isErrorState
 
   const handleApprove = async (actionId: string) => {
     try {
@@ -74,10 +99,8 @@ export function DeepChatPage() {
     } catch (approveError) {
       if (isApiErrorCode(approveError, 'budget_exceeded')) {
         setBudgetExceeded(true)
-        mapApiError(approveError)
-      } else {
-        mapApiError(approveError)
       }
+      mapApiError(approveError)
     }
   }
 
@@ -89,16 +112,44 @@ export function DeepChatPage() {
     }
   }
 
-  const terminalBanner = useMemo(() => {
-    if (!isTerminal) {
+  const handleCustomVariant = async (actionId: string, content: string) => {
+    try {
+      await reject(actionId)
+      const sent = await sendMessage(content)
+      if (!sent) {
+        await refetch()
+      }
+    } catch (variantError) {
+      mapApiError(variantError)
+    }
+  }
+
+  const terminalNotice = useMemo(() => {
+    if (!snapshot || !isClosedChat) {
       return null
     }
+    return <ChatStateNotice state={snapshot.state as 'completed' | 'cancelled'} />
+  }, [isClosedChat, snapshot])
+
+  const chatMessages = useMemo(() => {
+    if (!snapshot || isErrorState) {
+      return null
+    }
+
+    if (snapshot.messages.length > 0) {
+      return <ChatMessageList messages={snapshot.messages} />
+    }
+
+    if (isOpening) {
+      return (
+        <p className="text-muted-foreground p-4 text-sm">Загружаем summary…</p>
+      )
+    }
+
     return (
-      <div className="bg-muted/60 text-muted-foreground border-border border-t px-4 py-2 text-center text-sm">
-        Диалог завершён
-      </div>
+      <p className="text-muted-foreground p-4 text-sm">Сообщений пока нет</p>
     )
-  }, [isTerminal])
+  }, [isErrorState, isOpening, snapshot])
 
   if (!auditId) {
     return null
@@ -163,25 +214,24 @@ export function DeepChatPage() {
 
       <ChatWindow
         messages={
-          snapshot && snapshot.messages.length > 0 ? (
-            <ChatMessageList messages={snapshot.messages} />
-          ) : isOpening ? (
-            <p className="text-muted-foreground p-4 text-sm">Загружаем summary…</p>
+          isErrorState && snapshot ? (
+            <ChatErrorPanel error={resolveSnapshotError(snapshot, error)} />
           ) : (
-            <p className="text-muted-foreground p-4 text-sm">Сообщений пока нет</p>
+            chatMessages
           )
         }
-        approval={
-          snapshot?.pending_action ? (
-            <ApprovalBar
+        overlay={
+          snapshot?.pending_action && !isErrorState ? (
+            <ApprovalOverlay
               pendingAction={snapshot.pending_action}
               onApprove={handleApprove}
               onReject={handleReject}
+              onCustomVariant={handleCustomVariant}
               hideApprove={hideApprove}
             />
           ) : undefined
         }
-        terminalBanner={terminalBanner ?? undefined}
+        terminalBanner={terminalNotice ?? undefined}
         composer={
           snapshot && !isTerminal ? (
             <ChatComposer

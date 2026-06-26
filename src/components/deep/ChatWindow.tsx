@@ -5,6 +5,8 @@ import { cn } from '@/lib/utils'
 export interface ChatWindowProps {
   /** Scrollable messages area. */
   messages: ReactNode
+  /** Всплывающий overlay над messages (approval). */
+  overlay?: ReactNode
   /** Sticky approval bar между messages и composer. */
   approval?: ReactNode
   /** Sticky composer внизу. */
@@ -23,6 +25,7 @@ export interface ChatWindowProps {
  */
 export function ChatWindow({
   messages,
+  overlay,
   approval,
   composer,
   emptyState,
@@ -49,6 +52,7 @@ export function ChatWindow({
             <div className="pointer-events-auto">{emptyState}</div>
           </div>
         ) : null}
+        {overlay}
       </div>
 
       {approval ? (
@@ -58,7 +62,10 @@ export function ChatWindow({
       ) : null}
 
       {terminalBanner ? (
-        <div className="shrink-0" data-testid="chat-window-terminal-banner">
+        <div
+          className="shrink-0 p-4"
+          data-testid="chat-window-terminal-banner"
+        >
           {terminalBanner}
         </div>
       ) : null}
