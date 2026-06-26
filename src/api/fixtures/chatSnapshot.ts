@@ -1,5 +1,7 @@
 import { z } from 'zod'
 
+import { auditSummaryFixtureContent } from './auditSummaryFixture'
+
 export const chatMessageSchema = z.object({
   role: z.enum(['user', 'assistant', 'system', 'tool']),
   content: z.string(),
@@ -42,7 +44,7 @@ export const chatSnapshotFixture: ChatSnapshot = {
   messages: [
     {
       role: 'assistant',
-      content: 'Начинаю deep analysis по snapshot audit.',
+      content: auditSummaryFixtureContent,
     },
   ],
   pending_action: null,

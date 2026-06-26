@@ -32,10 +32,9 @@ test('open analysis and send message on fixture chat', async ({ page }) => {
   await expect(firstRow).toBeVisible({ timeout: 10_000 })
   await firstRow.click()
 
-  await expect(page.getByTestId('deep-chat-open-cta')).toBeVisible({
+  await expect(page.getByTestId('audit-summary')).toBeVisible({
     timeout: 10_000,
   })
-  await page.getByTestId('deep-chat-open-cta').click()
 
   await expect(page.getByTestId('chat-message-list')).toBeVisible()
   await page.getByLabel('Сообщение агенту').fill('e2e test message')

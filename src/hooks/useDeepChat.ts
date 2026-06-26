@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import {
   approveChatAction,
@@ -25,6 +25,8 @@ export interface UseDeepChatResult {
   error: unknown
   /** Polling включён по текущему state. */
   isPolling: boolean
+  /** Идёт автоматический POST open при `not_started`. */
+  isOpening: boolean
   /** Немедленный GET snapshot. */
   refetch: () => Promise<void>
   /** POST open; после успеха — refetch и polling по state. */
@@ -73,6 +75,12 @@ function isPollingEnabled(snapshot: ChatSnapshot | null): boolean {
 export function useDeepChat(auditId: string): UseDeepChatResult {
   const [snapshot, setSnapshot] = useState<ChatSnapshot | null>(null)
   const [error, setError] = useState<unknown>(null)
+  const [isOpening, setIsOpening] = useState(false)
+  const hasAutoOpenedRef = useRef(false)
+
+  useEffect(() => {
+    hasAutoOpenedRef.current = false
+  }, [auditId])
 
   const fetcher = useCallback(async (): Promise<ChatSnapshot | null> => {
     try {
@@ -114,6 +122,24 @@ export function useDeepChat(auditId: string): UseDeepChatResult {
       throw err
     }
   }, [auditId, refetch])
+
+  useEffect(() => {
+    if (
+      !snapshot ||
+      snapshot.state !== 'not_started' ||
+      hasAutoOpenedRef.current
+    ) {
+      return
+    }
+
+    hasAutoOpenedRef.current = true
+    setIsOpening(true)
+    void openSession()
+      .catch(() => undefined)
+      .finally(() => {
+        setIsOpening(false)
+      })
+  }, [snapshot, openSession])
 
   const sendMessage = useCallback(
     async (content: string): Promise<boolean> => {
@@ -173,6 +199,7 @@ export function useDeepChat(auditId: string): UseDeepChatResult {
     snapshot,
     error,
     isPolling: pollingEnabled,
+    isOpening,
     refetch: refetchSnapshot,
     openSession,
     sendMessage,

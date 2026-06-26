@@ -94,7 +94,7 @@ export function ChatMessageList({ messages, className }: ChatMessageListProps) {
     <div className={cn('relative h-full', className)}>
       <div
         ref={containerRef}
-        className="h-full overflow-y-auto"
+        className="chat-message-scroll h-full overflow-y-auto p-4"
         aria-live="polite"
         data-testid="chat-message-list"
       >

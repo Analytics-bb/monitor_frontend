@@ -1,4 +1,6 @@
 import type { ChatMessage as ChatMessageType } from '@/api/fixtures/chatSnapshot'
+import { isAuditSummaryContent } from '@/api/fixtures/auditSummaryFixture'
+import { AuditSummaryContent } from '@/components/deep/AuditSummaryContent'
 import { cn } from '@/lib/utils'
 
 export interface ChatMessageProps {
@@ -17,16 +19,17 @@ const ROLE_LABELS: Record<ChatMessageType['role'], string> = {
 /**
  * Одно сообщение чата: bubble layout по роли.
  *
- * User — справа; assistant — слева; system/tool — compact mono.
+ * Assistant audit summary — структурированный блок без bubble; user — справа.
  */
 export function ChatMessage({ role, content, className }: ChatMessageProps) {
   const isUser = role === 'user'
   const isCompact = role === 'system' || role === 'tool'
+  const isSummary = role === 'assistant' && isAuditSummaryContent(content)
 
   if (isCompact) {
     return (
       <div
-        className={cn('mb-3 flex justify-start', className)}
+        className={cn('mb-4 flex justify-start', className)}
         data-testid={`chat-message-${role}`}
       >
         <div
@@ -42,25 +45,37 @@ export function ChatMessage({ role, content, className }: ChatMessageProps) {
     )
   }
 
+  if (isSummary) {
+    return (
+      <div
+        className={cn('mb-6 flex justify-start', className)}
+        data-testid="chat-message-assistant"
+      >
+        <div className="max-w-full min-w-0 flex-1">
+          <AuditSummaryContent content={content} />
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div
       className={cn(
-        'mb-3 flex',
+        'mb-4 flex',
         isUser ? 'justify-end' : 'justify-start',
         className,
       )}
       data-testid={`chat-message-${role}`}
     >
-      <div
-        className={cn(
-          'max-w-[80%] rounded-2xl px-4 py-2 text-sm whitespace-pre-wrap',
-          isUser
-            ? 'bg-primary/10 text-foreground'
-            : 'border-border bg-card text-foreground border',
-        )}
-      >
-        {content}
-      </div>
+      {isUser ? (
+        <div className="bg-elevated text-foreground max-w-[80%] rounded-3xl px-4 py-2.5 text-sm leading-relaxed whitespace-pre-wrap">
+          {content}
+        </div>
+      ) : (
+        <p className="text-foreground max-w-[80%] text-sm leading-relaxed whitespace-pre-wrap">
+          {content}
+        </p>
+      )}
     </div>
   )
 }

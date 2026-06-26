@@ -1,5 +1,6 @@
 import { apiFetch, apiGetJson } from './client'
 import { ApiClientError } from './errors'
+import { auditSummaryFixtureContent } from './fixtures/auditSummaryFixture'
 import {
   chatSnapshotFixture,
   chatSnapshotNotStartedFixture,
@@ -90,7 +91,7 @@ export async function openChat(auditId: string): Promise<ChatSnapshot> {
         messages: [
           {
             role: 'assistant',
-            content: 'Начинаю deep analysis по snapshot audit.',
+            content: auditSummaryFixtureContent,
           },
         ],
       })

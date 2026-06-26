@@ -47,33 +47,25 @@ export function DeepChatPage() {
   const {
     snapshot,
     error,
-    openSession,
+    isOpening,
     sendMessage,
     approve,
     reject,
     refetch,
   } = useDeepChat(auditId ?? '')
 
-  const [opening, setOpening] = useState(false)
   const [budgetExceeded, setBudgetExceeded] = useState(false)
 
   const isTerminal = snapshot ? TERMINAL_STATES.has(snapshot.state) : false
   const isPending = Boolean(snapshot?.pending_action)
   const composerDisabled =
-    isPending || isTerminal || snapshot?.state === 'awaiting_approval'
+    isPending ||
+    isTerminal ||
+    isOpening ||
+    snapshot?.state === 'awaiting_approval' ||
+    snapshot?.state === 'not_started'
 
   const hideApprove = budgetExceeded || snapshot?.state === 'error'
-
-  const handleOpen = async () => {
-    setOpening(true)
-    try {
-      await openSession()
-    } catch (openError) {
-      mapApiError(openError)
-    } finally {
-      setOpening(false)
-    }
-  }
 
   const handleApprove = async (actionId: string) => {
     try {
@@ -171,23 +163,13 @@ export function DeepChatPage() {
 
       <ChatWindow
         messages={
-          snapshot && snapshot.state !== 'not_started' ? (
+          snapshot && snapshot.messages.length > 0 ? (
             <ChatMessageList messages={snapshot.messages} />
+          ) : isOpening ? (
+            <p className="text-muted-foreground p-4 text-sm">Загружаем summary…</p>
           ) : (
-            <p className="text-muted-foreground text-sm">Сообщений пока нет</p>
+            <p className="text-muted-foreground p-4 text-sm">Сообщений пока нет</p>
           )
-        }
-        emptyState={
-          snapshot?.state === 'not_started' ? (
-            <Button
-              type="button"
-              onClick={() => void handleOpen()}
-              disabled={opening}
-              data-testid="deep-chat-open-cta"
-            >
-              {opening ? 'Открываем…' : 'Открыть анализ'}
-            </Button>
-          ) : undefined
         }
         approval={
           snapshot?.pending_action ? (

@@ -1,5 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
+import { render, screen } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router'
 import { beforeEach, describe, expect, it } from 'vitest'
 
@@ -17,8 +16,7 @@ describe('DeepChatPage', () => {
     setFixtureChatSnapshot(AUDIT_ID, chatSnapshotNotStartedFixture)
   })
 
-  it('shows open CTA for not_started and opens session', async () => {
-    const user = userEvent.setup()
+  it('auto-opens chat and shows audit summary', async () => {
     const { DeepChatPage } = await import('@/pages/DeepChatPage')
 
     render(
@@ -29,14 +27,9 @@ describe('DeepChatPage', () => {
       </MemoryRouter>,
     )
 
-    const cta = await screen.findByTestId('deep-chat-open-cta')
-    expect(cta).toHaveTextContent('Открыть анализ')
-
-    await user.click(cta)
-
-    await waitFor(() => {
-      expect(screen.getByTestId('chat-message-list')).toBeInTheDocument()
-    })
+    expect(await screen.findByTestId('audit-summary')).toBeInTheDocument()
+    expect(screen.getByText(/Детекция/)).toBeVisible()
+    expect(screen.getByText(/ЭСКАЛИРОВАТЬ/)).toBeVisible()
   })
 
   it('links usage page with audit_id query', async () => {
