@@ -19,7 +19,7 @@ todos:
     status: completed
   - id: m6-route-align
     content: "Protected paths: /monitoring, /deep, /usage, /settings/agents, /cabinet"
-    status: pending
+    status: completed
   - id: m6-tests
     content: "Vitest + e2e: login redirect; guarded route without session; logout flow"
     status: pending

@@ -1,5 +1,8 @@
+import type { ReactElement } from 'react'
+import type { RouteObject } from 'react-router'
 import { createBrowserRouter, Navigate } from 'react-router'
 import { AppLayout } from '@/app/layout/AppLayout'
+import { ProtectedRoute } from '@/app/ProtectedRoute'
 import { AgentSettingsPage } from '@/pages/AgentSettingsPage'
 import { CabinetPage } from '@/pages/CabinetPage'
 import { DeepChatPage } from '@/pages/DeepChatPage'
@@ -8,7 +11,11 @@ import { LoginPage } from '@/pages/LoginPage'
 import { MonitoringPage } from '@/pages/MonitoringPage'
 import { UsagePage } from '@/pages/UsagePage'
 
-export const router = createBrowserRouter([
+function guard(element: ReactElement) {
+  return <ProtectedRoute>{element}</ProtectedRoute>
+}
+
+export const appRoutes: RouteObject[] = [
   {
     path: '/login',
     element: <LoginPage />,
@@ -17,17 +24,22 @@ export const router = createBrowserRouter([
     path: '/',
     element: <AppLayout />,
     children: [
-      { index: true, element: <Navigate to="/monitoring" replace /> },
-      { path: 'monitoring', element: <MonitoringPage /> },
-      { path: 'deep', element: <DeepListPage /> },
-      { path: 'deep/:auditId', element: <DeepChatPage /> },
-      { path: 'usage', element: <UsagePage /> },
+      {
+        index: true,
+        element: guard(<Navigate replace to="/monitoring" />),
+      },
+      { path: 'monitoring', element: guard(<MonitoringPage />) },
+      { path: 'deep', element: guard(<DeepListPage />) },
+      { path: 'deep/:auditId', element: guard(<DeepChatPage />) },
+      { path: 'usage', element: guard(<UsagePage />) },
       {
         path: 'settings',
-        element: <Navigate to="/settings/agents" replace />,
+        element: guard(<Navigate replace to="/settings/agents" />),
       },
-      { path: 'settings/agents', element: <AgentSettingsPage /> },
-      { path: 'cabinet', element: <CabinetPage /> },
+      { path: 'settings/agents', element: guard(<AgentSettingsPage />) },
+      { path: 'cabinet', element: guard(<CabinetPage />) },
     ],
   },
-])
+]
+
+export const router = createBrowserRouter(appRoutes)
