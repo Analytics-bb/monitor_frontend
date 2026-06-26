@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 
 import { formatContextScope } from '@/api/fixtures/agentContext'
 import { listContexts, type AgentContext, type AgentKind } from '@/api/contexts'
+import { settingsFieldClassName } from '@/components/settings/InstructionFormFields'
 import { ContextEditor } from '@/components/settings/ContextEditor'
 import { SettingsInlineError } from '@/components/settings/SettingsInlineError'
 import { resolveSettingsError } from '@/components/settings/settingsErrors'
@@ -13,10 +14,11 @@ export interface ContextsTabProps {
   className?: string
 }
 
+type AgentKindFilter = AgentKind | 'all'
 type ScopeFilter = 'all' | 'global' | 'gate'
 
 interface ContextFilterValues {
-  agent_kind: AgentKind
+  agent_kind: AgentKindFilter
   scope: ScopeFilter
   gate_id: string
 }
@@ -25,8 +27,11 @@ type EditorState =
   | { mode: 'closed' }
   | { mode: 'edit'; context: AgentContext }
 
-const inputClassName =
-  'border-input bg-background focus:border-ring/40 focus:ring-ring/20 h-9 w-full rounded-md border px-3 text-sm transition-colors duration-200 outline-none focus:ring-1'
+const defaultFilters: ContextFilterValues = {
+  agent_kind: 'all',
+  scope: 'all',
+  gate_id: '',
+}
 
 function truncatePreview(body: string, maxLength = 120): string {
   if (body.length <= maxLength) {
@@ -38,21 +43,19 @@ function truncatePreview(body: string, maxLength = 120): string {
 function resolveListGateId(
   filters: ContextFilterValues,
 ): string | undefined {
-  if (filters.scope === 'gate') {
-    return filters.gate_id.trim() || undefined
+  if (filters.scope === 'global') {
+    return undefined
   }
-  return undefined
+
+  const trimmed = filters.gate_id.trim()
+  return trimmed || undefined
 }
 
 /**
  * Вкладка Contexts: фильтры, список и editor (только правка).
  */
 export function ContextsTab({ className }: ContextsTabProps) {
-  const [filters, setFilters] = useState<ContextFilterValues>({
-    agent_kind: 'deep',
-    scope: 'all',
-    gate_id: '',
-  })
+  const [filters, setFilters] = useState<ContextFilterValues>(defaultFilters)
   const [appliedFilters, setAppliedFilters] = useState(filters)
   const [items, setItems] = useState<AgentContext[]>([])
   const [total, setTotal] = useState(0)
@@ -67,7 +70,8 @@ export function ContextsTab({ className }: ContextsTabProps) {
     try {
       const gateId = resolveListGateId(nextFilters)
       const response = await listContexts({
-        agent_kind: nextFilters.agent_kind,
+        agent_kind:
+          nextFilters.agent_kind === 'all' ? undefined : nextFilters.agent_kind,
         gate_id: gateId,
         page: 1,
         page_size: 50,
@@ -76,10 +80,16 @@ export function ContextsTab({ className }: ContextsTabProps) {
       let nextItems = response.items
       if (nextFilters.scope === 'global') {
         nextItems = nextItems.filter((item) => item.gate_id === null)
+      } else if (nextFilters.scope === 'gate' && !gateId) {
+        nextItems = nextItems.filter((item) => item.gate_id !== null)
       }
 
       setItems(nextItems)
-      setTotal(nextFilters.scope === 'global' ? nextItems.length : response.total)
+      setTotal(
+        nextFilters.scope === 'global' || (nextFilters.scope === 'gate' && !gateId)
+          ? nextItems.length
+          : response.total,
+      )
     } catch (error) {
       setLoadError(resolveSettingsError(error).message)
     } finally {
@@ -97,87 +107,98 @@ export function ContextsTab({ className }: ContextsTabProps) {
   }
 
   const handleReset = () => {
-    const reset: ContextFilterValues = {
-      agent_kind: 'deep',
-      scope: 'all',
-      gate_id: '',
-    }
-    setFilters(reset)
-    setAppliedFilters(reset)
+    setFilters(defaultFilters)
+    setAppliedFilters(defaultFilters)
   }
+
+  const isGateInputDisabled = filters.scope === 'global'
 
   return (
     <div className={cn('space-y-4', className)} data-testid="contexts-tab">
       <form
-        className="border-border bg-card grid grid-cols-1 gap-3 rounded-lg border p-4 sm:grid-cols-2 lg:grid-cols-4"
+        className="border-border bg-card space-y-3 rounded-lg border p-4"
         onSubmit={handleApply}
         data-testid="contexts-filters"
       >
-        <label className="flex flex-col gap-1 text-sm">
-          <span className="text-muted-foreground text-xs">Agent kind</span>
-          <select
-            className={inputClassName}
-            value={filters.agent_kind}
-            onChange={(event) =>
-              setFilters((current) => ({
-                ...current,
-                agent_kind: event.target.value as AgentKind,
-              }))
-            }
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <label className="flex flex-col gap-1 text-sm">
+            <span className="text-muted-foreground text-xs">Agent kind</span>
+            <select
+              className={settingsFieldClassName}
+              value={filters.agent_kind}
+              onChange={(event) =>
+                setFilters((current) => ({
+                  ...current,
+                  agent_kind: event.target.value as AgentKindFilter,
+                }))
+              }
+            >
+              <option value="all">all</option>
+              <option value="hypothesis">hypothesis</option>
+              <option value="deep">deep</option>
+            </select>
+          </label>
+
+          <label className="flex flex-col gap-1 text-sm">
+            <span className="text-muted-foreground text-xs">Scope</span>
+            <select
+              className={settingsFieldClassName}
+              value={filters.scope}
+              onChange={(event) => {
+                const scope = event.target.value as ScopeFilter
+                setFilters((current) => ({
+                  ...current,
+                  scope,
+                  gate_id: scope === 'global' ? '' : current.gate_id,
+                }))
+              }}
+            >
+              <option value="all">Все</option>
+              <option value="global">Global</option>
+              <option value="gate">Per-gate</option>
+            </select>
+          </label>
+
+          <label className="flex flex-col gap-1 text-sm">
+            <span className="text-muted-foreground text-xs">Gate</span>
+            <input
+              type="text"
+              inputMode="numeric"
+              className={cn(settingsFieldClassName, 'font-mono')}
+              value={filters.gate_id}
+              disabled={isGateInputDisabled}
+              placeholder="42"
+              onChange={(event) =>
+                setFilters((current) => ({
+                  ...current,
+                  gate_id: event.target.value.replace(/\D/g, ''),
+                }))
+              }
+            />
+          </label>
+        </div>
+
+        <div className="flex w-full justify-end gap-2">
+          <Button
+            type="submit"
+            size="sm"
+            className="min-w-28"
+            disabled={isLoading}
           >
-            <option value="hypothesis">hypothesis</option>
-            <option value="deep">deep</option>
-          </select>
-        </label>
-
-        <label className="flex flex-col gap-1 text-sm">
-          <span className="text-muted-foreground text-xs">Scope</span>
-          <select
-            className={inputClassName}
-            value={filters.scope}
-            onChange={(event) =>
-              setFilters((current) => ({
-                ...current,
-                scope: event.target.value as ScopeFilter,
-              }))
-            }
-          >
-            <option value="all">Все</option>
-            <option value="global">Global</option>
-            <option value="gate">Per-gate</option>
-          </select>
-        </label>
-
-        <label className="flex flex-col gap-1 text-sm">
-          <span className="text-muted-foreground text-xs">Gate</span>
-          <input
-            type="text"
-            inputMode="numeric"
-            className={cn(inputClassName, 'font-mono')}
-            value={filters.gate_id}
-            disabled={filters.scope !== 'gate'}
-            placeholder="42"
-            onChange={(event) =>
-              setFilters((current) => ({
-                ...current,
-                gate_id: event.target.value.replace(/\D/g, ''),
-              }))
-            }
-          />
-        </label>
-
-        <div className="flex items-end justify-end gap-2 sm:col-span-2 lg:col-span-1">
-          <Button type="button" variant="outline" onClick={handleReset}>
-            Reset
+            Применить
           </Button>
-          <Button type="submit">Apply</Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="hover:bg-muted/60 min-w-28"
+            disabled={isLoading}
+            onClick={handleReset}
+          >
+            Сбросить
+          </Button>
         </div>
       </form>
-
-      <p className="text-muted-foreground text-sm">
-        Контексты создаются на бэкенде; здесь доступно только редактирование
-        текста.
-      </p>
 
       {editor.mode === 'edit' ? (
         <ContextEditor

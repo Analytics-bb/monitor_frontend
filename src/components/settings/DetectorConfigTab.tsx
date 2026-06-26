@@ -6,6 +6,8 @@ import {
   patchGlobalDetectorConfig,
   resetGlobalDetectorConfig,
 } from '@/api/detector'
+import { CONFIG_FIELD_LABELS } from '@/components/monitoring/ConfigSnapshotPanel'
+import { settingsFieldClassName } from '@/components/settings/InstructionFormFields'
 import { SettingsInlineError } from '@/components/settings/SettingsInlineError'
 import { resolveSettingsError } from '@/components/settings/settingsErrors'
 import { Button } from '@/components/ui/button'
@@ -15,8 +17,8 @@ export interface DetectorConfigTabProps {
   className?: string
 }
 
-const inputClassName =
-  'border-input bg-background h-9 w-full rounded-md border px-3 text-sm'
+const resetButtonClassName =
+  'text-muted-foreground hover:bg-muted/40 hover:text-foreground focus-visible:ring-1 focus-visible:ring-ring/25 focus-visible:ring-offset-0'
 
 /**
  * Вкладка Detector: редактирование global config (M2).
@@ -119,36 +121,36 @@ export function DetectorConfigTab({ className }: DetectorConfigTabProps) {
   }
 
   return (
-    <div className={cn('space-y-4', className)} data-testid="detector-config-tab">
+    <div className={cn('space-y-2', className)} data-testid="detector-config-tab">
       <SettingsInlineError message={resetError} />
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h2 className="text-sm font-semibold">Global detector config</h2>
-          <p className="text-muted-foreground text-xs">
-            Per-gate overrides — позже. updated {config.updated_at}
-          </p>
-        </div>
-        <Button
-          type="button"
-          variant="outline"
-          disabled={isResetting || isSaving}
-          onClick={() => void handleReset()}
-        >
-          {isResetting ? 'Resetting…' : 'Reset to default'}
-        </Button>
-      </div>
 
       <form
-        className="border-border bg-card grid max-w-xl grid-cols-1 gap-4 rounded-lg border p-4 sm:grid-cols-2"
+        className="border-border bg-card grid w-full grid-cols-1 gap-4 rounded-lg border p-4 sm:grid-cols-2 lg:grid-cols-3"
         onSubmit={(event) => void handleSave(event)}
       >
-        <SettingsInlineError className="sm:col-span-2" message={formError} />
+        <div className="flex flex-wrap items-center justify-between gap-3 sm:col-span-2 lg:col-span-3">
+          <h2 className="text-sm font-semibold">Global Detector Config</h2>
+          <Button
+            type="button"
+            variant="ghost"
+            className={resetButtonClassName}
+            disabled={isResetting || isSaving}
+            onClick={() => void handleReset()}
+          >
+            {isResetting ? 'Resetting…' : 'Reset'}
+          </Button>
+        </div>
+
+        <SettingsInlineError className="sm:col-span-2 lg:col-span-3" message={formError} />
+
         <label className="flex flex-col gap-1 text-sm">
-          <span className="text-muted-foreground text-xs">slice_minutes</span>
+          <span className="text-muted-foreground text-xs">
+            {CONFIG_FIELD_LABELS.slice_minutes}
+          </span>
           <input
             type="number"
             min={1}
-            className={inputClassName}
+            className={settingsFieldClassName}
             value={form.slice_minutes ?? ''}
             onChange={(event) =>
               setForm((current) =>
@@ -165,11 +167,13 @@ export function DetectorConfigTab({ className }: DetectorConfigTabProps) {
         </label>
 
         <label className="flex flex-col gap-1 text-sm">
-          <span className="text-muted-foreground text-xs">window_slices</span>
+          <span className="text-muted-foreground text-xs">
+            {CONFIG_FIELD_LABELS.window_slices}
+          </span>
           <input
             type="number"
             min={1}
-            className={inputClassName}
+            className={settingsFieldClassName}
             value={form.window_slices ?? ''}
             onChange={(event) =>
               setForm((current) =>
@@ -186,13 +190,15 @@ export function DetectorConfigTab({ className }: DetectorConfigTabProps) {
         </label>
 
         <label className="flex flex-col gap-1 text-sm">
-          <span className="text-muted-foreground text-xs">quantile_low</span>
+          <span className="text-muted-foreground text-xs">
+            {CONFIG_FIELD_LABELS.quantile_low}
+          </span>
           <input
             type="number"
             step="0.01"
             min={0}
             max={1}
-            className={inputClassName}
+            className={settingsFieldClassName}
             value={form.quantile_low ?? ''}
             onChange={(event) =>
               setForm((current) =>
@@ -209,13 +215,15 @@ export function DetectorConfigTab({ className }: DetectorConfigTabProps) {
         </label>
 
         <label className="flex flex-col gap-1 text-sm">
-          <span className="text-muted-foreground text-xs">quantile_high</span>
+          <span className="text-muted-foreground text-xs">
+            {CONFIG_FIELD_LABELS.quantile_high}
+          </span>
           <input
             type="number"
             step="0.01"
             min={0}
             max={1}
-            className={inputClassName}
+            className={settingsFieldClassName}
             value={form.quantile_high ?? ''}
             onChange={(event) =>
               setForm((current) =>
@@ -232,11 +240,13 @@ export function DetectorConfigTab({ className }: DetectorConfigTabProps) {
         </label>
 
         <label className="flex flex-col gap-1 text-sm">
-          <span className="text-muted-foreground text-xs">persistence</span>
+          <span className="text-muted-foreground text-xs">
+            {CONFIG_FIELD_LABELS.persistence}
+          </span>
           <input
             type="number"
             min={1}
-            className={inputClassName}
+            className={settingsFieldClassName}
             value={form.persistence ?? ''}
             onChange={(event) =>
               setForm((current) =>
@@ -253,9 +263,11 @@ export function DetectorConfigTab({ className }: DetectorConfigTabProps) {
         </label>
 
         <label className="flex flex-col gap-1 text-sm">
-          <span className="text-muted-foreground text-xs">mode</span>
+          <span className="text-muted-foreground text-xs">
+            {CONFIG_FIELD_LABELS.mode}
+          </span>
           <select
-            className={inputClassName}
+            className={settingsFieldClassName}
             value={form.mode ?? 'anomaly'}
             onChange={(event) =>
               setForm((current) =>
@@ -275,9 +287,9 @@ export function DetectorConfigTab({ className }: DetectorConfigTabProps) {
           </select>
         </label>
 
-        <div className="flex justify-end sm:col-span-2">
+        <div className="flex justify-end sm:col-span-2 lg:col-span-3">
           <Button type="submit" disabled={isSaving || isResetting}>
-            {isSaving ? 'Saving…' : 'Save global config'}
+            {isSaving ? 'Saving…' : 'Save'}
           </Button>
         </div>
       </form>

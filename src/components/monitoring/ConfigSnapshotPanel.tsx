@@ -7,7 +7,7 @@ export interface ConfigSnapshotPanelProps {
 
 const HIDDEN_FIELDS = new Set(['gate_id', 'created_at', 'updated_at'])
 
-const CONFIG_FIELD_LABELS: Record<string, string> = {
+export const CONFIG_FIELD_LABELS: Record<string, string> = {
   slice_minutes: 'Длина шага',
   window_slices: 'Кол-во шагов',
   quantile_low: 'Порог нижнего квантиля',
