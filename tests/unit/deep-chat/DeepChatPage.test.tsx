@@ -54,7 +54,7 @@ describe('DeepChatPage', () => {
     expect(link).toHaveAttribute('href', `/usage?audit_id=${AUDIT_ID}`)
   })
 
-  it('restores deep list query in breadcrumb Deep link', async () => {
+  it('restores deep list query in back link', async () => {
     const { DeepChatPage } = await import('@/pages/DeepChatPage')
 
     render(
@@ -72,7 +72,7 @@ describe('DeepChatPage', () => {
       </MemoryRouter>,
     )
 
-    const breadcrumb = await screen.findByRole('link', { name: 'Deep' })
-    expect(breadcrumb).toHaveAttribute('href', '/deep?gate_id=42&page=1')
+    const backLink = await screen.findByRole('link', { name: 'Go back' })
+    expect(backLink).toHaveAttribute('href', '/deep?gate_id=42&page=1')
   })
 })

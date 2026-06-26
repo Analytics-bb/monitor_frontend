@@ -1,49 +1,56 @@
-import { useState } from 'react'
-
 import { cn } from '@/lib/utils'
 
 export interface CaseMetaStripProps {
   gateId: string
+  gateName?: string
   createdAt: string
-  conclusion?: string
   className?: string
 }
 
+function MetaField({
+  label,
+  value,
+  mono = false,
+}: {
+  label: string
+  value: string
+  mono?: boolean
+}) {
+  return (
+    <span>
+      <span className="text-muted-foreground">{label}: </span>
+      <span
+        className={cn('text-foreground font-medium', mono && 'font-mono text-xs')}
+      >
+        {value}
+      </span>
+    </span>
+  )
+}
+
 /**
- * Компактная meta-строка под breadcrumb: gate и время события (MSK as-is).
- *
- * Optional collapsible excerpt заключения (read-only, max 2 строки).
+ * Основная meta-информация кейса: гейт, название и время детекции (MSK as-is).
  */
 export function CaseMetaStrip({
   gateId,
+  gateName,
   createdAt,
-  conclusion,
   className,
 }: CaseMetaStripProps) {
-  const [expanded, setExpanded] = useState(false)
-  const hasConclusion = Boolean(conclusion?.trim())
-
   return (
-    <div className={cn('text-muted-foreground text-xs', className)}>
-      <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-        <span>
-          gate: <span className="text-foreground font-medium">{gateId}</span>
-        </span>
-        <span className="font-mono">{createdAt} MSK</span>
-        {hasConclusion ? (
-          <button
-            type="button"
-            className="text-primary hover:underline"
-            onClick={() => setExpanded((value) => !value)}
-            aria-expanded={expanded}
-          >
-            {expanded ? 'Скрыть заключение' : 'Заключение'}
-          </button>
-        ) : null}
-      </div>
-      {hasConclusion && expanded ? (
-        <p className="text-foreground mt-2 line-clamp-2 text-sm">{conclusion}</p>
-      ) : null}
+    <div
+      className={cn(
+        'flex min-w-0 flex-wrap items-center gap-x-4 gap-y-1 text-sm',
+        className,
+      )}
+    >
+      <MetaField label="Гейт" value={gateId} />
+      <MetaField label="Название гейта" value={gateName?.trim() || '—'} />
+      <MetaField
+        label="Время детекции"
+        value={`${createdAt} MSK`}
+        mono
+      />
     </div>
   )
 }

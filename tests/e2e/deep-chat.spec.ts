@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test'
 
-test('list row opens chat and breadcrumb restores list query', async ({
+test('list row opens chat and back link restores list query', async ({
   page,
 }) => {
   await page.goto('/deep?gate_id=42&page=1')
@@ -16,7 +16,7 @@ test('list row opens chat and breadcrumb restores list query', async ({
 
   await page
     .getByTestId('deep-chat-page')
-    .getByRole('link', { name: 'Deep' })
+    .getByRole('link', { name: 'Go back' })
     .click()
 
   await expect(page).toHaveURL(/\/deep\?/)

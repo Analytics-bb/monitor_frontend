@@ -1,3 +1,4 @@
+import { ChevronLeft } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { Link, useLocation, useParams } from 'react-router'
 
@@ -20,13 +21,6 @@ const TERMINAL_STATES = new Set<ChatSnapshot['state']>([
 
 interface DeepChatLocationState {
   deepListSearch?: string
-}
-
-/**
- * Короткий префикс UUID для breadcrumb.
- */
-function shortAuditId(auditId: string): string {
-  return auditId.slice(0, 8)
 }
 
 function toStatusBadgeVariant(state: ChatSnapshot['state']): StatusBadgeVariant {
@@ -140,44 +134,39 @@ export function DeepChatPage() {
       className="mx-auto flex h-[calc(100svh-3rem)] w-full max-w-[1440px] flex-col gap-3 overflow-hidden"
       data-testid="deep-chat-page"
     >
-      <header className="shrink-0 space-y-2">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <nav
-            aria-label="Breadcrumb"
-            className="flex items-center gap-2 text-sm"
-          >
+      <header className="border-border bg-card shrink-0 rounded-lg border p-4">
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex min-w-0 flex-1 flex-col gap-3">
             <Link
               to={deepListHref}
-              className="text-muted-foreground hover:text-foreground"
+              aria-label="Go back"
+              className="bg-elevated text-muted-foreground hover:bg-muted hover:text-foreground flex w-fit shrink-0 items-center gap-1 rounded-md px-2 py-1.5 text-sm transition-colors"
             >
-              Deep
+              <ChevronLeft className="size-5 shrink-0" aria-hidden />
+              <span>Назад</span>
             </Link>
-            <span className="text-muted-foreground" aria-hidden>
-              /
-            </span>
-            <span className="font-mono">{shortAuditId(auditId)}</span>
-          </nav>
-          <div className="flex items-center gap-3">
-            {snapshot ? (
-              <StatusBadge status={toStatusBadgeVariant(snapshot.state)} />
-            ) : (
-              <StatusBadge status="not_started" />
-            )}
-            <Link
-              to={`/usage?audit_id=${encodeURIComponent(auditId)}`}
-              className="text-primary text-sm hover:underline"
-            >
-              Расход токенов
-            </Link>
+            <div className="flex min-w-0 flex-wrap items-center gap-x-4 gap-y-1">
+              {snapshot ? (
+                <CaseMetaStrip
+                  gateId={snapshot.gate_id}
+                  gateName={snapshot.gate_name}
+                  createdAt={snapshot.created_at}
+                />
+              ) : null}
+              <Link
+                to={`/usage?audit_id=${encodeURIComponent(auditId)}`}
+                className="text-muted-foreground hover:text-primary shrink-0 text-sm transition-colors duration-200"
+              >
+                Расход токенов
+              </Link>
+            </div>
           </div>
+          {snapshot ? (
+            <StatusBadge status={toStatusBadgeVariant(snapshot.state)} />
+          ) : (
+            <StatusBadge status="not_started" />
+          )}
         </div>
-        {snapshot ? (
-          <CaseMetaStrip
-            gateId={snapshot.gate_id}
-            createdAt={snapshot.created_at}
-            conclusion={snapshot.conclusion}
-          />
-        ) : null}
       </header>
 
       <ChatWindow
