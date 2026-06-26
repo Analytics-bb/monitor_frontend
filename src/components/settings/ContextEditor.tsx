@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
 
 import { formatContextScope } from '@/api/fixtures/agentContext'
-import { mapApiError } from '@/api/errors'
 import { upsertContext, type AgentContext } from '@/api/contexts'
+import { SettingsInlineError } from '@/components/settings/SettingsInlineError'
+import { resolveSettingsError } from '@/components/settings/settingsErrors'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
@@ -25,10 +26,12 @@ export function ContextEditor({
   className,
 }: ContextEditorProps) {
   const [contextBody, setContextBody] = useState(context.context_body)
+  const [formError, setFormError] = useState<string | null>(null)
   const [isSaving, setIsSaving] = useState(false)
 
   useEffect(() => {
     setContextBody(context.context_body)
+    setFormError(null)
   }, [context])
 
   const handleSave = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -38,6 +41,7 @@ export function ContextEditor({
     }
 
     setIsSaving(true)
+    setFormError(null)
     try {
       await upsertContext({
         agent_kind: context.agent_kind,
@@ -47,7 +51,7 @@ export function ContextEditor({
       await onSaved()
       onClose()
     } catch (error) {
-      mapApiError(error)
+      setFormError(resolveSettingsError(error).message)
     } finally {
       setIsSaving(false)
     }
@@ -71,6 +75,8 @@ export function ContextEditor({
           </Button>
         </div>
 
+        <SettingsInlineError message={formError} />
+
         <label className="flex flex-col gap-1 text-sm">
           <span className="text-muted-foreground text-xs">context_body</span>
           <textarea
@@ -78,7 +84,10 @@ export function ContextEditor({
             value={contextBody}
             maxLength={CONTEXT_BODY_MAX_CHARS}
             data-testid="context-content-input"
-            onChange={(event) => setContextBody(event.target.value)}
+            onChange={(event) => {
+              setContextBody(event.target.value)
+              setFormError(null)
+            }}
             required
           />
           <span className="text-muted-foreground text-xs">

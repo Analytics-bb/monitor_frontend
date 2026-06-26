@@ -6,7 +6,8 @@ import {
   patchGlobalDetectorConfig,
   resetGlobalDetectorConfig,
 } from '@/api/detector'
-import { mapApiError } from '@/api/errors'
+import { SettingsInlineError } from '@/components/settings/SettingsInlineError'
+import { resolveSettingsError } from '@/components/settings/settingsErrors'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
@@ -25,6 +26,8 @@ export function DetectorConfigTab({ className }: DetectorConfigTabProps) {
   const [form, setForm] = useState<Required<DetectorConfigPatch> | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [loadError, setLoadError] = useState<string | null>(null)
+  const [formError, setFormError] = useState<string | null>(null)
+  const [resetError, setResetError] = useState<string | null>(null)
   const [isSaving, setIsSaving] = useState(false)
   const [isResetting, setIsResetting] = useState(false)
 
@@ -43,8 +46,7 @@ export function DetectorConfigTab({ className }: DetectorConfigTabProps) {
         mode: data.mode,
       })
     } catch (error) {
-      mapApiError(error)
-      setLoadError('Не удалось загрузить detector config')
+      setLoadError(resolveSettingsError(error).message)
     } finally {
       setIsLoading(false)
     }
@@ -61,6 +63,7 @@ export function DetectorConfigTab({ className }: DetectorConfigTabProps) {
     }
 
     setIsSaving(true)
+    setFormError(null)
     try {
       const updated = await patchGlobalDetectorConfig(form)
       setConfig(updated)
@@ -73,7 +76,7 @@ export function DetectorConfigTab({ className }: DetectorConfigTabProps) {
         mode: updated.mode,
       })
     } catch (error) {
-      mapApiError(error)
+      setFormError(resolveSettingsError(error).message)
     } finally {
       setIsSaving(false)
     }
@@ -85,11 +88,12 @@ export function DetectorConfigTab({ className }: DetectorConfigTabProps) {
     }
 
     setIsResetting(true)
+    setResetError(null)
     try {
       await resetGlobalDetectorConfig()
       await loadConfig()
     } catch (error) {
-      mapApiError(error)
+      setResetError(resolveSettingsError(error).message)
     } finally {
       setIsResetting(false)
     }
@@ -106,7 +110,7 @@ export function DetectorConfigTab({ className }: DetectorConfigTabProps) {
   if (loadError || !form || !config) {
     return (
       <div className={cn('space-y-3', className)} data-testid="detector-config-tab">
-        <p className="text-destructive text-sm">{loadError ?? 'Config unavailable'}</p>
+        <SettingsInlineError message={loadError ?? 'Конфиг недоступен'} />
         <Button type="button" variant="outline" onClick={() => void loadConfig()}>
           Повторить
         </Button>
@@ -116,6 +120,7 @@ export function DetectorConfigTab({ className }: DetectorConfigTabProps) {
 
   return (
     <div className={cn('space-y-4', className)} data-testid="detector-config-tab">
+      <SettingsInlineError message={resetError} />
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 className="text-sm font-semibold">Global detector config</h2>
@@ -137,6 +142,7 @@ export function DetectorConfigTab({ className }: DetectorConfigTabProps) {
         className="border-border bg-card grid max-w-xl grid-cols-1 gap-4 rounded-lg border p-4 sm:grid-cols-2"
         onSubmit={(event) => void handleSave(event)}
       >
+        <SettingsInlineError className="sm:col-span-2" message={formError} />
         <label className="flex flex-col gap-1 text-sm">
           <span className="text-muted-foreground text-xs">slice_minutes</span>
           <input

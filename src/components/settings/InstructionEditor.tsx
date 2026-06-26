@@ -4,7 +4,6 @@ import {
   defaultAction,
   defaultMatchPredicate,
 } from '@/api/fixtures/agentInstruction'
-import { mapApiError } from '@/api/errors'
 import {
   createInstruction,
   deleteInstruction,
@@ -12,6 +11,8 @@ import {
   type AgentInstruction,
 } from '@/api/instructions'
 import { ActionFields, MatchPredicateFields } from '@/components/settings/InstructionFormFields'
+import { SettingsInlineError } from '@/components/settings/SettingsInlineError'
+import { resolveSettingsError } from '@/components/settings/settingsErrors'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
@@ -46,6 +47,8 @@ export function InstructionEditor({
     instruction?.prompt_template ?? '',
   )
   const [nameError, setNameError] = useState<string | null>(null)
+  const [formError, setFormError] = useState<string | null>(null)
+  const [deleteError, setDeleteError] = useState<string | null>(null)
   const [isSaving, setIsSaving] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
@@ -56,6 +59,8 @@ export function InstructionEditor({
     setAction(instruction?.action ?? defaultAction)
     setPromptTemplate(instruction?.prompt_template ?? '')
     setNameError(null)
+    setFormError(null)
+    setDeleteError(null)
   }, [instruction])
 
   useEffect(() => {
@@ -74,7 +79,7 @@ export function InstructionEditor({
 
   const validateName = (value: string): boolean => {
     if (!INSTRUCTION_NAME_PATTERN.test(value) || value.length > 64) {
-      setNameError('name: только a-z, 0-9, _, длина 1–64')
+      setNameError('Только a-z, 0-9, _, длина 1–64')
       return false
     }
     setNameError(null)
@@ -88,6 +93,7 @@ export function InstructionEditor({
     }
 
     setIsSaving(true)
+    setFormError(null)
     try {
       if (mode === 'create') {
         await createInstruction({
@@ -108,7 +114,12 @@ export function InstructionEditor({
       await onSaved()
       onClose()
     } catch (error) {
-      mapApiError(error)
+      const resolved = resolveSettingsError(error)
+      if (resolved.field === 'name') {
+        setNameError(resolved.message)
+      } else {
+        setFormError(resolved.message)
+      }
     } finally {
       setIsSaving(false)
     }
@@ -120,14 +131,14 @@ export function InstructionEditor({
     }
 
     setIsDeleting(true)
+    setDeleteError(null)
     try {
       await deleteInstruction(instruction.instruction_id)
       setDeleteDialogOpen(false)
       await onSaved()
       onClose()
     } catch (error) {
-      mapApiError(error)
-      await onSaved()
+      setDeleteError(resolveSettingsError(error).message)
     } finally {
       setIsDeleting(false)
     }
@@ -149,14 +160,19 @@ export function InstructionEditor({
           </Button>
         </div>
 
+        <SettingsInlineError message={formError} />
+
         <label className="flex flex-col gap-1 text-sm">
           <span className="text-muted-foreground text-xs">name</span>
           <input
-            className="border-input bg-background h-9 rounded-md border px-3 font-mono text-sm"
+            className={cn(
+              'border-input bg-background h-9 rounded-md border px-3 font-mono text-sm',
+              nameError && 'border-destructive/50',
+            )}
             value={name}
-            disabled={mode === 'edit'}
             onChange={(event) => {
               setName(event.target.value)
+              setFormError(null)
               if (nameError) {
                 validateName(event.target.value.trim())
               }
@@ -214,6 +230,7 @@ export function InstructionEditor({
         <p className="text-muted-foreground mt-2 text-sm">
           Действие необратимо для «{instruction?.name}».
         </p>
+        <SettingsInlineError className="mt-3" message={deleteError} />
         <div className="mt-4 flex justify-end gap-2">
           <Button
             type="button"

@@ -1,4 +1,5 @@
 import { ApiClientError } from './errors'
+import { instructionConflict409 } from './fixtures/conflictEnvelope'
 import { apiFetch, apiGetJson, getApiBaseUrl } from './client'
 import {
   agentInstructionsListFixture,
@@ -12,6 +13,19 @@ import {
 let instructionsFixtureStore: AgentInstruction[] = agentInstructionsListFixture.map(
   (item) => ({ ...item }),
 )
+
+function assertUniqueInstructionName(
+  name: string,
+  excludeInstructionId?: string,
+): void {
+  const duplicate = instructionsFixtureStore.find(
+    (item) =>
+      item.name === name && item.instruction_id !== excludeInstructionId,
+  )
+  if (duplicate) {
+    throw instructionConflict409
+  }
+}
 
 function resetInstructionsFixtureStore(): void {
   instructionsFixtureStore = agentInstructionsListFixture.map((item) => ({
@@ -86,6 +100,8 @@ export async function patchInstruction(
     }
 
     const current = instructionsFixtureStore[index]
+    assertUniqueInstructionName(patch.name ?? current.name, instructionId)
+
     const updated: AgentInstruction = {
       ...current,
       ...patch,
@@ -117,6 +133,8 @@ export async function createInstruction(
   body: AgentInstructionCreate,
 ): Promise<AgentInstruction> {
   if (!getApiBaseUrl()) {
+    assertUniqueInstructionName(body.name)
+
     const created: AgentInstruction = {
       instruction_id: crypto.randomUUID(),
       name: body.name,

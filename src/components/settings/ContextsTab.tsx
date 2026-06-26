@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useState } from 'react'
 
 import { formatContextScope } from '@/api/fixtures/agentContext'
-import { mapApiError } from '@/api/errors'
 import { listContexts, type AgentContext, type AgentKind } from '@/api/contexts'
 import { ContextEditor } from '@/components/settings/ContextEditor'
+import { SettingsInlineError } from '@/components/settings/SettingsInlineError'
+import { resolveSettingsError } from '@/components/settings/settingsErrors'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
@@ -80,8 +81,7 @@ export function ContextsTab({ className }: ContextsTabProps) {
       setItems(nextItems)
       setTotal(nextFilters.scope === 'global' ? nextItems.length : response.total)
     } catch (error) {
-      mapApiError(error)
-      setLoadError('Не удалось загрузить contexts')
+      setLoadError(resolveSettingsError(error).message)
     } finally {
       setIsLoading(false)
     }
@@ -194,7 +194,7 @@ export function ContextsTab({ className }: ContextsTabProps) {
         </div>
       ) : loadError ? (
         <div className="space-y-3">
-          <p className="text-destructive text-sm">{loadError}</p>
+          <SettingsInlineError message={loadError} />
           <Button
             type="button"
             variant="outline"

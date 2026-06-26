@@ -2,13 +2,14 @@ import { Pencil } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 
 import { formatMatchSummary } from '@/api/fixtures/agentInstruction'
-import { mapApiError } from '@/api/errors'
 import {
   listInstructions,
   patchInstruction,
   type AgentInstruction,
 } from '@/api/instructions'
 import { InstructionEditor } from '@/components/settings/InstructionEditor'
+import { SettingsInlineError } from '@/components/settings/SettingsInlineError'
+import { resolveSettingsError } from '@/components/settings/settingsErrors'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
 import { cn } from '@/lib/utils'
@@ -29,6 +30,7 @@ export function InstructionsTab({ className }: InstructionsTabProps) {
   const [items, setItems] = useState<AgentInstruction[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [loadError, setLoadError] = useState<string | null>(null)
+  const [actionError, setActionError] = useState<string | null>(null)
   const [togglingId, setTogglingId] = useState<string | null>(null)
   const [editor, setEditor] = useState<EditorState>({ mode: 'closed' })
 
@@ -39,8 +41,7 @@ export function InstructionsTab({ className }: InstructionsTabProps) {
       const data = await listInstructions()
       setItems(data)
     } catch (error) {
-      mapApiError(error)
-      setLoadError('Не удалось загрузить instructions')
+      setLoadError(resolveSettingsError(error).message)
     } finally {
       setIsLoading(false)
     }
@@ -60,6 +61,7 @@ export function InstructionsTab({ className }: InstructionsTabProps) {
 
     const previousEnabled = instruction.enabled
     setTogglingId(instruction.instruction_id)
+    setActionError(null)
     setItems((current) =>
       current.map((item) =>
         item.instruction_id === instruction.instruction_id
@@ -85,7 +87,7 @@ export function InstructionsTab({ className }: InstructionsTabProps) {
             : item,
         ),
       )
-      mapApiError(error)
+      setActionError(resolveSettingsError(error).message)
     } finally {
       setTogglingId(null)
     }
@@ -103,7 +105,7 @@ export function InstructionsTab({ className }: InstructionsTabProps) {
   if (loadError) {
     return (
       <div className={cn('space-y-3', className)} data-testid="instructions-tab">
-        <p className="text-destructive text-sm">{loadError}</p>
+        <SettingsInlineError message={loadError} />
         <Button type="button" variant="outline" onClick={() => void loadList()}>
           Повторить
         </Button>
@@ -113,6 +115,8 @@ export function InstructionsTab({ className }: InstructionsTabProps) {
 
   return (
     <div className={cn('space-y-4', className)} data-testid="instructions-tab">
+      <SettingsInlineError message={actionError} />
+
       <div className="flex items-center justify-between gap-3">
         <p className="text-muted-foreground text-sm">
           {items.length === 0
