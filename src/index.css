@@ -111,6 +111,12 @@
   body {
     @apply bg-background text-foreground font-sans antialiased;
   }
+
+  .dark input[type='number']::-webkit-inner-spin-button,
+  .dark input[type='number']::-webkit-outer-spin-button {
+    opacity: 1;
+    filter: brightness(1.75);
+  }
 }
 
 @keyframes soft-pulse {

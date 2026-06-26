@@ -2,7 +2,7 @@ import type { Action, MatchPredicate } from '@/api/fixtures/agentInstruction'
 import { cn } from '@/lib/utils'
 
 export const settingsFieldClassName =
-  'border-input bg-background focus:border-ring/40 focus:ring-ring/20 h-9 w-full rounded-md border px-3 text-sm transition-colors duration-200 outline-none focus:ring-1 hover:border-border/70 hover:bg-muted/25'
+  'border-input bg-background focus:border-ring/40 focus:ring-ring/20 h-9 w-full rounded-md border px-3 text-sm transition-colors duration-200 outline-none focus:ring-1 hover:border-border/70 hover:bg-muted/25 scheme-light dark:scheme-dark'
 
 export const settingsTextareaClassName = cn(
   settingsFieldClassName,
