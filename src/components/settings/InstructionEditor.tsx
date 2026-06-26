@@ -1,5 +1,9 @@
 import { useEffect, useId, useRef, useState } from 'react'
 
+import {
+  defaultAction,
+  defaultMatchPredicate,
+} from '@/api/fixtures/agentInstruction'
 import { mapApiError } from '@/api/errors'
 import {
   createInstruction,
@@ -7,8 +11,11 @@ import {
   updateInstruction,
   type AgentInstruction,
 } from '@/api/instructions'
+import { ActionFields, MatchPredicateFields } from '@/components/settings/InstructionFormFields'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
+
+const INSTRUCTION_NAME_PATTERN = /^[a-z0-9_]+$/
 
 export type InstructionEditorMode = 'create' | 'edit'
 
@@ -21,7 +28,7 @@ export interface InstructionEditorProps {
 }
 
 /**
- * Редактор instruction: create/edit prompt_template.
+ * Редактор instruction: match, action, prompt_template. UUID не показывается.
  */
 export function InstructionEditor({
   mode,
@@ -33,16 +40,22 @@ export function InstructionEditor({
   const titleId = useId()
   const deleteDialogRef = useRef<HTMLDialogElement>(null)
   const [name, setName] = useState(instruction?.name ?? '')
+  const [match, setMatch] = useState(instruction?.match ?? defaultMatchPredicate)
+  const [action, setAction] = useState(instruction?.action ?? defaultAction)
   const [promptTemplate, setPromptTemplate] = useState(
     instruction?.prompt_template ?? '',
   )
+  const [nameError, setNameError] = useState<string | null>(null)
   const [isSaving, setIsSaving] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
 
   useEffect(() => {
     setName(instruction?.name ?? '')
+    setMatch(instruction?.match ?? defaultMatchPredicate)
+    setAction(instruction?.action ?? defaultAction)
     setPromptTemplate(instruction?.prompt_template ?? '')
+    setNameError(null)
   }, [instruction])
 
   useEffect(() => {
@@ -59,9 +72,18 @@ export function InstructionEditor({
     }
   }, [deleteDialogOpen])
 
+  const validateName = (value: string): boolean => {
+    if (!INSTRUCTION_NAME_PATTERN.test(value) || value.length > 64) {
+      setNameError('name: только a-z, 0-9, _, длина 1–64')
+      return false
+    }
+    setNameError(null)
+    return true
+  }
+
   const handleSave = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    if (isSaving) {
+    if (isSaving || !validateName(name.trim())) {
       return
     }
 
@@ -70,12 +92,15 @@ export function InstructionEditor({
       if (mode === 'create') {
         await createInstruction({
           name: name.trim(),
+          match,
+          action,
           prompt_template: promptTemplate,
-          agent_kind: instruction?.agent_kind,
         })
       } else if (instruction) {
-        await updateInstruction(instruction.id, {
+        await updateInstruction(instruction.instruction_id, {
           name: name.trim(),
+          match,
+          action,
           prompt_template: promptTemplate,
         })
       }
@@ -96,7 +121,7 @@ export function InstructionEditor({
 
     setIsDeleting(true)
     try {
-      await deleteInstruction(instruction.id)
+      await deleteInstruction(instruction.instruction_id)
       setDeleteDialogOpen(false)
       await onSaved()
       onClose()
@@ -117,7 +142,7 @@ export function InstructionEditor({
       <form className="space-y-4" onSubmit={(event) => void handleSave(event)}>
         <div className="flex items-center justify-between gap-3">
           <h3 className="text-sm font-semibold">
-            {mode === 'create' ? 'New instruction' : 'Edit instruction'}
+            {mode === 'create' ? 'New instruction' : `Edit: ${instruction?.name}`}
           </h3>
           <Button type="button" variant="ghost" size="sm" onClick={onClose}>
             Cancel
@@ -125,14 +150,26 @@ export function InstructionEditor({
         </div>
 
         <label className="flex flex-col gap-1 text-sm">
-          <span className="text-muted-foreground text-xs">Name</span>
+          <span className="text-muted-foreground text-xs">name</span>
           <input
-            className="border-input bg-background h-9 rounded-md border px-3 text-sm"
+            className="border-input bg-background h-9 rounded-md border px-3 font-mono text-sm"
             value={name}
-            onChange={(event) => setName(event.target.value)}
+            disabled={mode === 'edit'}
+            onChange={(event) => {
+              setName(event.target.value)
+              if (nameError) {
+                validateName(event.target.value.trim())
+              }
+            }}
             required
           />
+          {nameError ? (
+            <span className="text-destructive text-xs">{nameError}</span>
+          ) : null}
         </label>
+
+        <MatchPredicateFields value={match} onChange={setMatch} />
+        <ActionFields value={action} onChange={setAction} />
 
         <label className="flex flex-col gap-1 text-sm">
           <span className="text-muted-foreground text-xs">prompt_template</span>

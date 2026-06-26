@@ -3,15 +3,18 @@ import { apiFetch, apiGetJson, getApiBaseUrl } from './client'
 import {
   agentContextSchema,
   agentContextsListFixture,
-  parseAgentContextList,
+  parseAgentContextListPage,
   type AgentContext,
+  type AgentContextListPage,
   type AgentContextUpsert,
   type AgentKind,
 } from './fixtures/agentContext'
 
 export interface ListContextsParams {
-  agent_kind: AgentKind
-  gate_id?: string | null
+  agent_kind?: AgentKind
+  gate_id?: string
+  page?: number
+  page_size?: number
 }
 
 let contextsFixtureStore: AgentContext[] = agentContextsListFixture.map(
@@ -31,90 +34,93 @@ export function __resetContextsFixtureForTests(): void {
 
 function filterFixtureContexts(params: ListContextsParams): AgentContext[] {
   return contextsFixtureStore.filter((item) => {
-    if (item.agent_kind !== params.agent_kind) {
+    if (params.agent_kind && item.agent_kind !== params.agent_kind) {
       return false
     }
-
-    if (params.gate_id === null) {
-      return item.gate_id === null
+    if (params.gate_id !== undefined && item.gate_id !== params.gate_id) {
+      return false
     }
-
-    if (params.gate_id) {
-      return item.gate_id === params.gate_id
-    }
-
     return true
   })
 }
 
-function buildContextsQuery(params: ListContextsParams): string {
-  const search = new URLSearchParams()
-  search.set('agent_kind', params.agent_kind)
-
-  if (params.gate_id === null) {
-    search.set('gate_id', '')
-  } else if (params.gate_id) {
-    search.set('gate_id', params.gate_id)
+function paginateFixture(
+  items: AgentContext[],
+  page: number,
+  pageSize: number,
+): AgentContextListPage {
+  const total = items.length
+  const start = (page - 1) * pageSize
+  return {
+    items: items.slice(start, start + pageSize),
+    total,
+    page,
+    page_size: pageSize,
   }
-
-  return search.toString()
 }
 
-function upsertFixtureContext(body: AgentContextUpsert): AgentContext {
-  const index = contextsFixtureStore.findIndex(
-    (item) =>
-      item.agent_kind === body.agent_kind &&
-      item.gate_id === body.gate_id &&
-      item.key === body.key,
-  )
-
-  if (index >= 0) {
-    const updated: AgentContext = {
-      ...contextsFixtureStore[index],
-      content: body.content,
-      updated_at: '2025-07-14 12:00:00',
-    }
-    contextsFixtureStore[index] = updated
-    return { ...updated }
+function buildContextsQuery(params: ListContextsParams): string {
+  const search = new URLSearchParams()
+  if (params.agent_kind) {
+    search.set('agent_kind', params.agent_kind)
   }
-
-  const created: AgentContext = {
-    context_id: crypto.randomUUID(),
-    agent_kind: body.agent_kind,
-    gate_id: body.gate_id,
-    key: body.key,
-    content: body.content,
-    updated_at: '2025-07-14 12:00:00',
+  if (params.gate_id) {
+    search.set('gate_id', params.gate_id)
   }
-  contextsFixtureStore = [...contextsFixtureStore, created]
-  return { ...created }
+  if (params.page) {
+    search.set('page', String(params.page))
+  }
+  if (params.page_size) {
+    search.set('page_size', String(params.page_size))
+  }
+  return search.toString()
 }
 
 /**
  * Загружает agent contexts (`GET /api/agent/contexts`).
  */
 export async function listContexts(
-  params: ListContextsParams,
-): Promise<AgentContext[]> {
+  params: ListContextsParams = {},
+): Promise<AgentContextListPage> {
+  const page = params.page ?? 1
+  const pageSize = params.page_size ?? 50
+
   if (!getApiBaseUrl()) {
-    return filterFixtureContexts(params)
+    const filtered = filterFixtureContexts(params)
+    return paginateFixture(filtered, page, pageSize)
   }
 
-  const query = buildContextsQuery(params)
+  const query = buildContextsQuery({ ...params, page, page_size: pageSize })
   const json = await apiGetJson<unknown>(`/api/agent/contexts?${query}`)
-  return parseAgentContextList(json)
+  return parseAgentContextListPage(json)
 }
 
 /**
- * Upsert agent context (`PUT /api/agent/contexts`).
- *
- * @throws {ApiClientError} При HTTP-ошибке
+ * Upsert agent context (`PUT /api/agent/contexts`) по ключу (agent_kind, gate_id).
  */
 export async function upsertContext(
   body: AgentContextUpsert,
 ): Promise<AgentContext> {
   if (!getApiBaseUrl()) {
-    return upsertFixtureContext(body)
+    const index = contextsFixtureStore.findIndex(
+      (item) =>
+        item.agent_kind === body.agent_kind && item.gate_id === body.gate_id,
+    )
+
+    if (index >= 0) {
+      const updated: AgentContext = {
+        ...contextsFixtureStore[index],
+        context_body: body.context_body,
+        updated_at: '2025-07-14 12:00:00',
+      }
+      contextsFixtureStore[index] = updated
+      return { ...updated }
+    }
+
+    throw new ApiClientError(404, {
+      error_code: 'context_not_found',
+      message: 'Context not found for upsert key',
+    })
   }
 
   const response = await apiFetch('/api/agent/contexts', {
@@ -125,32 +131,9 @@ export async function upsertContext(
   return agentContextSchema.parse(json)
 }
 
-/**
- * Удаляет agent context (`DELETE /api/agent/contexts/{context_id}`).
- *
- * @throws {ApiClientError} При HTTP-ошибке
- */
-export async function deleteContext(contextId: string): Promise<void> {
-  if (!getApiBaseUrl()) {
-    const index = contextsFixtureStore.findIndex(
-      (item) => item.context_id === contextId,
-    )
-    if (index === -1) {
-      throw new ApiClientError(404, {
-        error_code: 'context_not_found',
-        message: 'Context not found',
-      })
-    }
-
-    contextsFixtureStore = contextsFixtureStore.filter(
-      (item) => item.context_id !== contextId,
-    )
-    return
-  }
-
-  await apiFetch(`/api/agent/contexts/${encodeURIComponent(contextId)}`, {
-    method: 'DELETE',
-  })
+export type {
+  AgentContext,
+  AgentContextListPage,
+  AgentContextUpsert,
+  AgentKind,
 }
-
-export type { AgentContext, AgentContextUpsert, AgentKind }

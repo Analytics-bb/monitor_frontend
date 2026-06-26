@@ -1,11 +1,8 @@
 import { useCallback, useEffect, useState } from 'react'
 
+import { formatContextScope } from '@/api/fixtures/agentContext'
 import { mapApiError } from '@/api/errors'
-import {
-  listContexts,
-  type AgentContext,
-  type AgentKind,
-} from '@/api/contexts'
+import { listContexts, type AgentContext, type AgentKind } from '@/api/contexts'
 import { ContextEditor } from '@/components/settings/ContextEditor'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -25,36 +22,29 @@ interface ContextFilterValues {
 
 type EditorState =
   | { mode: 'closed' }
-  | { mode: 'create' }
   | { mode: 'edit'; context: AgentContext }
 
 const inputClassName =
   'border-input bg-background focus:border-ring/40 focus:ring-ring/20 h-9 w-full rounded-md border px-3 text-sm transition-colors duration-200 outline-none focus:ring-1'
 
-function truncatePreview(content: string, maxLength = 120): string {
-  if (content.length <= maxLength) {
-    return content
+function truncatePreview(body: string, maxLength = 120): string {
+  if (body.length <= maxLength) {
+    return body
   }
-
-  return `${content.slice(0, maxLength)}…`
+  return `${body.slice(0, maxLength)}…`
 }
 
 function resolveListGateId(
   filters: ContextFilterValues,
-): string | null | undefined {
-  if (filters.scope === 'global') {
-    return null
-  }
-
+): string | undefined {
   if (filters.scope === 'gate') {
     return filters.gate_id.trim() || undefined
   }
-
   return undefined
 }
 
 /**
- * Вкладка Contexts: фильтры, список карточек и editor.
+ * Вкладка Contexts: фильтры, список и editor (только правка).
  */
 export function ContextsTab({ className }: ContextsTabProps) {
   const [filters, setFilters] = useState<ContextFilterValues>({
@@ -64,6 +54,7 @@ export function ContextsTab({ className }: ContextsTabProps) {
   })
   const [appliedFilters, setAppliedFilters] = useState(filters)
   const [items, setItems] = useState<AgentContext[]>([])
+  const [total, setTotal] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
   const [loadError, setLoadError] = useState<string | null>(null)
   const [editor, setEditor] = useState<EditorState>({ mode: 'closed' })
@@ -73,11 +64,21 @@ export function ContextsTab({ className }: ContextsTabProps) {
     setLoadError(null)
 
     try {
-      const data = await listContexts({
+      const gateId = resolveListGateId(nextFilters)
+      const response = await listContexts({
         agent_kind: nextFilters.agent_kind,
-        gate_id: resolveListGateId(nextFilters),
+        gate_id: gateId,
+        page: 1,
+        page_size: 50,
       })
-      setItems(data)
+
+      let nextItems = response.items
+      if (nextFilters.scope === 'global') {
+        nextItems = nextItems.filter((item) => item.gate_id === null)
+      }
+
+      setItems(nextItems)
+      setTotal(nextFilters.scope === 'global' ? nextItems.length : response.total)
     } catch (error) {
       mapApiError(error)
       setLoadError('Не удалось загрузить contexts')
@@ -104,13 +105,6 @@ export function ContextsTab({ className }: ContextsTabProps) {
     setFilters(reset)
     setAppliedFilters(reset)
   }
-
-  const defaultGateId =
-    appliedFilters.scope === 'global'
-      ? null
-      : appliedFilters.scope === 'gate'
-        ? appliedFilters.gate_id.trim() || null
-        : null
 
   return (
     <div className={cn('space-y-4', className)} data-testid="contexts-tab">
@@ -180,21 +174,14 @@ export function ContextsTab({ className }: ContextsTabProps) {
         </div>
       </form>
 
-      <div className="flex justify-end">
-        <Button
-          type="button"
-          onClick={() => setEditor({ mode: 'create' })}
-        >
-          + Create context
-        </Button>
-      </div>
+      <p className="text-muted-foreground text-sm">
+        Контексты создаются на бэкенде; здесь доступно только редактирование
+        текста.
+      </p>
 
-      {editor.mode !== 'closed' ? (
+      {editor.mode === 'edit' ? (
         <ContextEditor
-          mode={editor.mode}
-          context={editor.mode === 'edit' ? editor.context : undefined}
-          defaultAgentKind={appliedFilters.agent_kind}
-          defaultGateId={defaultGateId}
+          context={editor.context}
           onClose={() => setEditor({ mode: 'closed' })}
           onSaved={async () => loadList(appliedFilters)}
         />
@@ -221,34 +208,38 @@ export function ContextsTab({ className }: ContextsTabProps) {
           <p className="text-muted-foreground text-sm">Нет contexts по фильтру</p>
         </div>
       ) : (
-        <div className="grid gap-3" data-testid="contexts-card-list">
-          {items.map((item) => (
-            <article
-              key={item.context_id}
-              className="border-border bg-card hover:bg-muted/20 cursor-pointer rounded-lg border p-4 transition-colors"
-              data-testid="context-card"
-              onClick={() => setEditor({ mode: 'edit', context: item })}
-              onKeyDown={(event) => {
-                if (event.key === 'Enter' || event.key === ' ') {
-                  event.preventDefault()
-                  setEditor({ mode: 'edit', context: item })
-                }
-              }}
-              role="button"
-              tabIndex={0}
-            >
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <h3 className="font-medium">{item.key}</h3>
-                <Badge variant="secondary">
-                  {item.gate_id === null ? 'Global' : `Gate ${item.gate_id}`}
-                </Badge>
-              </div>
-              <p className="text-muted-foreground mt-2 text-sm">
-                {truncatePreview(item.content)}
-              </p>
-            </article>
-          ))}
-        </div>
+        <>
+          <p className="text-muted-foreground text-xs">Всего: {total}</p>
+          <div className="grid gap-3" data-testid="contexts-card-list">
+            {items.map((item) => (
+              <article
+                key={item.context_id}
+                className="border-border bg-card hover:bg-muted/20 cursor-pointer rounded-lg border p-4 transition-colors"
+                data-testid="context-card"
+                onClick={() => setEditor({ mode: 'edit', context: item })}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault()
+                    setEditor({ mode: 'edit', context: item })
+                  }
+                }}
+                role="button"
+                tabIndex={0}
+              >
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <h3 className="font-medium capitalize">{item.agent_kind}</h3>
+                  <Badge variant="secondary">{formatContextScope(item)}</Badge>
+                </div>
+                <p className="text-muted-foreground mt-2 text-sm">
+                  {truncatePreview(item.context_body)}
+                </p>
+                <p className="text-muted-foreground mt-2 font-mono text-xs">
+                  updated {item.updated_at}
+                </p>
+              </article>
+            ))}
+          </div>
+        </>
       )}
     </div>
   )

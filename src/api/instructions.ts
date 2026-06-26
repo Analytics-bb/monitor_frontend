@@ -14,7 +14,9 @@ let instructionsFixtureStore: AgentInstruction[] = agentInstructionsListFixture.
 )
 
 function resetInstructionsFixtureStore(): void {
-  instructionsFixtureStore = agentInstructionsListFixture.map((item) => ({ ...item }))
+  instructionsFixtureStore = agentInstructionsListFixture.map((item) => ({
+    ...item,
+  }))
 }
 
 /**
@@ -26,29 +28,56 @@ export function __resetInstructionsFixtureForTests(): void {
 
 /**
  * Загружает список agent instructions (`GET /api/settings/instructions`).
- *
- * Без `VITE_ANOMALY_API_BASE_URL` возвращает fixture store.
  */
-export async function listInstructions(): Promise<AgentInstruction[]> {
+export async function listInstructions(
+  enabledOnly = false,
+): Promise<AgentInstruction[]> {
   if (!getApiBaseUrl()) {
-    return instructionsFixtureStore.map((item) => ({ ...item }))
+    const items = instructionsFixtureStore.map((item) => ({ ...item }))
+    return enabledOnly ? items.filter((item) => item.enabled) : items
   }
 
-  const json = await apiGetJson<unknown>('/api/settings/instructions')
+  const query = enabledOnly ? '?enabled_only=true' : ''
+  const json = await apiGetJson<unknown>(`/api/settings/instructions${query}`)
   return parseAgentInstructionList(json)
 }
 
 /**
+ * Загружает instruction по ID (`GET /api/settings/instructions/{id}`).
+ */
+export async function getInstruction(
+  instructionId: string,
+): Promise<AgentInstruction> {
+  if (!getApiBaseUrl()) {
+    const item = instructionsFixtureStore.find(
+      (entry) => entry.instruction_id === instructionId,
+    )
+    if (!item) {
+      throw new ApiClientError(404, {
+        error_code: 'instruction_not_found',
+        message: 'Instruction not found',
+      })
+    }
+    return { ...item }
+  }
+
+  const json = await apiGetJson<unknown>(
+    `/api/settings/instructions/${encodeURIComponent(instructionId)}`,
+  )
+  return parseAgentInstruction(json)
+}
+
+/**
  * Частично обновляет instruction (`PATCH /api/settings/instructions/{id}`).
- *
- * @throws {ApiClientError} При HTTP-ошибке
  */
 export async function patchInstruction(
-  id: string,
+  instructionId: string,
   patch: AgentInstructionPatch,
 ): Promise<AgentInstruction> {
   if (!getApiBaseUrl()) {
-    const index = instructionsFixtureStore.findIndex((item) => item.id === id)
+    const index = instructionsFixtureStore.findIndex(
+      (item) => item.instruction_id === instructionId,
+    )
     if (index === -1) {
       throw new ApiClientError(404, {
         error_code: 'instruction_not_found',
@@ -56,9 +85,14 @@ export async function patchInstruction(
       })
     }
 
+    const current = instructionsFixtureStore[index]
     const updated: AgentInstruction = {
-      ...instructionsFixtureStore[index],
+      ...current,
       ...patch,
+      match: patch.match ? { ...current.match, ...patch.match } : current.match,
+      action: patch.action
+        ? { ...current.action, ...patch.action }
+        : current.action,
       updated_at: '2025-07-14 12:00:00',
     }
     instructionsFixtureStore[index] = updated
@@ -66,7 +100,7 @@ export async function patchInstruction(
   }
 
   const response = await apiFetch(
-    `/api/settings/instructions/${encodeURIComponent(id)}`,
+    `/api/settings/instructions/${encodeURIComponent(instructionId)}`,
     {
       method: 'PATCH',
       body: JSON.stringify(patch),
@@ -78,19 +112,19 @@ export async function patchInstruction(
 
 /**
  * Создаёт instruction (`POST /api/settings/instructions`).
- *
- * @throws {ApiClientError} При HTTP-ошибке
  */
 export async function createInstruction(
   body: AgentInstructionCreate,
 ): Promise<AgentInstruction> {
   if (!getApiBaseUrl()) {
     const created: AgentInstruction = {
-      id: crypto.randomUUID(),
+      instruction_id: crypto.randomUUID(),
       name: body.name,
-      prompt_template: body.prompt_template,
       enabled: body.enabled ?? true,
-      agent_kind: body.agent_kind,
+      match: body.match,
+      action: body.action,
+      prompt_template: body.prompt_template,
+      created_at: '2025-07-14 12:00:00',
       updated_at: '2025-07-14 12:00:00',
     }
     instructionsFixtureStore = [...instructionsFixtureStore, created]
@@ -106,25 +140,23 @@ export async function createInstruction(
 }
 
 /**
- * Обновляет instruction (`PATCH /api/settings/instructions/{id}`).
- *
- * @throws {ApiClientError} При HTTP-ошибке
+ * Обновляет instruction (`PATCH`).
  */
 export async function updateInstruction(
-  id: string,
+  instructionId: string,
   patch: AgentInstructionPatch,
 ): Promise<AgentInstruction> {
-  return patchInstruction(id, patch)
+  return patchInstruction(instructionId, patch)
 }
 
 /**
  * Удаляет instruction (`DELETE /api/settings/instructions/{id}`).
- *
- * @throws {ApiClientError} При HTTP-ошибке
  */
-export async function deleteInstruction(id: string): Promise<void> {
+export async function deleteInstruction(instructionId: string): Promise<void> {
   if (!getApiBaseUrl()) {
-    const index = instructionsFixtureStore.findIndex((item) => item.id === id)
+    const index = instructionsFixtureStore.findIndex(
+      (item) => item.instruction_id === instructionId,
+    )
     if (index === -1) {
       throw new ApiClientError(404, {
         error_code: 'instruction_not_found',
@@ -133,14 +165,17 @@ export async function deleteInstruction(id: string): Promise<void> {
     }
 
     instructionsFixtureStore = instructionsFixtureStore.filter(
-      (item) => item.id !== id,
+      (item) => item.instruction_id !== instructionId,
     )
     return
   }
 
-  await apiFetch(`/api/settings/instructions/${encodeURIComponent(id)}`, {
-    method: 'DELETE',
-  })
+  await apiFetch(
+    `/api/settings/instructions/${encodeURIComponent(instructionId)}`,
+    {
+      method: 'DELETE',
+    },
+  )
 }
 
 export type { AgentInstruction, AgentInstructionCreate, AgentInstructionPatch }
