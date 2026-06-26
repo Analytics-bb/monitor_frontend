@@ -5,8 +5,8 @@ import { ThemeToggle } from './ThemeToggle'
 
 const navItems = [
   { to: '/monitoring', label: 'Мониторинг' },
-  { to: '/deep', label: 'Список срабатываний' },
-  { to: '/usage', label: 'Usage' },
+  { to: '/deep', label: 'Аналитика срабатываний' },
+  { to: '/usage', label: 'Использование' },
   { to: '/settings/agents', label: 'Настройки' },
   { to: '/cabinet', label: 'Кабинет' },
 ] as const

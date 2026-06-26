@@ -7,7 +7,7 @@ test('deep list loads and gate filter narrows fixture rows', async ({
 
   await expect(page.getByTestId('deep-list-page')).toBeVisible()
   await expect(
-    page.getByRole('heading', { name: 'Список срабатываний' }),
+    page.getByRole('heading', { name: 'Аналитика срабатываний' }),
   ).toBeVisible()
 
   await expect(page.getByTestId('deep-cases-table-row')).toHaveCount(20, {
