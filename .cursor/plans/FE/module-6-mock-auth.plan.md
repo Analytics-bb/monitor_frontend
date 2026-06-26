@@ -16,7 +16,7 @@ todos:
     status: pending
   - id: m6-cabinet-page
     content: "CabinetPage: static placeholder «скоро»; protected"
-    status: pending
+    status: completed
   - id: m6-route-align
     content: "Protected paths: /monitoring, /deep, /usage, /settings/agents, /cabinet"
     status: pending
