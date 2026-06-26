@@ -1,9 +1,8 @@
-import { type FormEvent, useEffect, useState } from 'react'
+import { type FormEvent, useEffect } from 'react'
 import { useNavigate } from 'react-router'
 
 import { isMockAuthenticated, setMockSession } from '@/auth/mockSession'
 import { Button } from '@/components/ui/button'
-import { cn } from '@/lib/utils'
 
 const fieldClassName =
   'border-input bg-background focus:border-ring/40 focus:ring-ring/20 h-9 w-full rounded-md border px-3 text-sm transition-colors duration-200 outline-none focus:ring-1'
@@ -14,10 +13,8 @@ const fieldClassName =
  */
 export function LoginPage() {
   const navigate = useNavigate()
-  const [visible, setVisible] = useState(false)
 
   useEffect(() => {
-    setVisible(true)
     if (isMockAuthenticated()) {
       navigate('/monitoring', { replace: true })
     }
@@ -31,12 +28,7 @@ export function LoginPage() {
 
   return (
     <div className="bg-background flex min-h-svh items-center justify-center p-6">
-      <section
-        className={cn(
-          'border-border bg-card w-full max-w-sm rounded-lg border p-6 shadow-sm transition-opacity duration-200',
-          visible ? 'opacity-100' : 'opacity-0',
-        )}
-      >
+      <section className="border-border bg-card motion-safe:animate-login-card-fade-in w-full max-w-sm rounded-lg border p-6 shadow-sm">
         <div className="mb-6 text-center">
           <h1 className="text-xl font-semibold tracking-tight">
             BB Anomaly Monitor
