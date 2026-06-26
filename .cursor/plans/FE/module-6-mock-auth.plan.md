@@ -10,7 +10,7 @@ todos:
     status: completed
   - id: m6-protected-route
     content: "ProtectedRoute wrapper: без session → redirect /login; save return URL optional"
-    status: pending
+    status: completed
   - id: m6-sidebar-auth
     content: "Sidebar: Login link или Logout button в одном слоте"
     status: pending
