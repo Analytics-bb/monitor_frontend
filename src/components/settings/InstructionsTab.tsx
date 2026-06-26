@@ -1,3 +1,4 @@
+import { Pencil } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 
 import { formatMatchSummary } from '@/api/fixtures/agentInstruction'
@@ -120,10 +121,10 @@ export function InstructionsTab({ className }: InstructionsTabProps) {
         </p>
         <Button
           type="button"
-          aria-label="New instruction"
+          aria-label="Создать инструкцию"
           onClick={() => setEditor({ mode: 'create' })}
         >
-          + New instruction
+          Создать инструкцию
         </Button>
       </div>
 
@@ -138,7 +139,7 @@ export function InstructionsTab({ className }: InstructionsTabProps) {
 
       {items.length === 0 ? (
         <p className="text-muted-foreground text-sm">
-          Нажмите «+ New instruction», чтобы создать первую запись.
+          Нажмите «Создать инструкцию», чтобы создать первую запись.
         </p>
       ) : (
         <div className="border-border overflow-x-auto rounded-lg border">
@@ -149,12 +150,12 @@ export function InstructionsTab({ className }: InstructionsTabProps) {
           >
             <thead className="bg-muted/40">
               <tr className="border-border border-b">
-                <th className="px-3 py-2 text-left font-medium">Name</th>
-                <th className="px-3 py-2 text-left font-medium">Match</th>
-                <th className="px-3 py-2 text-left font-medium">Action</th>
+                <th className="px-3 py-2 text-center font-medium">Name</th>
+                <th className="px-3 py-2 text-center font-medium">Match</th>
+                <th className="px-3 py-2 text-center font-medium">Action</th>
                 <th className="px-3 py-2 text-center font-medium">Enabled</th>
-                <th className="px-3 py-2 text-left font-medium">Updated</th>
-                <th className="px-3 py-2 text-right font-medium">Actions</th>
+                <th className="px-3 py-2 text-center font-medium">Updated</th>
+                <th className="px-3 py-2 text-center font-medium">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -164,36 +165,40 @@ export function InstructionsTab({ className }: InstructionsTabProps) {
                   className="border-border border-b"
                   data-testid="instructions-table-row"
                 >
-                  <td className="px-3 py-2 font-mono text-xs">{item.name}</td>
-                  <td className="text-muted-foreground px-3 py-2 text-xs">
+                  <td className="px-3 py-2 text-center font-mono text-xs">{item.name}</td>
+                  <td className="text-muted-foreground px-3 py-2 text-center text-xs">
                     {formatMatchSummary(item.match)}
                   </td>
-                  <td className="text-muted-foreground px-3 py-2 text-xs">
+                  <td className="text-muted-foreground px-3 py-2 text-center text-xs">
                     {item.action.decision} · {item.action.severity}
                   </td>
                   <td className="px-3 py-2 text-center">
-                    <Switch
-                      checked={item.enabled}
-                      disabled={togglingId === item.instruction_id}
-                      aria-label={`Enabled: ${item.name}`}
-                      onCheckedChange={(checked) =>
-                        void handleToggleEnabled(item, checked)
-                      }
-                    />
+                    <div className="flex justify-center">
+                      <Switch
+                        checked={item.enabled}
+                        disabled={togglingId === item.instruction_id}
+                        aria-label={`Enabled: ${item.name}`}
+                        onCheckedChange={(checked) =>
+                          void handleToggleEnabled(item, checked)
+                        }
+                      />
+                    </div>
                   </td>
-                  <td className="text-muted-foreground px-3 py-2 font-mono text-xs">
+                  <td className="text-muted-foreground px-3 py-2 text-center font-mono text-xs">
                     {item.updated_at}
                   </td>
-                  <td className="px-3 py-2 text-right">
+                  <td className="px-3 py-2 text-center">
                     <Button
                       type="button"
                       variant="ghost"
-                      size="sm"
+                      size="icon"
+                      className="text-muted-foreground hover:bg-muted/40 hover:text-foreground h-8 w-8 transition-colors"
+                      aria-label={`Редактировать: ${item.name}`}
                       onClick={() =>
                         setEditor({ mode: 'edit', instruction: item })
                       }
                     >
-                      Edit
+                      <Pencil className="h-4 w-4" />
                     </Button>
                   </td>
                 </tr>

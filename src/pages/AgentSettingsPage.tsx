@@ -15,9 +15,9 @@ export function AgentSettingsPage() {
       data-testid="agent-settings-page"
     >
       <header>
-        <h1 className="text-2xl font-semibold tracking-tight">Agent Settings</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">Настройки агента</h1>
         <p className="text-muted-foreground mt-1 text-sm">
-          Instructions, contexts и global detector config.
+          Возможность редактирования: инструкции, контекст, конфиг
         </p>
       </header>
 
