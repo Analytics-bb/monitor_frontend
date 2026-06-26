@@ -4,7 +4,7 @@ overview: "Mock auth R2: /login (any credentials → localStorage → /monitorin
 todos:
   - id: m6-auth-storage
     content: auth/mockSession.ts — get/set/clear mock flag; MOCK_AUTH_ENABLED env
-    status: pending
+    status: completed
   - id: m6-login-page
     content: "LoginPage: форма без API; submit → set session → redirect /monitoring"
     status: pending
