@@ -1,5 +1,5 @@
 import { ChevronLeft } from 'lucide-react'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link, useLocation, useParams } from 'react-router'
 
 import type { ApiError } from '@/api/errors'
@@ -32,7 +32,13 @@ function toStatusBadgeVariant(state: ChatSnapshot['state']): StatusBadgeVariant 
   return state
 }
 
-function getComposerPlaceholder(state: ChatSnapshot['state']): string {
+function getComposerPlaceholder(
+  state: ChatSnapshot['state'],
+  customVariantMode: boolean,
+): string {
+  if (customVariantMode) {
+    return 'Опишите свой вариант действия…'
+  }
   if (state === 'awaiting_approval') {
     return 'Ожидание подтверждения…'
   }
@@ -78,17 +84,24 @@ export function DeepChatPage() {
   } = useDeepChat(auditId ?? '')
 
   const [budgetExceeded, setBudgetExceeded] = useState(false)
+  const [customVariantMode, setCustomVariantMode] = useState(false)
+
+  useEffect(() => {
+    if (!snapshot?.pending_action) {
+      setCustomVariantMode(false)
+    }
+  }, [snapshot?.pending_action])
 
   const isErrorState = snapshot?.state === 'error'
   const isTerminal = snapshot ? TERMINAL_STATES.has(snapshot.state) : false
   const isClosedChat = snapshot ? CLOSED_CHAT_STATES.has(snapshot.state) : false
   const isPending = Boolean(snapshot?.pending_action)
   const composerDisabled =
-    isPending ||
     isTerminal ||
     isOpening ||
-    snapshot?.state === 'awaiting_approval' ||
-    snapshot?.state === 'not_started'
+    snapshot?.state === 'not_started' ||
+    (isPending && !customVariantMode) ||
+    (snapshot?.state === 'awaiting_approval' && !customVariantMode)
 
   const hideApprove = budgetExceeded || isErrorState
 
@@ -221,12 +234,12 @@ export function DeepChatPage() {
           )
         }
         overlay={
-          snapshot?.pending_action && !isErrorState ? (
+          snapshot?.pending_action && !isErrorState && !customVariantMode ? (
             <ApprovalOverlay
               pendingAction={snapshot.pending_action}
               onApprove={handleApprove}
               onReject={handleReject}
-              onCustomVariant={handleCustomVariant}
+              onUseCustomInput={() => setCustomVariantMode(true)}
               hideApprove={hideApprove}
             />
           ) : undefined
@@ -236,8 +249,17 @@ export function DeepChatPage() {
           snapshot && !isTerminal ? (
             <ChatComposer
               disabled={composerDisabled}
-              placeholder={getComposerPlaceholder(snapshot.state)}
+              placeholder={getComposerPlaceholder(snapshot.state, customVariantMode)}
               onSend={async (content) => {
+                if (customVariantMode && snapshot.pending_action) {
+                  await handleCustomVariant(
+                    snapshot.pending_action.action_id,
+                    content,
+                  )
+                  setCustomVariantMode(false)
+                  return
+                }
+
                 const sent = await sendMessage(content)
                 if (!sent) {
                   await refetch()

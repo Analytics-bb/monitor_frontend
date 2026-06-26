@@ -18,7 +18,7 @@ describe('ApprovalOverlay', () => {
         }}
         onApprove={onApprove}
         onReject={vi.fn()}
-        onCustomVariant={vi.fn()}
+        onUseCustomInput={vi.fn()}
       />,
     )
 
@@ -31,9 +31,9 @@ describe('ApprovalOverlay', () => {
     })
   })
 
-  it('submits custom variant after reject flow', async () => {
+  it('switches to composer on Свой вариант click', async () => {
     const user = userEvent.setup()
-    const onCustomVariant = vi.fn().mockResolvedValue(undefined)
+    const onUseCustomInput = vi.fn()
 
     render(
       <ApprovalOverlay
@@ -44,22 +44,13 @@ describe('ApprovalOverlay', () => {
         }}
         onApprove={vi.fn()}
         onReject={vi.fn()}
-        onCustomVariant={onCustomVariant}
+        onUseCustomInput={onUseCustomInput}
       />,
     )
 
     await user.click(screen.getByRole('button', { name: 'Свой вариант' }))
-    await user.type(
-      screen.getByLabelText('Свой вариант'),
-      'Проверить канал вручную',
-    )
-    await user.click(screen.getByRole('button', { name: 'Отправить вариант' }))
 
-    await waitFor(() => {
-      expect(onCustomVariant).toHaveBeenCalledWith(
-        'act-2',
-        'Проверить канал вручную',
-      )
-    })
+    expect(onUseCustomInput).toHaveBeenCalledTimes(1)
+    expect(screen.queryByLabelText('Свой вариант')).not.toBeInTheDocument()
   })
 })
