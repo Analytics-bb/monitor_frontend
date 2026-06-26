@@ -7,7 +7,7 @@ todos:
     status: completed
   - id: m6-login-page
     content: "LoginPage: форма без API; submit → set session → redirect /monitoring"
-    status: pending
+    status: completed
   - id: m6-protected-route
     content: "ProtectedRoute wrapper: без session → redirect /login; save return URL optional"
     status: pending
