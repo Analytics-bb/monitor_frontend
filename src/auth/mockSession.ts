@@ -29,7 +29,11 @@ export function isMockAuthenticated(): boolean {
   }
 }
 
-/** Устанавливает boolean-флаг mock-сессии (без секретов и токенов). */
+/**
+ * Устанавливает boolean-флаг mock-сессии в `localStorage` (без секретов и токенов).
+ *
+ * Побочный эффект: запись в `localStorage` под ключом `MOCK_SESSION_STORAGE_KEY`.
+ */
 export function setMockSession(): void {
   try {
     localStorage.setItem(MOCK_SESSION_STORAGE_KEY, 'true')
@@ -38,7 +42,11 @@ export function setMockSession(): void {
   }
 }
 
-/** Снимает mock-сессию из localStorage. */
+/**
+ * Снимает mock-сессию: удаляет флаг из `localStorage`.
+ *
+ * Побочный эффект: `localStorage.removeItem` под ключом `MOCK_SESSION_STORAGE_KEY`.
+ */
 export function clearMockSession(): void {
   try {
     localStorage.removeItem(MOCK_SESSION_STORAGE_KEY)

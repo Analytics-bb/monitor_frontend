@@ -23,7 +23,7 @@ todos:
   - id: m6-tests
     content: "Vitest + e2e: login redirect; guarded route without session; logout flow"
     status: completed
-isProject: false
+isProject: true
 ---
 
 # FE Module 6 — Mock Auth (`/login`, `/cabinet`, guards)
@@ -183,12 +183,12 @@ Backend API: **none**.
 
 ## DoD
 
-- [ ] Login/logout flow работает; sidebar slot корректен.
-- [ ] Все protected M17 routes guarded.
-- [ ] Cabinet placeholder без API.
-- [ ] `.env.example` документирует MOCK_AUTH_ENABLED.
-- [ ] Login уважает light/dark theme (module-0 tokens).
-- [ ] Тесты проходят; M17 §9.2 mock login/logout готов.
+- [x] Login/logout flow работает; sidebar slot корректен.
+- [x] Все protected M17 routes guarded.
+- [x] Cabinet placeholder без API.
+- [x] `.env.example` документирует MOCK_AUTH_ENABLED.
+- [x] Login уважает light/dark theme (module-0 tokens).
+- [x] Тесты проходят; M17 §9.2 mock login/logout готов.
 
 ---
 
