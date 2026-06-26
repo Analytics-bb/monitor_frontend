@@ -13,6 +13,7 @@ import { useEffect, useState, type ReactNode } from 'react'
 import { NavLink } from 'react-router'
 
 import { ThemeToggle } from './ThemeToggle'
+import { SidebarCollapsedContext } from './sidebarCollapsedContext'
 import {
   getStoredSidebarCollapsed,
   storeSidebarCollapsed,
@@ -48,7 +49,8 @@ export function Sidebar({ authSlot }: SidebarProps) {
   }, [collapsed])
 
   return (
-    <aside
+    <SidebarCollapsedContext.Provider value={collapsed}>
+      <aside
       data-testid="sidebar"
       data-collapsed={collapsed ? 'true' : 'false'}
       className={cn(
@@ -167,5 +169,6 @@ export function Sidebar({ authSlot }: SidebarProps) {
         <ThemeToggle />
       </div>
     </aside>
+    </SidebarCollapsedContext.Provider>
   )
 }

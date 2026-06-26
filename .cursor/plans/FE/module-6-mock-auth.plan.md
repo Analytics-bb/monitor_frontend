@@ -13,7 +13,7 @@ todos:
     status: completed
   - id: m6-sidebar-auth
     content: "Sidebar: Login link или Logout button в одном слоте"
-    status: pending
+    status: completed
   - id: m6-cabinet-page
     content: "CabinetPage: static placeholder «скоро»; protected"
     status: completed
