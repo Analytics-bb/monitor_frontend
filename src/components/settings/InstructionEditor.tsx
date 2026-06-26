@@ -10,13 +10,16 @@ import {
   updateInstruction,
   type AgentInstruction,
 } from '@/api/instructions'
-import { ActionFields, MatchPredicateFields } from '@/components/settings/InstructionFormFields'
+import { ActionFields, MatchPredicateFields, settingsFieldClassName, settingsTextareaClassName } from '@/components/settings/InstructionFormFields'
 import { SettingsInlineError } from '@/components/settings/SettingsInlineError'
 import { resolveSettingsError } from '@/components/settings/settingsErrors'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
 const INSTRUCTION_NAME_PATTERN = /^[a-z0-9_]+$/
+
+const cancelButtonClassName =
+  'text-muted-foreground hover:bg-muted/40 hover:text-foreground focus-visible:ring-1 focus-visible:ring-ring/25 focus-visible:ring-offset-0'
 
 export type InstructionEditorMode = 'create' | 'edit'
 
@@ -71,6 +74,11 @@ export function InstructionEditor({
 
     if (deleteDialogOpen && !dialog.open) {
       dialog.showModal()
+      requestAnimationFrame(() => {
+        if (document.activeElement instanceof HTMLElement) {
+          document.activeElement.blur()
+        }
+      })
     }
     if (!deleteDialogOpen && dialog.open) {
       dialog.close()
@@ -151,11 +159,21 @@ export function InstructionEditor({
       aria-label={mode === 'create' ? 'New instruction' : 'Edit instruction'}
     >
       <form className="space-y-4" onSubmit={(event) => void handleSave(event)}>
-        <div className="flex items-center justify-between gap-3">
-          <h3 className="text-sm font-semibold">
-            {mode === 'create' ? 'New instruction' : `Edit: ${instruction?.name}`}
-          </h3>
-          <Button type="button" variant="ghost" size="sm" onClick={onClose}>
+        <div
+          className={cn(
+            'flex items-center gap-3',
+            mode === 'create' ? 'justify-between' : 'justify-end',
+          )}
+        >
+          {mode === 'create' ? (
+            <h3 className="text-sm font-semibold">New instruction</h3>
+          ) : null}
+          <Button
+            type="button"
+            variant="ghost"
+            className={cancelButtonClassName}
+            onClick={onClose}
+          >
             Cancel
           </Button>
         </div>
@@ -166,7 +184,8 @@ export function InstructionEditor({
           <span className="text-muted-foreground text-xs">name</span>
           <input
             className={cn(
-              'border-input bg-background h-9 rounded-md border px-3 font-mono text-sm',
+              settingsFieldClassName,
+              'font-mono',
               nameError && 'border-destructive/50',
             )}
             value={name}
@@ -190,7 +209,7 @@ export function InstructionEditor({
         <label className="flex flex-col gap-1 text-sm">
           <span className="text-muted-foreground text-xs">prompt_template</span>
           <textarea
-            className="border-input bg-background min-h-[240px] rounded-md border px-3 py-2 font-mono text-sm"
+            className={settingsTextareaClassName}
             value={promptTemplate}
             onChange={(event) => setPromptTemplate(event.target.value)}
             required
@@ -219,35 +238,40 @@ export function InstructionEditor({
 
       <dialog
         ref={deleteDialogRef}
-        className="border-border bg-card w-full max-w-md rounded-lg border p-4 shadow-lg backdrop:bg-black/40"
+        className="fixed inset-0 z-50 m-0 h-full max-h-none w-full max-w-none border-0 bg-transparent p-0 backdrop:bg-black/30 backdrop:backdrop-blur-[2px]"
         aria-labelledby={titleId}
         data-testid="instruction-delete-dialog"
         onClose={() => setDeleteDialogOpen(false)}
       >
-        <h4 id={titleId} className="text-sm font-semibold">
-          Удалить instruction?
-        </h4>
-        <p className="text-muted-foreground mt-2 text-sm">
-          Действие необратимо для «{instruction?.name}».
-        </p>
-        <SettingsInlineError className="mt-3" message={deleteError} />
-        <div className="mt-4 flex justify-end gap-2">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => setDeleteDialogOpen(false)}
-          >
-            Отмена
-          </Button>
-          <Button
-            type="button"
-            variant="destructive"
-            disabled={isDeleting}
-            data-testid="instruction-delete-confirm"
-            onClick={() => void handleDeleteConfirm()}
-          >
-            {isDeleting ? 'Deleting…' : 'Delete'}
-          </Button>
+        <div className="flex h-full items-center justify-center p-4">
+          <div className="border-border bg-card text-card-foreground w-full max-w-md rounded-lg border p-4 shadow-lg">
+            <h4 id={titleId} className="text-foreground text-sm font-semibold">
+              Удалить instruction?
+            </h4>
+            <p className="text-muted-foreground mt-2 text-sm">
+              Действие необратимо для «{instruction?.name}».
+            </p>
+            <SettingsInlineError className="mt-3" message={deleteError} />
+            <div className="mt-4 flex justify-end gap-2">
+              <Button
+                type="button"
+                variant="ghost"
+                className={cancelButtonClassName}
+                onClick={() => setDeleteDialogOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                variant="destructive"
+                disabled={isDeleting}
+                data-testid="instruction-delete-confirm"
+                onClick={() => void handleDeleteConfirm()}
+              >
+                {isDeleting ? 'Deleting…' : 'Delete'}
+              </Button>
+            </div>
+          </div>
         </div>
       </dialog>
     </section>
