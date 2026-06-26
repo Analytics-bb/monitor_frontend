@@ -1,11 +1,13 @@
-import { type FormEvent, useEffect } from 'react'
+import { Eye, EyeOff } from 'lucide-react'
+import { type FormEvent, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router'
 
 import { isMockAuthenticated, setMockSession } from '@/auth/mockSession'
 import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 
 const fieldClassName =
-  'border-input bg-background focus:border-ring/40 focus:ring-ring/20 h-9 w-full rounded-md border px-3 text-sm transition-colors duration-200 outline-none focus:ring-1'
+  'border-input bg-background placeholder:text-muted-foreground placeholder:text-xs focus:border-ring/40 focus:ring-ring/20 h-9 w-full rounded-md border px-3 text-sm transition-colors duration-200 outline-none focus:ring-1'
 
 /**
  * Mock login без API: любые credentials → localStorage flag → `/monitoring`.
@@ -13,6 +15,7 @@ const fieldClassName =
  */
 export function LoginPage() {
   const navigate = useNavigate()
+  const [passwordVisible, setPasswordVisible] = useState(false)
 
   useEffect(() => {
     if (isMockAuthenticated()) {
@@ -33,12 +36,15 @@ export function LoginPage() {
           <h1 className="text-xl font-semibold tracking-tight">
             BB Anomaly Monitor
           </h1>
-          <p className="text-muted-foreground mt-1 text-sm">Ops dashboard</p>
+          <p className="text-muted-foreground mt-1 text-sm">Traffic analysis</p>
         </div>
 
         <form className="space-y-4" onSubmit={handleSubmit}>
           <div className="space-y-2">
-            <label className="text-sm font-medium" htmlFor="login-email">
+            <label
+              className="text-muted-foreground text-sm font-medium"
+              htmlFor="login-email"
+            >
               Email
             </label>
             <input
@@ -46,21 +52,42 @@ export function LoginPage() {
               className={fieldClassName}
               id="login-email"
               name="email"
+              placeholder="user@example.com"
               type="text"
             />
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium" htmlFor="login-password">
+            <label
+              className="text-muted-foreground text-sm font-medium"
+              htmlFor="login-password"
+            >
               Password
             </label>
-            <input
-              autoComplete="current-password"
-              className={fieldClassName}
-              id="login-password"
-              name="password"
-              type="password"
-            />
+            <div className="relative">
+              <input
+                autoComplete="current-password"
+                className={cn(fieldClassName, 'pr-10')}
+                id="login-password"
+                name="password"
+                placeholder="Enter your password"
+                type={passwordVisible ? 'text' : 'password'}
+              />
+              <button
+                aria-label={
+                  passwordVisible ? 'Скрыть пароль' : 'Показать пароль'
+                }
+                className="text-muted-foreground hover:text-foreground absolute top-1/2 right-2 flex size-8 -translate-y-1/2 items-center justify-center transition-colors"
+                type="button"
+                onClick={() => setPasswordVisible((value) => !value)}
+              >
+                {passwordVisible ? (
+                  <EyeOff aria-hidden className="size-4" />
+                ) : (
+                  <Eye aria-hidden className="size-4" />
+                )}
+              </button>
+            </div>
           </div>
 
           <Button className="w-full" type="submit">
