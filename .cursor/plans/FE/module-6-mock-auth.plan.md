@@ -3,7 +3,7 @@ name: fe-mock-auth
 overview: "Mock auth R2: /login (any credentials → localStorage → /monitoring), protected routes guard, sidebar Login/Logout, /cabinet placeholder."
 todos:
   - id: m6-auth-storage
-    content: "auth/mockSession.ts — get/set/clear mock flag; MOCK_AUTH_ENABLED env"
+    content: auth/mockSession.ts — get/set/clear mock flag; MOCK_AUTH_ENABLED env
     status: pending
   - id: m6-login-page
     content: "LoginPage: форма без API; submit → set session → redirect /monitoring"
