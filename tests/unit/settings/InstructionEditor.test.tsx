@@ -57,7 +57,7 @@ describe('InstructionEditor', () => {
 
     await waitFor(() => {
       expect(deleteInstructionMock).toHaveBeenCalledWith(
-        agentInstructionFixture.id,
+        agentInstructionFixture.instruction_id,
       )
     })
 

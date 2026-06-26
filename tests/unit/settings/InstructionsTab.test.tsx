@@ -40,8 +40,8 @@ describe('InstructionsTab', () => {
       expect(screen.getAllByTestId('instructions-table-row')).toHaveLength(2)
     })
 
-    expect(screen.getByText('Deep analyst system prompt')).toBeInTheDocument()
-    expect(screen.getByText('Hypothesis generator')).toBeInTheDocument()
+    expect(screen.getByText('deep_analyst_prompt')).toBeInTheDocument()
+    expect(screen.getByText('hypothesis_generator')).toBeInTheDocument()
   })
 
   it('calls PATCH on enabled toggle and keeps switch state', async () => {
@@ -56,18 +56,21 @@ describe('InstructionsTab', () => {
     render(<InstructionsTab />)
 
     await waitFor(() => {
-      expect(screen.getByText('Hypothesis generator')).toBeInTheDocument()
+      expect(screen.getByText('hypothesis_generator')).toBeInTheDocument()
     })
 
-    const toggle = screen.getByLabelText('Enabled: Hypothesis generator')
+    const toggle = screen.getByLabelText('Enabled: hypothesis_generator')
     expect(toggle).not.toBeChecked()
 
     await user.click(toggle)
 
     await waitFor(() => {
-      expect(patchInstructionMock).toHaveBeenCalledWith(target.id, {
-        enabled: true,
-      })
+      expect(patchInstructionMock).toHaveBeenCalledWith(
+        target.instruction_id,
+        {
+          enabled: true,
+        },
+      )
     })
 
     expect(toggle).toBeChecked()
@@ -86,10 +89,10 @@ describe('InstructionsTab', () => {
     render(<InstructionsTab />)
 
     await waitFor(() => {
-      expect(screen.getByText('Deep analyst system prompt')).toBeInTheDocument()
+      expect(screen.getByText('deep_analyst_prompt')).toBeInTheDocument()
     })
 
-    const toggle = screen.getByLabelText('Enabled: Deep analyst system prompt')
+    const toggle = screen.getByLabelText('Enabled: deep_analyst_prompt')
     expect(toggle).toBeChecked()
 
     await user.click(toggle)

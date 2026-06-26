@@ -2,9 +2,8 @@ import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { agentContextFixture } from '@/api/fixtures/agentContext'
 import * as contextsApi from '@/api/contexts'
-import { contextConflict409 } from '@/api/fixtures/conflictEnvelope'
-import { mapApiError } from '@/api/errors'
 import { ContextEditor } from '@/components/settings/ContextEditor'
 
 vi.mock('@/api/contexts', async (importOriginal) => {
@@ -12,7 +11,6 @@ vi.mock('@/api/contexts', async (importOriginal) => {
   return {
     ...actual,
     upsertContext: vi.fn(),
-    deleteContext: vi.fn(),
   }
 })
 
@@ -25,88 +23,43 @@ vi.mock('@/api/errors', async (importOriginal) => {
 })
 
 const upsertContextMock = vi.mocked(contextsApi.upsertContext)
-const mapApiErrorMock = vi.mocked(mapApiError)
 
 describe('ContextEditor', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     upsertContextMock.mockResolvedValue({
-      context_id: 'new-id',
-      agent_kind: 'deep',
-      gate_id: null,
-      key: 'new_key',
-      content: 'Updated content',
-      updated_at: '2025-07-14 12:00:00',
+      ...agentContextFixture,
+      context_body: 'Updated body',
     })
   })
 
-  it('sends upsert payload matching form on save', async () => {
+  it('sends upsert payload matching edited context_body', async () => {
     const user = userEvent.setup()
     const onSaved = vi.fn(async () => undefined)
     const onClose = vi.fn()
 
     render(
       <ContextEditor
-        mode="create"
-        defaultAgentKind="deep"
-        defaultGateId={null}
+        context={agentContextFixture}
         onClose={onClose}
         onSaved={onSaved}
       />,
     )
 
-    await user.type(screen.getByLabelText('key'), 'new_key')
-    await user.type(
-      screen.getByTestId('context-content-input'),
-      'Updated content',
-    )
+    const textarea = screen.getByTestId('context-content-input')
+    await user.clear(textarea)
+    await user.type(textarea, 'Updated body')
     await user.click(screen.getByRole('button', { name: 'Save' }))
 
     await waitFor(() => {
       expect(upsertContextMock).toHaveBeenCalledWith({
         agent_kind: 'deep',
         gate_id: null,
-        key: 'new_key',
-        content: 'Updated content',
+        context_body: 'Updated body',
       })
     })
 
     expect(onSaved).toHaveBeenCalled()
     expect(onClose).toHaveBeenCalled()
-  })
-
-  it('preserves form on 409 and calls mapApiError', async () => {
-    const user = userEvent.setup()
-    const onSaved = vi.fn(async () => undefined)
-    const onClose = vi.fn()
-
-    upsertContextMock.mockRejectedValue(contextConflict409)
-
-    render(
-      <ContextEditor
-        mode="create"
-        defaultAgentKind="deep"
-        defaultGateId={null}
-        onClose={onClose}
-        onSaved={onSaved}
-      />,
-    )
-
-    await user.type(screen.getByLabelText('key'), 'conflict_key')
-    await user.type(
-      screen.getByTestId('context-content-input'),
-      'Conflict content',
-    )
-    await user.click(screen.getByRole('button', { name: 'Save' }))
-
-    await waitFor(() => {
-      expect(mapApiErrorMock).toHaveBeenCalledWith(contextConflict409)
-    })
-
-    expect(screen.getByTestId('context-content-input')).toHaveValue(
-      'Conflict content',
-    )
-    expect(screen.getByTestId('context-editor')).toBeInTheDocument()
-    expect(onClose).not.toHaveBeenCalled()
   })
 })
