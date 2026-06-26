@@ -28,7 +28,7 @@ describe('Sidebar', () => {
         path === '/monitoring'
           ? 'Мониторинг'
           : path === '/deep'
-            ? 'Deep'
+            ? 'Список срабатываний'
             : path === '/usage'
               ? 'Usage'
               : path === '/settings/agents'

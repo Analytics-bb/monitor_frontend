@@ -196,7 +196,7 @@ export function DeepListPage() {
     >
       <header className="shrink-0">
         <h1 className="text-2xl font-semibold tracking-tight">
-          Deep Analytics — каталог audits
+          Список срабатываний
         </h1>
       </header>
 
