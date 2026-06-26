@@ -131,16 +131,6 @@ export function ActionFields({ value, onChange }: ActionFieldsProps) {
           </select>
         </label>
       </div>
-      <label className="flex items-center gap-2 text-sm">
-        <input
-          type="checkbox"
-          checked={value.require_sql}
-          onChange={(event) =>
-            onChange({ ...value, require_sql: event.target.checked })
-          }
-        />
-        <span>require_sql</span>
-      </label>
     </fieldset>
   )
 }

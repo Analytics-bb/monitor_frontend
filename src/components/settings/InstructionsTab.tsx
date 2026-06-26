@@ -196,7 +196,7 @@ export function InstructionsTab({ className }: InstructionsTabProps) {
                       type="button"
                       variant="ghost"
                       size="icon"
-                      className="text-muted-foreground hover:bg-muted/40 hover:text-foreground h-8 w-8 transition-colors"
+                      className="text-muted-foreground hover:bg-transparent hover:text-foreground dark:hover:bg-transparent h-8 w-8 transition-colors"
                       aria-label={`Редактировать: ${item.name}`}
                       onClick={() =>
                         setEditor({ mode: 'edit', instruction: item })
