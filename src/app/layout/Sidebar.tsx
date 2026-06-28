@@ -1,5 +1,6 @@
 import {
   Activity,
+  Bot,
   ListChecks,
   LogIn,
   PanelLeftClose,
@@ -28,6 +29,7 @@ const navItems: ReadonlyArray<{
 }> = [
   { to: '/monitoring', label: 'Мониторинг', icon: Activity },
   { to: '/deep', label: 'Аналитика срабатываний', icon: ListChecks },
+  { to: '/support', label: 'Саппорт', icon: Bot },
   { to: '/usage', label: 'Использование', icon: PieChart },
   { to: '/settings/agents', label: 'Настройки', icon: Settings },
   { to: '/cabinet', label: 'Кабинет', icon: UserRound },
@@ -150,20 +152,14 @@ export function Sidebar({ authSlot }: SidebarProps) {
             title={collapsed ? 'Login' : undefined}
             aria-label={collapsed ? 'Login' : undefined}
             className={cn(
-              'text-muted-foreground hover:bg-muted hover:text-foreground flex items-center rounded-md py-2 text-sm transition-colors',
-              collapsed ? 'justify-center px-2' : 'gap-3 px-3',
+              'text-muted-foreground hover:bg-muted hover:text-foreground transition-colors',
+              collapsed
+                ? 'inline-flex size-8 shrink-0 items-center justify-center rounded-md'
+                : 'flex items-center gap-3 rounded-md px-3 py-2 text-sm',
             )}
           >
             <LogIn className="size-5 shrink-0" aria-hidden />
-            <span
-              className={cn(
-                'truncate whitespace-nowrap transition-all duration-300',
-                collapsed ? 'w-0 opacity-0' : 'w-auto opacity-100',
-              )}
-              aria-hidden={collapsed}
-            >
-              Login
-            </span>
+            {!collapsed ? <span>Login</span> : null}
           </NavLink>
         )}
         <ThemeToggle />

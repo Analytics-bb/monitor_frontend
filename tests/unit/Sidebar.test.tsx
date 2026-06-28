@@ -8,6 +8,7 @@ import { Sidebar } from '@/app/layout/Sidebar'
 const EXPECTED_ROUTES = [
   '/monitoring',
   '/deep',
+  '/support',
   '/usage',
   '/settings/agents',
   '/cabinet',
@@ -32,9 +33,11 @@ describe('Sidebar', () => {
       const label =
         path === '/monitoring'
           ? 'Мониторинг'
-          : path === '/deep'
+            : path === '/deep'
             ? 'Аналитика срабатываний'
-            : path === '/usage'
+            : path === '/support'
+              ? 'Саппорт'
+              : path === '/usage'
               ? 'Использование'
               : path === '/settings/agents'
                 ? 'Настройки'

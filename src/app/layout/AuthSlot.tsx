@@ -5,19 +5,12 @@ import { NavLink, useNavigate } from 'react-router'
 import { SidebarCollapsedContext } from './sidebarCollapsedContext'
 import { clearMockSession, isMockAuthenticated } from '@/auth/mockSession'
 import { Button } from '@/components/ui/button'
-import { cn } from '@/lib/utils'
 
-const linkClassName = (collapsed: boolean) =>
-  cn(
-    'text-muted-foreground hover:bg-muted hover:text-foreground flex items-center rounded-md py-2 text-sm transition-colors',
-    collapsed ? 'justify-center px-2' : 'gap-3 px-3',
-  )
+const expandedLinkClassName =
+  'text-muted-foreground hover:bg-muted hover:text-foreground flex h-auto items-center gap-3 rounded-md px-3 py-2 text-sm font-normal transition-colors'
 
-const labelClassName = (collapsed: boolean) =>
-  cn(
-    'truncate whitespace-nowrap transition-all duration-300',
-    collapsed ? 'w-0 opacity-0' : 'w-auto opacity-100',
-  )
+const collapsedIconClassName =
+  'text-muted-foreground hover:bg-muted hover:text-foreground inline-flex size-8 shrink-0 items-center justify-center rounded-md transition-colors'
 
 /**
  * Слот Login/Logout в sidebar: один элемент по состоянию mock-сессии.
@@ -31,7 +24,8 @@ export function AuthSlot() {
     return (
       <Button
         aria-label={collapsed ? 'Logout' : undefined}
-        className={cn(linkClassName(collapsed), 'h-auto font-normal')}
+        className={collapsed ? collapsedIconClassName : expandedLinkClassName}
+        size={collapsed ? 'icon-sm' : undefined}
         title={collapsed ? 'Logout' : undefined}
         type="button"
         variant="ghost"
@@ -42,9 +36,7 @@ export function AuthSlot() {
         }}
       >
         <LogOut aria-hidden className="size-5 shrink-0" />
-        <span aria-hidden={collapsed} className={labelClassName(collapsed)}>
-          Logout
-        </span>
+        {!collapsed ? <span>Logout</span> : null}
       </Button>
     )
   }
@@ -52,14 +44,12 @@ export function AuthSlot() {
   return (
     <NavLink
       aria-label={collapsed ? 'Login' : undefined}
-      className={linkClassName(collapsed)}
+      className={collapsed ? collapsedIconClassName : expandedLinkClassName}
       title={collapsed ? 'Login' : undefined}
       to="/login"
     >
       <LogIn aria-hidden className="size-5 shrink-0" />
-      <span aria-hidden={collapsed} className={labelClassName(collapsed)}>
-        Login
-      </span>
+      {!collapsed ? <span>Login</span> : null}
     </NavLink>
   )
 }

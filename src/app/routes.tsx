@@ -11,6 +11,7 @@ import { LoginPage } from '@/pages/LoginPage'
 import { MonitoringPage } from '@/pages/MonitoringPage'
 import { UsagePage } from '@/pages/UsagePage'
 import { UsageRunDetailPage } from '@/pages/UsageRunDetailPage'
+import { SupportPage } from '@/pages/SupportPage'
 
 function guard(element: ReactElement) {
   return <ProtectedRoute>{element}</ProtectedRoute>
@@ -32,6 +33,7 @@ export const appRoutes: RouteObject[] = [
       { path: 'monitoring', element: guard(<MonitoringPage />) },
       { path: 'deep', element: guard(<DeepListPage />) },
       { path: 'deep/:auditId', element: guard(<DeepChatPage />) },
+      { path: 'support', element: guard(<SupportPage />) },
       { path: 'usage', element: guard(<UsagePage />) },
       { path: 'usage/:runId', element: guard(<UsageRunDetailPage />) },
       {
