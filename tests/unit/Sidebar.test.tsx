@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router'
 import { describe, expect, it } from 'vitest'
 import { ThemeProvider } from '@/app/providers/ThemeProvider'
@@ -13,24 +14,28 @@ const EXPECTED_ROUTES = [
   '/login',
 ]
 
+function renderSidebar() {
+  return render(
+    <ThemeProvider>
+      <MemoryRouter>
+        <Sidebar />
+      </MemoryRouter>
+    </ThemeProvider>,
+  )
+}
+
 describe('Sidebar', () => {
   it('renders all M17 navigation links', () => {
-    render(
-      <ThemeProvider>
-        <MemoryRouter>
-          <Sidebar />
-        </MemoryRouter>
-      </ThemeProvider>,
-    )
+    renderSidebar()
 
     for (const path of EXPECTED_ROUTES) {
       const label =
         path === '/monitoring'
           ? 'Мониторинг'
           : path === '/deep'
-            ? 'Deep'
+            ? 'Аналитика срабатываний'
             : path === '/usage'
-              ? 'Usage'
+              ? 'Использование'
               : path === '/settings/agents'
                 ? 'Настройки'
                 : path === '/cabinet'
@@ -42,5 +47,31 @@ describe('Sidebar', () => {
         path,
       )
     }
+  })
+
+  it('collapses and expands with animated width state', async () => {
+    const user = userEvent.setup()
+    renderSidebar()
+
+    const sidebar = screen.getByTestId('sidebar')
+    expect(sidebar).toHaveAttribute('data-collapsed', 'false')
+    expect(sidebar).toHaveClass('w-56')
+
+    await user.click(
+      screen.getByRole('button', { name: 'Свернуть боковую панель' }),
+    )
+
+    expect(sidebar).toHaveAttribute('data-collapsed', 'true')
+    expect(sidebar).toHaveClass('w-16')
+    expect(
+      screen.getByRole('link', { name: 'Мониторинг' }),
+    ).toBeInTheDocument()
+
+    await user.click(
+      screen.getByRole('button', { name: 'Развернуть боковую панель' }),
+    )
+
+    expect(sidebar).toHaveAttribute('data-collapsed', 'false')
+    expect(sidebar).toHaveClass('w-56')
   })
 })

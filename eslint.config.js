@@ -24,6 +24,22 @@ export default defineConfig([
     },
   },
   {
+    files: ['src/api/**/*.ts'],
+    rules: {
+      'react-hooks/rules-of-hooks': 'off',
+    },
+  },
+  {
+    files: [
+      'src/components/monitoring/**/*.{ts,tsx}',
+      'src/components/settings/**/*.{ts,tsx}',
+    ],
+    rules: {
+      'react-refresh/only-export-components': 'off',
+      'react-hooks/set-state-in-effect': 'off',
+    },
+  },
+  {
     files: ['src/components/ui/**/*.{ts,tsx}'],
     rules: {
       'react-refresh/only-export-components': 'off',

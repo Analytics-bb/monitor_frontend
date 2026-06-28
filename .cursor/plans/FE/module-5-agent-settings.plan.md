@@ -4,25 +4,25 @@ overview: "Страница /settings/agents: две секции Instructions (
 todos:
   - id: m5-page-tabs
     content: "AgentSettingsPage: tabs Instructions | Contexts; route /settings/agents"
-    status: pending
+    status: completed
   - id: m5-instructions-list
     content: "GET /settings/instructions — table + enabled toggle → PATCH"
-    status: pending
+    status: completed
   - id: m5-instruction-editor
     content: "Create/edit prompt_template — POST/PATCH/DELETE по OpenAPI M6"
-    status: pending
+    status: completed
   - id: m5-contexts-list
     content: "GET /agent/contexts?agent_kind&gate_id — split hypothesis/deep"
-    status: pending
+    status: completed
   - id: m5-context-upsert
     content: "PUT /agent/contexts global (gate_id null) и per-gate; DELETE context"
-    status: pending
+    status: completed
   - id: m5-conflict-handling
     content: "409 upsert → toast error_code; form state preserved"
-    status: pending
+    status: completed
   - id: m5-tests
     content: "Vitest: toggle instruction mock; context PUT roundtrip; 409 display"
-    status: pending
+    status: completed
 isProject: false
 ---
 

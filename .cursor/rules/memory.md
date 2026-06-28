@@ -36,19 +36,19 @@ alwaysApply: true
 | Layout + Sidebar | `src/app/` | pending | FE `module-0-index` (Phase 3) |
 | StatusBadge | `src/components/` | pending | единая система: success/error/skipped/active/awaiting_approval/completed |
 | Monitoring | `/monitoring` | done | `docs/modules/module-1-monitoring.md` |
-| Deep list | `/deep` | pending | `GET /deep/cases` |
+| Deep list | `/deep` | done | `docs/modules/module-2-deep-list.md` |
 | Deep chat | `/deep/{audit_id}` | pending | polling + mutations M16 |
 | Usage | `/usage`, `/usage/{run_id}` | pending | M14 runs API |
 | Agent settings | `/settings/agents` | pending | M6 instructions + M15 contexts |
-| Login (mock) | `/login` | pending | localStorage, без API |
-| Cabinet (mock) | `/cabinet` | pending | placeholder |
+| Login (mock) | `/login` | done | `.cursor/plans/FE/module-6-mock-auth.plan.md` |
+| Cabinet (mock) | `/cabinet` | done | `.cursor/plans/FE/module-6-mock-auth.plan.md` |
 | API client | `src/api/` | pending | mock samples → реальный `ANOMALY_API_BASE_URL` |
 | Hooks | `src/hooks/` | pending | `usePolling`, `useDeepChat` |
 | Scaffold | корень репо | pending | Phase 2 setup-плана |
 | Deploy | `deploy/` | pending | nginx SPA + `/api/*` proxy (M0 §3.3) |
 | `.cursor` адаптация | `.cursor/` | in progress | Phase 1 setup-плана |
 
-**Критический путь реализации:** M0 (index) done → **M1 monitoring done** → следующий: M2 deep list (`/deep`) → M3 deep chat → остальные страницы → deploy.
+**Критический путь реализации:** M0 (index) done → M1 monitoring done → M2 deep list done → M6 mock auth done → следующий: **M4 usage** (формальное закрытие M3/M5 — при необходимости).
 
 ## Архитектурные решения (ADR)
 

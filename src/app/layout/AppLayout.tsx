@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 import { Outlet } from 'react-router'
 import { Toaster } from 'sonner'
 
+import { AuthSlot } from './AuthSlot'
 import { Sidebar } from './Sidebar'
 
 export interface AppLayoutProps {
@@ -14,7 +15,7 @@ export interface AppLayoutProps {
  *
  * @param props.authSlot - Слот Login/Logout (реализация в module-6)
  */
-export function AppLayout({ authSlot }: AppLayoutProps) {
+export function AppLayout({ authSlot = <AuthSlot /> }: AppLayoutProps) {
   return (
     <div className="bg-background text-foreground flex min-h-svh">
       <Sidebar authSlot={authSlot} />
