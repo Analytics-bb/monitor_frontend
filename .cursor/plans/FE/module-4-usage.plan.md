@@ -10,10 +10,10 @@ todos:
     status: completed
   - id: m4-runs-table
     content: "UsagePage + UsageRunsTable: TanStack table, pagination, row → /usage/:runId"
-    status: pending
+    status: completed
   - id: m4-run-detail
     content: "Route /usage/:runId, UsageRunDetailPage: metadata + step_breakdown (deep)"
-    status: pending
+    status: completed
   - id: m4-daily-widget
     content: "UsageDailySummary: GET /agent/usage/daily, client sum cards (today MSK)"
     status: pending
