@@ -23,7 +23,7 @@ const AGENT_KIND_OPTIONS: {
   value: UsageFiltersState['agent_kind']
   label: string
 }[] = [
-  { value: '', label: 'Все' },
+  { value: '', label: 'All' },
   { value: 'hypothesis', label: 'Hypothesis' },
   { value: 'deep', label: 'Deep' },
 ]

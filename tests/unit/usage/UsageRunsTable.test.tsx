@@ -31,11 +31,12 @@ describe('UsageRunsTable', () => {
       </MemoryRouter>,
     )
 
-    const link = screen.getByTestId('usage-audit-link')
+    const link = screen.getByRole('link', { name: 'Открыть deep chat' })
     expect(link).toHaveAttribute(
       'href',
       `/deep/${agentUsageRunFixture.audit_id}`,
     )
+    expect(link).toHaveAttribute('data-testid', 'usage-audit-link')
   })
 
   it('does not render audit link when audit_id is null', () => {

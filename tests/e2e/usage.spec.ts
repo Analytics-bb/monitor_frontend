@@ -11,7 +11,7 @@ test('usage list drill-down opens run detail page', async ({ page }) => {
   await page.goto('/usage')
 
   await expect(page.getByTestId('usage-page')).toBeVisible()
-  await expect(page.getByRole('heading', { name: 'Usage' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Использование' })).toBeVisible()
   await expect(page.getByTestId('usage-runs-table-row').first()).toBeVisible({
     timeout: 10_000,
   })

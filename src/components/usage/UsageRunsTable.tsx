@@ -1,3 +1,4 @@
+import { MessageSquare } from 'lucide-react'
 import { Link } from 'react-router'
 
 import type { AgentUsageRun } from '@/api/usage'
@@ -99,18 +100,21 @@ export function UsageRunsTable({
                   {formatGate(item.gate_id)}
                 </span>
               </td>
-              <td className="px-3 py-2 text-center font-mono text-xs">
+              <td className="px-3 py-2 text-center">
                 {item.audit_id ? (
                   <Link
                     to={`/deep/${item.audit_id}`}
-                    className="text-primary hover:underline"
+                    className="text-muted-foreground hover:text-primary inline-flex size-8 items-center justify-center transition-colors"
+                    aria-label="Открыть deep chat"
                     data-testid="usage-audit-link"
                     onClick={(event) => event.stopPropagation()}
                   >
-                    {item.audit_id.slice(0, 8)}
+                    <MessageSquare aria-hidden className="size-4" />
                   </Link>
                 ) : (
-                  <span title="backfill pending">—</span>
+                  <span className="text-muted-foreground text-xs" title="backfill pending">
+                    —
+                  </span>
                 )}
               </td>
               <td className="px-3 py-2 text-center font-mono text-xs">

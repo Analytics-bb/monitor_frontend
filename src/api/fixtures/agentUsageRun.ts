@@ -80,7 +80,73 @@ export const agentUsageRunHypothesisFixture: AgentUsageRun = {
   created_at: '2025-07-14 11:20:00',
 }
 
-/** Список runs для fixture list API. */
+/** Daily rollups для fixture daily API. */
+export const agentUsageDailyRollupFixture: AgentUsageDailyRollup[] = [
+  {
+    date: '2025-07-14',
+    gate_id: '42',
+    agent_kind: 'deep',
+    total_tokens: 1540,
+    total_cost_usd: 0.042,
+    run_count: 1,
+  },
+  {
+    date: '2025-07-14',
+    gate_id: '17',
+    agent_kind: 'deep',
+    total_tokens: 2610,
+    total_cost_usd: 0.071,
+    run_count: 1,
+  },
+]
+
+const FIXTURE_RUN_COUNT = 30
+
+function fixtureUuid(slot: number): string {
+  const suffix = slot.toString(16).padStart(12, '0')
+  return `00000000-0000-4000-8000-${suffix}`
+}
+
+function buildGeneratedUsageRun(index: number): AgentUsageRun {
+  const isDeep = index % 3 !== 1
+  const gateId = index % 2 === 0 ? '42' : '17'
+  const day = 14 - (index % 5)
+  const hour = 8 + (index % 12)
+  const minute = (index * 7) % 60
+  const promptTokens = 600 + index * 45
+  const completionTokens = 80 + index * 12
+  const statusCycle: AgentUsageRun['status'][] = [
+    'success',
+    'success',
+    'error',
+    'success',
+    'skipped',
+  ]
+  const status = statusCycle[index % statusCycle.length]!
+
+  return {
+    run_id: fixtureUuid(index + 10),
+    agent_kind: isDeep ? 'deep' : 'hypothesis',
+    gate_id: gateId,
+    audit_id: isDeep ? fixtureUuid(index + 100) : null,
+    session_id: isDeep ? fixtureUuid(index + 200) : null,
+    provider_run_id: `prov-run-${index}`,
+    model: isDeep ? 'gpt-4.1' : 'gpt-4.1-mini',
+    prompt_tokens: promptTokens,
+    completion_tokens: completionTokens,
+    total_tokens: promptTokens + completionTokens,
+    estimated_cost_usd: Number((0.005 + index * 0.003).toFixed(4)),
+    latency_ms: 500 + index * 40,
+    status,
+    error: status === 'error' ? 'tool timeout' : null,
+    step_breakdown: isDeep
+      ? [{ tool_name: 'mysql_query', latency_ms: 300 + index * 20 }]
+      : [],
+    created_at: `2025-07-${String(day).padStart(2, '0')} ${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}:00`,
+  }
+}
+
+/** Список runs для fixture list API (30 записей). */
 export const agentUsageRunsListFixture: AgentUsageRun[] = [
   agentUsageRunFixture,
   agentUsageRunHypothesisFixture,
@@ -102,26 +168,9 @@ export const agentUsageRunsListFixture: AgentUsageRun[] = [
     step_breakdown: [{ tool_name: 'mysql_query', latency_ms: 2340 }],
     created_at: '2025-07-13 18:05:00',
   },
-]
-
-/** Daily rollups для fixture daily API. */
-export const agentUsageDailyRollupFixture: AgentUsageDailyRollup[] = [
-  {
-    date: '2025-07-14',
-    gate_id: '42',
-    agent_kind: 'deep',
-    total_tokens: 1540,
-    total_cost_usd: 0.042,
-    run_count: 1,
-  },
-  {
-    date: '2025-07-14',
-    gate_id: '17',
-    agent_kind: 'deep',
-    total_tokens: 2610,
-    total_cost_usd: 0.071,
-    run_count: 1,
-  },
+  ...Array.from({ length: FIXTURE_RUN_COUNT - 3 }, (_, offset) =>
+    buildGeneratedUsageRun(offset + 3),
+  ),
 ]
 
 /**

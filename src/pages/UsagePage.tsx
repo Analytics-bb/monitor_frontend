@@ -121,25 +121,6 @@ export function UsagePage() {
     }
   }, [listParams])
 
-  const refetchDaily = useCallback(async () => {
-    setIsDailyLoading(true)
-
-    try {
-      const today = getUsageTodayDateString()
-      const rollups = await listUsageDaily({
-        gate_id: appliedFilters.gate_id || undefined,
-        date_from: today,
-        date_to: today,
-      })
-      setDailyRollups(rollups)
-    } catch (fetchError) {
-      mapApiError(fetchError)
-      setDailyRollups([])
-    } finally {
-      setIsDailyLoading(false)
-    }
-  }, [appliedFilters.gate_id])
-
   useEffect(() => {
     let cancelled = false
 
@@ -292,20 +273,12 @@ export function UsagePage() {
       className="mx-auto flex h-[calc(100svh-3rem)] w-full max-w-[1440px] flex-col gap-4 overflow-hidden"
       data-testid="usage-page"
     >
-      <header className="flex shrink-0 items-center justify-between gap-3">
-        <h1 className="text-2xl font-semibold tracking-tight">Usage</h1>
-        <Button
-          type="button"
-          size="sm"
-          variant="outline"
-          disabled={isLoading}
-          onClick={() => {
-            void refetch()
-            void refetchDaily()
-          }}
-        >
-          Refresh
-        </Button>
+      <header className="shrink-0">
+        <h1 className="text-2xl font-semibold tracking-tight">Использование</h1>
+        <p className="text-muted-foreground mt-1 text-sm">
+          Контроль расхода токенов агентов — история runs, фильтры и детализация
+          по audit
+        </p>
       </header>
 
       <UsageDailySummary rollups={dailyRollups} isLoading={isDailyLoading} />

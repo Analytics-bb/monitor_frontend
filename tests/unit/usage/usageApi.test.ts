@@ -23,7 +23,7 @@ describe('usage API fixtures', () => {
   it('listUsageRuns returns paginated envelope from fixture', async () => {
     const result = await listUsageRuns({ page: 1, page_size: 2 })
 
-    expect(result.total).toBe(3)
+    expect(result.total).toBe(30)
     expect(result.page).toBe(1)
     expect(result.page_size).toBe(2)
     expect(result.items).toHaveLength(2)
