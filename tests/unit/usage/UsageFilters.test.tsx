@@ -1,10 +1,8 @@
 import { render, screen } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 
-import {
-  UsageFilters,
-  readUsageFiltersFromSearchParams,
-} from '@/components/usage/UsageFilters'
+import { UsageFilters } from '@/components/usage/UsageFilters'
+import { readUsageFiltersFromSearchParams } from '@/lib/usageFilters'
 
 describe('UsageFilters URL sync', () => {
   it('parses audit_id from search params and displays chip', () => {

@@ -10,6 +10,27 @@ interface UsageRunDetailLocationState {
   usageListSearch?: string
 }
 
+function UsageRunDetailError({
+  errorCode,
+  backHref,
+}: {
+  errorCode: string
+  backHref: string
+}) {
+  return (
+    <section
+      className="border-destructive/30 bg-destructive/5 space-y-3 rounded-md border p-4"
+      data-testid="usage-run-detail-error"
+      role="alert"
+    >
+      <p className="text-destructive font-mono text-sm">{errorCode}</p>
+      <Button asChild size="sm" variant="outline">
+        <Link to={backHref}>← Usage</Link>
+      </Button>
+    </section>
+  )
+}
+
 /**
  * Страница детализации usage run по `/usage/:runId`.
  */
@@ -17,7 +38,7 @@ export function UsageRunDetailPage() {
   const { runId } = useParams<{ runId: string }>()
   const location = useLocation()
   const [run, setRun] = useState<AgentUsageRun | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
+  const [isLoading, setIsLoading] = useState(Boolean(runId))
   const [errorCode, setErrorCode] = useState<string | null>(null)
 
   const backHref = useMemo(() => {
@@ -28,8 +49,6 @@ export function UsageRunDetailPage() {
 
   useEffect(() => {
     if (!runId) {
-      setErrorCode('usage_run_not_found')
-      setIsLoading(false)
       return
     }
 
@@ -72,6 +91,15 @@ export function UsageRunDetailPage() {
     }
   }, [runId])
 
+  if (!runId) {
+    return (
+      <UsageRunDetailError
+        errorCode="usage_run_not_found"
+        backHref={backHref}
+      />
+    )
+  }
+
   if (isLoading) {
     return (
       <section className="space-y-4" data-testid="usage-run-detail-loading">
@@ -89,18 +117,7 @@ export function UsageRunDetailPage() {
   }
 
   if (errorCode) {
-    return (
-      <section
-        className="border-destructive/30 bg-destructive/5 space-y-3 rounded-md border p-4"
-        data-testid="usage-run-detail-error"
-        role="alert"
-      >
-        <p className="text-destructive font-mono text-sm">{errorCode}</p>
-        <Button asChild size="sm" variant="outline">
-          <Link to={backHref}>← Usage</Link>
-        </Button>
-      </section>
-    )
+    return <UsageRunDetailError errorCode={errorCode} backHref={backHref} />
   }
 
   if (!run) {

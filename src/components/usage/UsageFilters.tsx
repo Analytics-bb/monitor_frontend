@@ -9,14 +9,6 @@ import {
 } from '@/lib/usageFilters'
 import { cn } from '@/lib/utils'
 
-export type { AgentKindFilter, UsageFiltersState } from '@/lib/usageFilters'
-export {
-  EMPTY_USAGE_FILTERS,
-  hasActiveUsageFilters,
-  readUsageFiltersFromSearchParams,
-  writeUsageFiltersToSearchParams,
-} from '@/lib/usageFilters'
-
 export interface UsageFiltersProps {
   values: UsageFiltersState
   onChange: (values: UsageFiltersState) => void

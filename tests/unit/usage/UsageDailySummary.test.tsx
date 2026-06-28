@@ -2,10 +2,8 @@ import { render, screen } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 
 import { agentUsageDailyRollupFixture } from '@/api/fixtures/agentUsageRun'
-import {
-  UsageDailySummary,
-  sumUsageDailyRollups,
-} from '@/components/usage/UsageDailySummary'
+import { UsageDailySummary } from '@/components/usage/UsageDailySummary'
+import { sumUsageDailyRollups } from '@/lib/usageDaily'
 
 describe('UsageDailySummary', () => {
   it('sums fixture rollups into stat cards', () => {

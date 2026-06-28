@@ -19,10 +19,10 @@ todos:
     status: completed
   - id: m4-no-usage-total
     content: "Guard: не импортировать agent_sessions.usage_total; grep checklist"
-    status: pending
+    status: completed
   - id: m4-tests
     content: "Vitest: list fixture; audit_id link; step_breakdown; e2e drill-down"
-    status: pending
+    status: completed
 isProject: false
 ---
 
