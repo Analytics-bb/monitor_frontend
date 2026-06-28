@@ -5,10 +5,16 @@ export {
   type AuditEntry,
 } from './auditEntry'
 export {
+  agentUsageDailyRollupFixture,
   agentUsageRunFixture,
+  agentUsageRunHypothesisFixture,
   agentUsageRunSchema,
+  agentUsageRunsListFixture,
+  parseAgentUsageDailyRollup,
   parseAgentUsageRun,
+  type AgentUsageDailyRollup,
   type AgentUsageRun,
+  type UsageStepBreakdown,
 } from './agentUsageRun'
 export {
   chatSnapshotFixture,

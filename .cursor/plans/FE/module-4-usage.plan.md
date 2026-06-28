@@ -4,25 +4,25 @@ overview: "Страницы /usage и /usage/{run_id}: таблица AgentUsage
 todos:
   - id: m4-api-usage
     content: "api/usage.ts + Zod M14; sync agentUsageRun fixture (OpenAPI поля, step_breakdown)"
-    status: pending
+    status: completed
   - id: m4-filters
     content: "UsageFilters: gate_id, agent_kind, from, to, audit_id — URL sync"
-    status: pending
+    status: completed
   - id: m4-runs-table
     content: "UsagePage + UsageRunsTable: TanStack table, pagination, row → /usage/:runId"
-    status: pending
+    status: completed
   - id: m4-run-detail
     content: "Route /usage/:runId, UsageRunDetailPage: metadata + step_breakdown (deep)"
-    status: pending
+    status: completed
   - id: m4-daily-widget
     content: "UsageDailySummary: GET /agent/usage/daily, client sum cards (today MSK)"
-    status: pending
+    status: completed
   - id: m4-no-usage-total
     content: "Guard: не импортировать agent_sessions.usage_total; grep checklist"
-    status: pending
+    status: completed
   - id: m4-tests
     content: "Vitest: list fixture; audit_id link; step_breakdown; e2e drill-down"
-    status: pending
+    status: completed
 isProject: false
 ---
 
