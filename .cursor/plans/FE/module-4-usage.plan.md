@@ -7,7 +7,7 @@ todos:
     status: completed
   - id: m4-filters
     content: "UsageFilters: gate_id, agent_kind, from, to, audit_id — URL sync"
-    status: pending
+    status: completed
   - id: m4-runs-table
     content: "UsagePage + UsageRunsTable: TanStack table, pagination, row → /usage/:runId"
     status: pending
