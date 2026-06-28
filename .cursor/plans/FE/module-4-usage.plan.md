@@ -16,7 +16,7 @@ todos:
     status: completed
   - id: m4-daily-widget
     content: "UsageDailySummary: GET /agent/usage/daily, client sum cards (today MSK)"
-    status: pending
+    status: completed
   - id: m4-no-usage-total
     content: "Guard: не импортировать agent_sessions.usage_total; grep checklist"
     status: pending

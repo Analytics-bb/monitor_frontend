@@ -1,9 +1,13 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router'
 
-import { listUsageRuns } from '@/api/usage'
+import { listUsageRuns, listUsageDaily } from '@/api/usage'
 import { mapApiError } from '@/api/errors'
 import { DeepCasesPagination } from '@/components/deep/DeepCasesPagination'
+import {
+  UsageDailySummary,
+  getUsageTodayDateString,
+} from '@/components/usage/UsageDailySummary'
 import {
   UsageFilters,
   EMPTY_USAGE_FILTERS,
@@ -63,6 +67,10 @@ export function UsagePage() {
   const [total, setTotal] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [dailyRollups, setDailyRollups] = useState<
+    Awaited<ReturnType<typeof listUsageDaily>>
+  >([])
+  const [isDailyLoading, setIsDailyLoading] = useState(true)
 
   const page = Number(searchParams.get('page') ?? '1') || 1
   const pageSize = Number(searchParams.get('page_size') ?? '50') || 50
@@ -111,6 +119,25 @@ export function UsagePage() {
     }
   }, [listParams])
 
+  const refetchDaily = useCallback(async () => {
+    setIsDailyLoading(true)
+
+    try {
+      const today = getUsageTodayDateString()
+      const rollups = await listUsageDaily({
+        gate_id: appliedFilters.gate_id || undefined,
+        date_from: today,
+        date_to: today,
+      })
+      setDailyRollups(rollups)
+    } catch (fetchError) {
+      mapApiError(fetchError)
+      setDailyRollups([])
+    } finally {
+      setIsDailyLoading(false)
+    }
+  }, [appliedFilters.gate_id])
+
   useEffect(() => {
     let cancelled = false
 
@@ -144,6 +171,39 @@ export function UsagePage() {
       cancelled = true
     }
   }, [listParams])
+
+  useEffect(() => {
+    let cancelled = false
+
+    void (async () => {
+      setIsDailyLoading(true)
+
+      try {
+        const today = getUsageTodayDateString()
+        const rollups = await listUsageDaily({
+          gate_id: appliedFilters.gate_id || undefined,
+          date_from: today,
+          date_to: today,
+        })
+        if (!cancelled) {
+          setDailyRollups(rollups)
+        }
+      } catch (fetchError) {
+        if (!cancelled) {
+          mapApiError(fetchError)
+          setDailyRollups([])
+        }
+      } finally {
+        if (!cancelled) {
+          setIsDailyLoading(false)
+        }
+      }
+    })()
+
+    return () => {
+      cancelled = true
+    }
+  }, [appliedFilters.gate_id])
 
   useEffect(() => {
     if (isLoading || total === 0) {
@@ -237,11 +297,16 @@ export function UsagePage() {
           size="sm"
           variant="outline"
           disabled={isLoading}
-          onClick={() => void refetch()}
+          onClick={() => {
+            void refetch()
+            void refetchDaily()
+          }}
         >
           Refresh
         </Button>
       </header>
+
+      <UsageDailySummary rollups={dailyRollups} isLoading={isDailyLoading} />
 
       <UsageZone
         label="Фильтры usage runs"
