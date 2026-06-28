@@ -13,6 +13,12 @@ describe('UsageRunDetail', () => {
       </MemoryRouter>,
     )
 
+    expect(screen.getByTestId('usage-run-detail-header')).toBeVisible()
+    expect(screen.getByRole('link', { name: 'Назад' })).toBeVisible()
+    expect(screen.getByRole('link', { name: 'Провалиться в чат' })).toHaveAttribute(
+      'href',
+      `/deep/${agentUsageRunFixture.audit_id}`,
+    )
     expect(screen.getByTestId('usage-step-breakdown-table')).toBeVisible()
     expect(screen.getByText('mysql_query')).toBeVisible()
     expect(screen.getByText('420')).toBeVisible()

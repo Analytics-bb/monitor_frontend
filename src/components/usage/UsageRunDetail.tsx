@@ -1,3 +1,4 @@
+import { ChevronLeft } from 'lucide-react'
 import { Link } from 'react-router'
 
 import type { AgentUsageRun } from '@/api/usage'
@@ -28,10 +29,8 @@ function formatCost(value: number | null): string {
 }
 
 const metadataLabels: { key: keyof AgentUsageRun; label: string }[] = [
-  { key: 'run_id', label: 'Run ID' },
   { key: 'agent_kind', label: 'Agent kind' },
   { key: 'gate_id', label: 'Gate' },
-  { key: 'audit_id', label: 'Audit ID' },
   { key: 'model', label: 'Model' },
   { key: 'prompt_tokens', label: 'Prompt tokens' },
   { key: 'completion_tokens', label: 'Completion tokens' },
@@ -40,7 +39,6 @@ const metadataLabels: { key: keyof AgentUsageRun; label: string }[] = [
   { key: 'latency_ms', label: 'Latency ms' },
   { key: 'status', label: 'Status' },
   { key: 'error', label: 'Error' },
-  { key: 'session_id', label: 'Session ID' },
   { key: 'provider_run_id', label: 'Provider run ID' },
   { key: 'created_at', label: 'Created at' },
 ]
@@ -75,16 +73,32 @@ export function UsageRunDetail({
 
   return (
     <div className={cn('space-y-6', className)} data-testid="usage-run-detail">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <Button asChild variant="ghost" size="sm" className="hover:bg-muted/60">
-          <Link to={backHref}>← Usage</Link>
-        </Button>
-        {run.audit_id ? (
-          <Button asChild size="sm" variant="outline">
-            <Link to={`/deep/${run.audit_id}`}>Open deep case</Link>
-          </Button>
-        ) : null}
-      </div>
+      <header
+        className="border-border bg-card shrink-0 rounded-lg border p-4"
+        data-testid="usage-run-detail-header"
+      >
+        <div className="flex items-center justify-between gap-4">
+          <Link
+            to={backHref}
+            aria-label="Назад"
+            className="bg-elevated text-muted-foreground hover:bg-muted hover:text-foreground flex w-fit shrink-0 items-center gap-1 rounded-md px-2 py-1.5 text-sm transition-colors"
+            data-testid="usage-run-back-link"
+          >
+            <ChevronLeft className="size-5 shrink-0" aria-hidden />
+            <span>Назад</span>
+          </Link>
+          {run.audit_id ? (
+            <Button asChild size="sm" className="min-w-28">
+              <Link
+                to={`/deep/${run.audit_id}`}
+                data-testid="usage-run-deep-chat-link"
+              >
+                Провалиться в чат
+              </Link>
+            </Button>
+          ) : null}
+        </div>
+      </header>
 
       <dl className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {metadataLabels.map(({ key, label }) => (
@@ -102,7 +116,9 @@ export function UsageRunDetail({
 
       {run.agent_kind === 'deep' ? (
         <section className="space-y-3">
-          <h2 className="text-lg font-medium">Step breakdown</h2>
+          <h2 className="text-muted-foreground text-center text-lg font-medium">
+            Детализация по шагам
+          </h2>
           {showStepBreakdown ? (
             <div className="overflow-x-auto">
               <table

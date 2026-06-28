@@ -1,10 +1,10 @@
+import { ChevronLeft } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useLocation, useParams } from 'react-router'
 
 import { getUsageRun, type AgentUsageRun } from '@/api/usage'
 import { ApiClientError, isApiErrorCode, mapApiError } from '@/api/errors'
 import { UsageRunDetail } from '@/components/usage/UsageRunDetail'
-import { Button } from '@/components/ui/button'
 
 interface UsageRunDetailLocationState {
   usageListSearch?: string
@@ -24,9 +24,14 @@ function UsageRunDetailError({
       role="alert"
     >
       <p className="text-destructive font-mono text-sm">{errorCode}</p>
-      <Button asChild size="sm" variant="outline">
-        <Link to={backHref}>← Usage</Link>
-      </Button>
+      <Link
+        to={backHref}
+        aria-label="Назад"
+        className="bg-elevated text-muted-foreground hover:bg-muted hover:text-foreground inline-flex w-fit shrink-0 items-center gap-1 rounded-md px-2 py-1.5 text-sm transition-colors"
+      >
+        <ChevronLeft className="size-5 shrink-0" aria-hidden />
+        <span>Назад</span>
+      </Link>
     </section>
   )
 }
@@ -126,9 +131,6 @@ export function UsageRunDetailPage() {
 
   return (
     <section data-testid="usage-run-detail-page">
-      <header className="mb-4">
-        <h1 className="text-2xl font-semibold tracking-tight">Usage run</h1>
-      </header>
       <UsageRunDetail run={run} backHref={backHref} />
     </section>
   )
