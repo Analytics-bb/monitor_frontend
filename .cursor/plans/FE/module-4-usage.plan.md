@@ -4,7 +4,7 @@ overview: "Страницы /usage и /usage/{run_id}: таблица AgentUsage
 todos:
   - id: m4-api-usage
     content: "api/usage.ts + Zod M14; sync agentUsageRun fixture (OpenAPI поля, step_breakdown)"
-    status: pending
+    status: completed
   - id: m4-filters
     content: "UsageFilters: gate_id, agent_kind, from, to, audit_id — URL sync"
     status: pending
