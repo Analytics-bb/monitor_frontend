@@ -23,7 +23,7 @@ todos:
   - id: m4-tests
     content: "Vitest: list fixture; audit_id link; step_breakdown; e2e drill-down"
     status: completed
-isProject: false
+isProject: true
 ---
 
 # FE Module 4 — Usage (`/usage`, `/usage/{run_id}`)
@@ -218,13 +218,13 @@ Daily query: `gate_id?`, `date_from?`, `date_to?`.
 
 ## DoD
 
-- [ ] `api/usage.ts` + fixture M14-aligned.
-- [ ] Таблица runs с filters и pagination.
-- [ ] Sub-route `/usage/:runId` с step_breakdown для deep.
-- [ ] Links to deep by audit_id.
-- [ ] Нет `usage_total` в коде модуля.
-- [ ] Light + dark корректны; semantic tokens.
-- [ ] Тесты проходят; M17 §9.2 usage пункты готовы.
+- [x] `api/usage.ts` + fixture M14-aligned.
+- [x] Таблица runs с filters и pagination.
+- [x] Sub-route `/usage/:runId` с step_breakdown для deep.
+- [x] Links to deep by audit_id.
+- [x] Нет `usage_total` в коде модуля.
+- [x] Light + dark корректны; semantic tokens.
+- [x] Тесты проходят; M17 §9.2 usage пункты готовы.
 
 ---
 

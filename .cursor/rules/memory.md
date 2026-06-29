@@ -38,7 +38,7 @@ alwaysApply: true
 | Monitoring | `/monitoring` | done | `docs/modules/module-1-monitoring.md` |
 | Deep list | `/deep` | done | `docs/modules/module-2-deep-list.md` |
 | Deep chat | `/deep/{audit_id}` | pending | polling + mutations M16 |
-| Usage | `/usage`, `/usage/{run_id}` | pending | M14 runs API |
+| Usage | `/usage`, `/usage/{run_id}` | done | `docs/modules/module-4-usage.md` |
 | Agent settings | `/settings/agents` | pending | M6 instructions + M15 contexts |
 | Login (mock) | `/login` | done | `.cursor/plans/FE/module-6-mock-auth.plan.md` |
 | Cabinet (mock) | `/cabinet` | done | `.cursor/plans/FE/module-6-mock-auth.plan.md` |
@@ -48,7 +48,7 @@ alwaysApply: true
 | Deploy | `deploy/` | pending | nginx SPA + `/api/*` proxy (M0 §3.3) |
 | `.cursor` адаптация | `.cursor/` | in progress | Phase 1 setup-плана |
 
-**Критический путь реализации:** M0 (index) done → M1 monitoring done → M2 deep list done → M6 mock auth done → следующий: **M4 usage** (формальное закрытие M3/M5 — при необходимости).
+**Критический путь реализации:** M0 (index) done → M1 monitoring done → M2 deep list done → M4 usage done → M6 mock auth done → следующий: **M3 deep chat** (формальное закрытие M5 — при необходимости).
 
 ## Архитектурные решения (ADR)
 
