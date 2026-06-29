@@ -14,21 +14,37 @@ export interface ApiFetchOptions extends RequestInit {
 }
 
 /**
+ * Режим fixtures: нет `VITE_ANOMALY_API_BASE_URL` и разрешена offline-сборка.
+ *
+ * В dev — всегда при пустом base URL. В prod — только при `VITE_USE_API_FIXTURES=true`.
+ */
+export function isFixtureMode(): boolean {
+  if (import.meta.env.VITE_ANOMALY_API_BASE_URL) {
+    return false
+  }
+  return (
+    import.meta.env.DEV || import.meta.env.VITE_USE_API_FIXTURES === 'true'
+  )
+}
+
+/**
  * Возвращает базовый URL REST API anomaly-api.
  *
- * В dev без `VITE_ANOMALY_API_BASE_URL` пишет предупреждение в консоль и возвращает `null`
- * (для работы через fixtures). В prod бросает ошибку, если env не задан.
+ * В fixture-режиме возвращает `null` (см. {@link isFixtureMode}).
+ * Иначе в prod бросает ошибку, если env не задан.
  *
- * @returns Base URL без trailing slash или `null` в dev без конфигурации
- * @throws {Error} В prod-сборке, если `VITE_ANOMALY_API_BASE_URL` не задан
+ * @returns Base URL без trailing slash или `null` в fixture-режиме
+ * @throws {Error} В prod-сборке без API URL и без `VITE_USE_API_FIXTURES`
  */
 export function getApiBaseUrl(): string | null {
   const baseUrl = import.meta.env.VITE_ANOMALY_API_BASE_URL
   if (!baseUrl) {
-    if (import.meta.env.DEV) {
-      console.warn(
-        'VITE_ANOMALY_API_BASE_URL is not configured; use fixtures or set .env',
-      )
+    if (isFixtureMode()) {
+      if (import.meta.env.DEV) {
+        console.warn(
+          'VITE_ANOMALY_API_BASE_URL is not configured; use fixtures or set .env',
+        )
+      }
       return null
     }
     throw new Error('VITE_ANOMALY_API_BASE_URL is not configured')

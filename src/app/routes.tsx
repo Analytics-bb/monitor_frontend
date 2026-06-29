@@ -46,4 +46,12 @@ export const appRoutes: RouteObject[] = [
   },
 ]
 
-export const router = createBrowserRouter(appRoutes)
+/** Basename из Vite `base` (`import.meta.env.BASE_URL`); для GitHub Pages — `/monitor_frontend`. */
+function getRouterBasename(): string | undefined {
+  const basename = import.meta.env.BASE_URL.replace(/\/$/, '')
+  return basename || undefined
+}
+
+export const router = createBrowserRouter(appRoutes, {
+  basename: getRouterBasename(),
+})
