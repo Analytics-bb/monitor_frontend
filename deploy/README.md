@@ -15,7 +15,7 @@ Project site: `https://analytics-bb.github.io/monitor_frontend/`
 
 ### Автодеплой
 
-Workflow [`.github/workflows/pages.yml`](../.github/workflows/pages.yml) на push в `chore/github-pages` (или вручную через **workflow_dispatch**):
+Workflow [`.github/workflows/pages.yml`](../.github/workflows/pages.yml) на push в `main` (или вручную через **workflow_dispatch**):
 
 - `npm run lint`, `typecheck`, `test`, `build`
 - `VITE_BASE_PATH=/<repo-name>/` для assets и React Router
