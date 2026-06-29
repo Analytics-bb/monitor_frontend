@@ -137,18 +137,16 @@ export function validateUsageFilters(
 
 /** Возвращает true, если есть хотя бы одна ошибка валидации фильтров. */
 export function hasUsageFilterErrors(errors: UsageFilterErrors): boolean {
-  return Boolean(
-    errors.gate_id || errors.from || errors.to || errors.audit_id,
-  )
+  return Boolean(errors.gate_id || errors.from || errors.to || errors.audit_id)
 }
 
 /** Возвращает true, если хотя бы один фильтр не пустой. */
 export function hasActiveUsageFilters(filters: UsageFiltersState): boolean {
   return Boolean(
     filters.gate_id ||
-      filters.agent_kind ||
-      filters.from ||
-      filters.to ||
-      filters.audit_id,
+    filters.agent_kind ||
+    filters.from ||
+    filters.to ||
+    filters.audit_id,
   )
 }

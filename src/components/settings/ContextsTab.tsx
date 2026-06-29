@@ -218,7 +218,8 @@ export function ContextsTab({ className }: ContextsTabProps) {
           <SettingsInlineError message={loadError} />
           <Button
             type="button"
-            variant="outline"
+            size="sm"
+            className="min-w-28"
             onClick={() => void loadList(appliedFilters)}
           >
             Повторить

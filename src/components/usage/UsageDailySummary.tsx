@@ -23,7 +23,9 @@ function SummaryCard({
       data-testid={testId}
     >
       <p className="text-muted-foreground text-xs">{label}</p>
-      <p className="mt-1 font-mono text-lg font-semibold tabular-nums">{value}</p>
+      <p className="mt-1 font-mono text-lg font-semibold tabular-nums">
+        {value}
+      </p>
     </div>
   )
 }

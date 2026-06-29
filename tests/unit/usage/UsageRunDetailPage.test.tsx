@@ -7,7 +7,9 @@ import { UsageRunDetailPage } from '@/pages/UsageRunDetailPage'
 describe('UsageRunDetailPage', () => {
   it('shows usage_run_not_found for unknown run id', async () => {
     render(
-      <MemoryRouter initialEntries={['/usage/00000000-0000-4000-8000-000000000000']}>
+      <MemoryRouter
+        initialEntries={['/usage/00000000-0000-4000-8000-000000000000']}
+      >
         <Routes>
           <Route path="/usage/:runId" element={<UsageRunDetailPage />} />
         </Routes>

@@ -49,9 +49,7 @@ export function UsageRunsTable({
             <th className={headerCellClassName}>Gate</th>
             <th className={headerCellClassName}>Audit</th>
             <th className={headerCellClassName}>Model</th>
-            <th className={cn(headerCellClassName, 'text-right')}>
-              Tokens in
-            </th>
+            <th className={cn(headerCellClassName, 'text-right')}>Tokens in</th>
             <th className={cn(headerCellClassName, 'text-right')}>
               Tokens out
             </th>
@@ -91,7 +89,10 @@ export function UsageRunsTable({
                 {item.created_at}
               </td>
               <td className="px-3 py-2 text-center">
-                <Badge variant="outline" className="font-mono text-xs uppercase">
+                <Badge
+                  variant="outline"
+                  className="font-mono text-xs uppercase"
+                >
                   {item.agent_kind}
                 </Badge>
               </td>
@@ -112,7 +113,10 @@ export function UsageRunsTable({
                     <MessageSquare aria-hidden className="size-4" />
                   </Link>
                 ) : (
-                  <span className="text-muted-foreground text-xs" title="backfill pending">
+                  <span
+                    className="text-muted-foreground text-xs"
+                    title="backfill pending"
+                  >
                     —
                   </span>
                 )}

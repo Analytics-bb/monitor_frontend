@@ -232,7 +232,7 @@ export function DeepListPage() {
               <Button
                 type="button"
                 size="sm"
-                variant="outline"
+                className="min-w-28"
                 onClick={() => void refetch()}
               >
                 Retry
@@ -261,7 +261,7 @@ export function DeepListPage() {
                 type="button"
                 size="sm"
                 variant="ghost"
-                className="hover:bg-muted/60"
+                className="hover:bg-muted/60 min-w-28"
                 onClick={handleReset}
               >
                 Сбросить

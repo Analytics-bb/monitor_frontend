@@ -11,7 +11,9 @@ import { ApiClientError } from '@/api/errors'
 
 describe('usage API fixtures', () => {
   it('parses deep and hypothesis runs with OpenAPI M14 fields', () => {
-    expect(parseAgentUsageRun(agentUsageRunFixture)).toEqual(agentUsageRunFixture)
+    expect(parseAgentUsageRun(agentUsageRunFixture)).toEqual(
+      agentUsageRunFixture,
+    )
     expect(parseAgentUsageRun(agentUsageRunHypothesisFixture)).toEqual(
       agentUsageRunHypothesisFixture,
     )

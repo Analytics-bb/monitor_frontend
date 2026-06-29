@@ -106,7 +106,7 @@ export function InstructionsTab({ className }: InstructionsTabProps) {
     return (
       <div className={cn('space-y-3', className)} data-testid="instructions-tab">
         <SettingsInlineError message={loadError} />
-        <Button type="button" variant="outline" onClick={() => void loadList()}>
+        <Button type="button" size="sm" className="min-w-28" onClick={() => void loadList()}>
           Повторить
         </Button>
       </div>

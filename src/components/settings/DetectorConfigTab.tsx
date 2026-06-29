@@ -113,7 +113,7 @@ export function DetectorConfigTab({ className }: DetectorConfigTabProps) {
     return (
       <div className={cn('space-y-3', className)} data-testid="detector-config-tab">
         <SettingsInlineError message={loadError ?? 'Конфиг недоступен'} />
-        <Button type="button" variant="outline" onClick={() => void loadConfig()}>
+        <Button type="button" size="sm" className="min-w-28" onClick={() => void loadConfig()}>
           Повторить
         </Button>
       </div>

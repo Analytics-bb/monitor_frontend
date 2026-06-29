@@ -32,7 +32,7 @@ export function DegradedBanner({
         Scheduler не инициализирован (503). Показаны последние доступные данные.
       </p>
       {onRetry ? (
-        <Button type="button" size="sm" variant="outline" onClick={onRetry}>
+        <Button type="button" size="sm" className="min-w-28" onClick={onRetry}>
           Повторить
         </Button>
       ) : null}

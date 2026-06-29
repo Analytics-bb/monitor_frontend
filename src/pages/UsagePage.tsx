@@ -4,13 +4,9 @@ import { useNavigate, useSearchParams } from 'react-router'
 import { listUsageRuns, listUsageDaily } from '@/api/usage'
 import { mapApiError } from '@/api/errors'
 import { DeepCasesPagination } from '@/components/deep/DeepCasesPagination'
-import {
-  UsageDailySummary,
-} from '@/components/usage/UsageDailySummary'
+import { UsageDailySummary } from '@/components/usage/UsageDailySummary'
 import { getUsageTodayDateString } from '@/lib/usageDaily'
-import {
-  UsageFilters,
-} from '@/components/usage/UsageFilters'
+import { UsageFilters } from '@/components/usage/UsageFilters'
 import {
   EMPTY_USAGE_FILTERS,
   hasActiveUsageFilters,
@@ -60,12 +56,10 @@ function TableSkeletonRows({ rows = 8 }: { rows?: number }) {
 export function UsagePage() {
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
-  const [filterDraft, setFilterDraft] = useState<UsageFiltersState | null>(
-    null,
-  )
-  const [items, setItems] = useState<Awaited<
-    ReturnType<typeof listUsageRuns>
-  >['items']>([])
+  const [filterDraft, setFilterDraft] = useState<UsageFiltersState | null>(null)
+  const [items, setItems] = useState<
+    Awaited<ReturnType<typeof listUsageRuns>>['items']
+  >([])
   const [total, setTotal] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -316,7 +310,7 @@ export function UsagePage() {
               <Button
                 type="button"
                 size="sm"
-                variant="outline"
+                className="min-w-28"
                 onClick={() => void refetch()}
               >
                 Retry
