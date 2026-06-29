@@ -3,7 +3,11 @@ import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vitest/config'
 
+/** Base path для GitHub Pages project site; локально и в CI без env — `/`. */
+const basePath = process.env.VITE_BASE_PATH ?? '/'
+
 export default defineConfig({
+  base: basePath,
   plugins: [react(), tailwindcss()],
   resolve: {
     alias: {
