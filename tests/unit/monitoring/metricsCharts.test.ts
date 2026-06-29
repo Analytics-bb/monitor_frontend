@@ -56,7 +56,7 @@ describe('metricsCharts fixtures', () => {
     expect(metricsToolsFixture.top_ips_tx_details_3h).toHaveLength(10)
   })
 
-  it('includes customer details in top ip chart slide', () => {
+  it('includes anonymized customer details in top ip chart slide', () => {
     const slides = buildMetricsChartSlides(metricsToolsFixture)
     const topIpSlide = slides.find(
       (slide) => slide.key === 'top_ips_tx_details_3h',
@@ -70,12 +70,12 @@ describe('metricsCharts fixtures', () => {
       ]),
     )
     expect(topIpSlide?.data[0]).toMatchObject({
-      label: '185.220.101.42',
-      customer_email: 'xmarcusx89@googlemail.com',
-      customer_first_name: 'Marcus',
-      customer_last_name: 'Junge',
-      card_number: '454793XXXXXX0072',
-      customer_country: 'DEU',
+      label: '10.0.0.1',
+      customer_email: 'user01@example.com',
+      customer_first_name: 'User',
+      customer_last_name: '01',
+      card_number: '411111XXXXXX0101',
+      customer_country: 'DE',
     })
   })
 
@@ -98,19 +98,19 @@ describe('metricsCharts fixtures', () => {
     expect(successRateSlide?.yAxisTicks).toEqual([0, 0.25, 0.5, 0.75, 1])
   })
 
-  it('includes error descriptions in errors by code slide', () => {
+  it('includes generic error descriptions in errors by code slide', () => {
     const slides = buildMetricsChartSlides(metricsToolsFixture)
     const errorsSlide = slides.find((slide) => slide.key === 'errors_24h')
 
     expect(errorsSlide?.series).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
-          key: '942405',
-          description: '[784094] Insufficient funds/over credit limit',
+          key: 'ERR_1001',
+          description: 'Declined by issuer',
         }),
         expect.objectContaining({
-          key: '950952',
-          description: 'Canceled by timeout',
+          key: 'ERR_1002',
+          description: 'Request timeout',
         }),
       ]),
     )

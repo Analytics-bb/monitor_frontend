@@ -466,24 +466,24 @@ function buildTxStatus24hFixture(): MetricsTools['tx_status_24h'] {
 
 const ERROR_CODE_FIXTURES = [
   {
-    error_code: '942405',
-    error_description: '[784094] Insufficient funds/over credit limit',
+    error_code: 'ERR_1001',
+    error_description: 'Declined by issuer',
   },
   {
-    error_code: '950952',
-    error_description: 'Canceled by timeout',
+    error_code: 'ERR_1002',
+    error_description: 'Request timeout',
   },
   {
-    error_code: '1015',
-    error_description: 'SECURE_3D_TIMEOUT',
+    error_code: 'ERR_1003',
+    error_description: '3DS verification failed',
   },
   {
-    error_code: '947167',
-    error_description: 'Payment form canceled',
+    error_code: 'ERR_1004',
+    error_description: 'Cancelled by user',
   },
   {
-    error_code: '942427',
-    error_description: '[784005] Do not honor',
+    error_code: 'ERR_1005',
+    error_description: 'Invalid payment data',
   },
 ] as const
 
@@ -496,38 +496,38 @@ function fixtureErrorCountsByHour(hour: number): Record<ErrorCode, number> {
   ) as Record<ErrorCode, number>
 
   if (hour === 23) {
-    counts['942405'] = 4
-    counts['950952'] = 3
-    counts['1015'] = 2
-    counts['947167'] = 1
-    counts['942427'] = 1
+    counts['ERR_1001'] = 4
+    counts['ERR_1002'] = 3
+    counts['ERR_1003'] = 2
+    counts['ERR_1004'] = 1
+    counts['ERR_1005'] = 1
     return counts
   }
 
   if (hour === 12) {
-    counts['942405'] = 2
-    counts['950952'] = 2
-    counts['1015'] = 1
+    counts['ERR_1001'] = 2
+    counts['ERR_1002'] = 2
+    counts['ERR_1003'] = 1
     return counts
   }
 
   if (hour === 13) {
-    counts['942405'] = 1
-    counts['950952'] = 1
-    counts['947167'] = 1
+    counts['ERR_1001'] = 1
+    counts['ERR_1002'] = 1
+    counts['ERR_1004'] = 1
     return counts
   }
 
   if (hour % 6 === 0) {
-    counts['942405'] = 1
+    counts['ERR_1001'] = 1
   }
 
   if (hour % 8 === 3) {
-    counts['950952'] = 1
+    counts['ERR_1002'] = 1
   }
 
   if (hour % 10 === 7) {
-    counts['1015'] = 1
+    counts['ERR_1003'] = 1
   }
 
   return counts
@@ -599,98 +599,22 @@ function buildSuccessRateByHourCountry24hFixture(): MetricsTools['success_rate_b
 }
 
 function buildTopIpsTxDetails3hFixture(): MetricsTools['top_ips_tx_details_3h'] {
-  return [
-    {
-      ip: '185.220.101.42',
-      tx_count: 18,
-      customer_email: 'xmarcusx89@googlemail.com',
-      customer_country: 'DEU',
-      customer_first_name: 'Marcus',
-      customer_last_name: 'Junge',
-      card_number: '454793XXXXXX0072',
-    },
-    {
-      ip: '91.198.174.192',
-      tx_count: 17,
-      customer_email: 'rocky92@web.de',
-      customer_country: 'DEU',
-      customer_first_name: 'Dennis',
-      customer_last_name: 'Wiemken',
-      card_number: '999999XXXXXX9999',
-    },
-    {
-      ip: '178.63.89.11',
-      tx_count: 16,
-      customer_email: 'rouven1025@gmail.com',
-      customer_country: 'DEU',
-      customer_first_name: 'Rouven',
-      customer_last_name: 'Ulbricht',
-      card_number: '462761XXXXXX0474',
-    },
-    {
-      ip: '194.232.104.55',
-      tx_count: 15,
-      customer_email: 'galyas.jennifer@gmail.com',
-      customer_country: 'AUT',
-      customer_first_name: 'Jennifer',
-      customer_last_name: 'Regina Galyas',
-      card_number: '999999XXXXXX9999',
-    },
-    {
-      ip: '87.122.241.88',
-      tx_count: 14,
-      customer_email: 'kevin210392@web.de',
-      customer_country: 'DEU',
-      customer_first_name: 'Kevin',
-      customer_last_name: 'Dippel',
-      card_number: '530351XXXXXX7675',
-    },
-    {
-      ip: '212.102.63.77',
-      tx_count: 13,
-      customer_email: 'kenansabic321@gmail.com',
-      customer_country: 'DEU',
-      customer_first_name: 'Kenan',
-      customer_last_name: 'Sabic',
-      card_number: '534964XXXXXX6844',
-    },
-    {
-      ip: '46.5.78.203',
-      tx_count: 12,
-      customer_email: 'luanapex18@gmx.de',
-      customer_country: 'DEU',
-      customer_first_name: 'Luan-Luca',
-      customer_last_name: 'Böhnlein',
-      card_number: '454793XXXXXX2930',
-    },
-    {
-      ip: '77.117.168.34',
-      tx_count: 11,
-      customer_email: 'stefan.wallner1@gmx.net',
-      customer_country: 'AUT',
-      customer_first_name: 'Stefan Josef',
-      customer_last_name: 'Wallner',
-      card_number: '447634XXXXXX5178',
-    },
-    {
-      ip: '93.104.214.19',
-      tx_count: 10,
-      customer_email: 'jm.amato@icloud.com',
-      customer_country: 'DEU',
-      customer_first_name: 'Justin-Mike',
-      customer_last_name: 'Amato',
-      card_number: '427665XXXXXX0834',
-    },
-    {
-      ip: '84.236.112.66',
-      tx_count: 9,
-      customer_email: 'balladaniel17@gmail.com',
-      customer_country: 'HUN',
-      customer_first_name: 'Balla',
-      customer_last_name: 'Daniel',
-      card_number: '531596XXXXXX2626',
-    },
-  ]
+  const countries = ['DE', 'US', 'AT', 'FR', 'GB'] as const
+
+  return Array.from({ length: 10 }, (_, index) => {
+    const rank = index + 1
+    const padded = String(rank).padStart(2, '0')
+
+    return {
+      ip: `10.0.0.${rank}`,
+      tx_count: 19 - index,
+      customer_email: `user${padded}@example.com`,
+      customer_country: countries[index % countries.length],
+      customer_first_name: 'User',
+      customer_last_name: padded,
+      card_number: `411111XXXXXX${padded}${padded}`,
+    }
+  })
 }
 
 /** Fixture SQL-tools для dev и Vitest (gate 1001, падение трафика ~12:00). */
