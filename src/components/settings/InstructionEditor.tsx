@@ -174,7 +174,7 @@ export function InstructionEditor({
             className={cancelButtonClassName}
             onClick={onClose}
           >
-            Cancel
+            Отменить
           </Button>
         </div>
 
@@ -224,14 +224,14 @@ export function InstructionEditor({
               disabled={isSaving || isDeleting}
               onClick={() => setDeleteDialogOpen(true)}
             >
-              Delete
+              Удалить
             </Button>
           ) : (
             <span />
           )}
 
           <Button type="submit" disabled={isSaving || isDeleting}>
-            {isSaving ? 'Saving…' : 'Save'}
+            {isSaving ? 'Применение…' : 'Применить'}
           </Button>
         </div>
       </form>
@@ -259,7 +259,7 @@ export function InstructionEditor({
                 className={cancelButtonClassName}
                 onClick={() => setDeleteDialogOpen(false)}
               >
-                Cancel
+                Отменить
               </Button>
               <Button
                 type="button"
@@ -268,7 +268,7 @@ export function InstructionEditor({
                 data-testid="instruction-delete-confirm"
                 onClick={() => void handleDeleteConfirm()}
               >
-                {isDeleting ? 'Deleting…' : 'Delete'}
+                {isDeleting ? 'Удаление…' : 'Удалить'}
               </Button>
             </div>
           </div>
