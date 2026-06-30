@@ -54,7 +54,7 @@ describe('ConclusionModal', () => {
 
     expect(screen.getByTestId('conclusion-modal')).toBeInTheDocument()
     expect(screen.getByText(/ЭСКАЛИРОВАТЬ/)).toBeInTheDocument()
-    expect(screen.getByText('Deep analysis →')).toBeInTheDocument()
+    expect(screen.getByText('Deep analysis')).toBeInTheDocument()
 
     await user.click(screen.getByLabelText('Свернуть вывод агента'))
     expect(onClose).toHaveBeenCalled()

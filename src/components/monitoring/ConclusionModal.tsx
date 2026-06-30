@@ -94,9 +94,9 @@ export function ConclusionModal({ open, data, onClose }: ConclusionModalProps) {
             {data?.audit_id ? (
               <Link
                 to={`/deep/${data.audit_id}`}
-                className="text-primary mt-4 inline-block text-sm hover:underline"
+                className="text-muted-foreground hover:text-primary mt-4 inline-block shrink-0 text-sm transition-colors duration-200"
               >
-                Deep analysis →
+                Deep analysis
               </Link>
             ) : null}
           </ConclusionScrollArea>
