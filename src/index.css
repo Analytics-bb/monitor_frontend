@@ -113,6 +113,29 @@
     @apply bg-background text-foreground font-sans antialiased;
   }
 
+  a[href],
+  button:not(:disabled),
+  [role='button']:not([aria-disabled='true']),
+  label[for],
+  summary,
+  select:not(:disabled),
+  input[type='checkbox']:not(:disabled),
+  input[type='radio']:not(:disabled),
+  input[type='date']:not(:disabled),
+  [data-slot='button']:not(:disabled),
+  [data-slot='tabs-trigger']:not(:disabled),
+  [data-slot='switch']:not(:disabled) {
+    cursor: pointer;
+  }
+
+  button:disabled,
+  select:disabled,
+  [data-slot='button']:disabled,
+  [data-slot='tabs-trigger']:disabled,
+  [data-slot='switch']:disabled {
+    cursor: not-allowed;
+  }
+
   .dark input[type='number']::-webkit-inner-spin-button,
   .dark input[type='number']::-webkit-outer-spin-button {
     opacity: 1;
