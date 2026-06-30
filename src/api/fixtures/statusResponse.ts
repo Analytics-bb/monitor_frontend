@@ -4,6 +4,8 @@ import { agentConclusionHtmlFixture } from './agentConclusionHtml'
 import type { MetricsChartSlide } from './metricsCharts'
 import {
   buildMetricsChartSlides,
+  buildMetricsToolsFromToolCalls,
+  extractGateNameFromToolCalls,
   metricsToolsFixture,
   metricsToolsSchema,
 } from './metricsCharts'
@@ -76,10 +78,13 @@ const schedulerSchema = z.object({
 
 const reportUsageSchema = z.object({
   model: z.string(),
-  prompt_tokens: z.number(),
-  completion_tokens: z.number(),
-  total_tokens: z.number(),
-  estimated_cost_usd: z.string(),
+  prompt_tokens: z.coerce.number().nullable().optional(),
+  completion_tokens: z.coerce.number().nullable().optional(),
+  total_tokens: z.coerce.number().nullable().optional(),
+  estimated_cost_usd: z
+    .union([z.string(), z.coerce.number()])
+    .nullable()
+    .optional(),
 })
 
 const reportSchema = z.object({
@@ -100,11 +105,41 @@ const reportSchema = z.object({
   created_at: z.string().optional(),
 })
 
-/** Ответ `GET /api/status` (последний тик scheduler). */
+const statusAuditEntrySchema = z.object({
+  audit_id: z.string().uuid(),
+  tick_id: z.string().uuid(),
+  event: eventSchema,
+  report: reportSchema,
+  telegram_status: z.string().nullable().optional(),
+  deep_chat: z.unknown().nullable().optional(),
+  created_at: z.string(),
+})
+
+const publisherSchema = z
+  .object({
+    connected: z.boolean(),
+    exchange: z.string(),
+    last_publish_at: z.string().nullable(),
+  })
+  .nullable()
+  .optional()
+
+/** Сырой ответ `GET /api/status` (AggregatedStatusResponse). */
+export const aggregatedStatusResponseSchema = z.object({
+  scheduler: schedulerSchema,
+  recent_audits: z.array(statusAuditEntrySchema),
+  publisher: publisherSchema,
+})
+
+export type AggregatedStatusResponse = z.infer<
+  typeof aggregatedStatusResponseSchema
+>
+
+/** Нормализованный снимок для UI monitoring (последний audit + scheduler). */
 export const statusResponseSchema = z.object({
   audit_id: z.string().uuid().nullable().optional(),
   tick_id: z.string().uuid().nullable().optional(),
-  created_at: z.string().nullable(),
+  created_at: z.string().nullable().optional(),
   telegram_status: z.unknown().nullable().optional(),
   deep_chat: z.unknown().nullable().optional(),
   event: eventSchema.nullable().optional(),
@@ -223,7 +258,59 @@ export const statusResponseFixture: StatusResponse = {
 }
 
 export function parseStatusResponse(data: unknown): StatusResponse {
+  if (isAggregatedStatusPayload(data)) {
+    const aggregated = aggregatedStatusResponseSchema.parse(data)
+    return normalizeAggregatedStatus(aggregated)
+  }
+
   return statusResponseSchema.parse(data)
+}
+
+function isAggregatedStatusPayload(
+  data: unknown,
+): data is { recent_audits: unknown } {
+  return (
+    typeof data === 'object' &&
+    data !== null &&
+    Array.isArray((data as { recent_audits?: unknown }).recent_audits)
+  )
+}
+
+/**
+ * Разворачивает `recent_audits[0]` в плоский `StatusResponse` для UI.
+ */
+export function normalizeAggregatedStatus(
+  aggregated: AggregatedStatusResponse,
+): StatusResponse {
+  const latest = aggregated.recent_audits[0]
+
+  if (!latest) {
+    return {
+      created_at: null,
+      scheduler: aggregated.scheduler,
+    }
+  }
+
+  const metrics_tools =
+    buildMetricsToolsFromToolCalls(latest.report.tool_calls) ?? undefined
+  const gateName = extractGateNameFromToolCalls(latest.report.tool_calls)
+  const event =
+    gateName && !latest.event.gate_name
+      ? { ...latest.event, gate_name: gateName }
+      : latest.event
+
+  return {
+    audit_id: latest.audit_id,
+    tick_id: latest.tick_id,
+    created_at: latest.created_at,
+    telegram_status: latest.telegram_status,
+    deep_chat: latest.deep_chat,
+    event,
+    report: latest.report,
+    scheduler: aggregated.scheduler,
+    metrics_tools,
+    tick_in_progress: aggregated.scheduler.tick_in_progress,
+  }
 }
 
 /** Gate id из последнего status. */
@@ -240,11 +327,16 @@ export function getStatusGateName(
   return data?.event?.gate_name ?? null
 }
 
-/** Время последнего тика (`scheduler.last_tick_at` или fallback). */
+/** Время последнего тика или последнего audit. */
 export function getStatusLastTickAt(
   data: StatusResponse | null | undefined,
 ): string | null {
-  return data?.scheduler?.last_tick_at ?? data?.created_at ?? null
+  return (
+    data?.scheduler?.last_tick_at ??
+    data?.created_at ??
+    data?.event?.detected_at ??
+    null
+  )
 }
 
 /** Активный тик scheduler для ускоренного polling. */
