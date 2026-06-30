@@ -15,7 +15,7 @@ describe('CaseMetaStrip', () => {
 
     expect(screen.getByText('42')).toBeVisible()
     expect(screen.getByText('Gate 42')).toBeVisible()
-    expect(screen.getByText(/2025-07-14 12:30:00 MSK/)).toBeVisible()
+    expect(screen.getByText(/14\.07\.2025, 12:30 MSK/)).toBeVisible()
   })
 
   it('shows dash when gate name is missing', () => {

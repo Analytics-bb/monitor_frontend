@@ -2,7 +2,7 @@ import { CheckCircle2, XCircle } from 'lucide-react'
 
 import type { StatusResponse } from '@/api/monitoring'
 import { getStatusScheduler } from '@/api/fixtures/statusResponse'
-import { formatDateTimeRu } from '@/lib/formatDateTime'
+import { formatDateTimeRuOrDash } from '@/lib/formatDateTime'
 import { cn } from '@/lib/utils'
 
 export interface StatusPanelProps {
@@ -15,7 +15,10 @@ export interface StatusPanelProps {
 }
 
 function formatOptionalDateTime(value: string | null | undefined): string {
-  return formatDateTimeRu(value) ?? 'нет'
+  if (!value) {
+    return 'нет'
+  }
+  return formatDateTimeRuOrDash(value)
 }
 
 function formatBoolean(value: boolean | null | undefined): string {

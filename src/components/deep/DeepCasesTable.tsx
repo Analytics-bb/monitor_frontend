@@ -1,5 +1,6 @@
 import type { DeepCaseSummary } from '@/api/deep'
 import { StatusBadge, type StatusBadgeVariant } from '@/components/StatusBadge'
+import { formatDateTimeRuOrDash } from '@/lib/formatDateTime'
 import { cn } from '@/lib/utils'
 
 export interface DeepCasesTableProps {
@@ -63,8 +64,8 @@ export function DeepCasesTable({
                 }
               }}
             >
-              <td className="text-muted-foreground px-3 py-2 font-mono text-xs whitespace-nowrap">
-                {item.created_at}
+              <td className="text-muted-foreground px-3 py-2 font-mono text-xs whitespace-nowrap tabular-nums">
+                {formatDateTimeRuOrDash(item.created_at)}
               </td>
               <td className="px-3 py-2 text-center">
                 <span className="bg-muted text-foreground inline-flex rounded-full px-2 py-0.5 font-mono text-xs">

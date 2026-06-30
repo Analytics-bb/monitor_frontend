@@ -8,6 +8,7 @@ import { SettingsInlineError } from '@/components/settings/SettingsInlineError'
 import { resolveSettingsError } from '@/components/settings/settingsErrors'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { formatDateTimeRuOrDash } from '@/lib/formatDateTime'
 import { cn } from '@/lib/utils'
 
 export interface ContextsTabProps {
@@ -256,7 +257,7 @@ export function ContextsTab({ className }: ContextsTabProps) {
                   {truncatePreview(item.context_body)}
                 </p>
                 <p className="text-muted-foreground mt-2 font-mono text-xs">
-                  updated {item.updated_at}
+                  updated {formatDateTimeRuOrDash(item.updated_at)}
                 </p>
               </article>
             ))}

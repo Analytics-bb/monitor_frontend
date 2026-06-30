@@ -12,6 +12,7 @@ import { SettingsInlineError } from '@/components/settings/SettingsInlineError'
 import { resolveSettingsError } from '@/components/settings/settingsErrors'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
+import { formatDateTimeRuOrDash } from '@/lib/formatDateTime'
 import { cn } from '@/lib/utils'
 
 export interface InstructionsTabProps {
@@ -189,7 +190,7 @@ export function InstructionsTab({ className }: InstructionsTabProps) {
                     </div>
                   </td>
                   <td className="text-muted-foreground px-3 py-2 text-center font-mono text-xs">
-                    {item.updated_at}
+                    {formatDateTimeRuOrDash(item.updated_at)}
                   </td>
                   <td className="px-3 py-2 text-center">
                     <Button
