@@ -47,6 +47,46 @@ describe('StatusPanel', () => {
     )
   })
 
+  it('shows ok icon for no_events last_status', () => {
+    render(
+      <StatusPanel
+        data={{
+          ...statusResponseFixture,
+          scheduler: {
+            ...statusResponseFixture.scheduler!,
+            last_status: 'no_events',
+            last_error_code: null,
+            ticks_error_total: 0,
+          },
+        }}
+        isStale={false}
+        isDegraded={false}
+      />,
+    )
+
+    expect(screen.getByTestId('status-last-ok-icon')).toBeInTheDocument()
+    expect(screen.queryByTestId('status-last-error-icon')).not.toBeInTheDocument()
+  })
+
+  it('shows error icon only for error last_status', () => {
+    render(
+      <StatusPanel
+        data={{
+          ...statusResponseFixture,
+          scheduler: {
+            ...statusResponseFixture.scheduler!,
+            last_status: 'error',
+            last_error_code: 'pipeline_error',
+          },
+        }}
+        isStale={false}
+        isDegraded={false}
+      />,
+    )
+
+    expect(screen.getByTestId('status-last-error-icon')).toBeInTheDocument()
+  })
+
   it('shows detector running as field value', () => {
     render(
       <StatusPanel

@@ -42,8 +42,9 @@ function formatCount(value: number | null | undefined): string {
   return value.toLocaleString('ru-RU')
 }
 
-function isSchedulerStatusOk(status: string | null | undefined): boolean {
-  return status === 'ok'
+/** Красный индикатор только при бизнес-ошибке тика; `no_events` — штатный исход. */
+function isSchedulerStatusError(status: string | null | undefined): boolean {
+  return status === 'error'
 }
 
 /**
@@ -111,17 +112,17 @@ export function StatusPanel({ data, isStale, isDegraded }: StatusPanelProps) {
         </div>
 
         {lastStatus ? (
-          isSchedulerStatusOk(lastStatus) ? (
-            <CheckCircle2
-              aria-label="Последний тик: успех"
-              className="text-status-success size-5 shrink-0"
-              data-testid="status-last-ok-icon"
-            />
-          ) : (
+          isSchedulerStatusError(lastStatus) ? (
             <XCircle
               aria-label="Последний тик: ошибка"
               className="text-status-error size-5 shrink-0"
               data-testid="status-last-error-icon"
+            />
+          ) : (
+            <CheckCircle2
+              aria-label="Последний тик: успех"
+              className="text-status-success size-5 shrink-0"
+              data-testid="status-last-ok-icon"
             />
           )
         ) : null}
