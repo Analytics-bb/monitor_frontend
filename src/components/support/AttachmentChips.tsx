@@ -33,7 +33,10 @@ export function AttachmentChips({
       {items.map((item) => (
         <span
           key={item.id}
-          className="bg-muted/60 text-foreground inline-flex w-fit max-w-full items-center gap-1.5 rounded-full py-1 pr-1 pl-2.5 text-sm"
+          className={cn(
+            'bg-muted/60 text-foreground inline-flex w-fit max-w-full items-center gap-1.5 rounded-full py-1 text-sm',
+            onRemove ? 'pl-2.5 pr-1' : 'px-2.5',
+          )}
         >
           <File className="text-muted-foreground size-3.5 shrink-0" aria-hidden />
           <span className="truncate">{item.filename}</span>

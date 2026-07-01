@@ -1,6 +1,5 @@
 import { X } from 'lucide-react'
 
-import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
 export interface ContextResetBannerProps {
@@ -31,16 +30,14 @@ export function ContextResetBanner({
       role="status"
     >
       <span>История очищена (лимит контекста)</span>
-      <Button
+      <button
         type="button"
-        variant="ghost"
-        size="icon"
-        className="size-7 shrink-0"
+        className="text-muted-foreground hover:text-foreground shrink-0 cursor-pointer rounded-full p-1 transition-colors"
         aria-label="Скрыть уведомление"
         onClick={onDismiss}
       >
         <X className="size-4" aria-hidden />
-      </Button>
+      </button>
     </div>
   )
 }

@@ -1,6 +1,8 @@
 export { AttachmentChips } from './AttachmentChips'
 export { ContextResetBanner } from './ContextResetBanner'
 export { SupportChatMessage } from './SupportChatMessage'
+export { SupportHistoryLimitBanner } from './SupportHistoryLimitBanner'
+export { SupportHistoryMeter } from './SupportHistoryMeter'
 export { SupportComposer } from './SupportComposer'
 export { SupportHeader } from './SupportHeader'
 export { SupportMessageList } from './SupportMessageList'

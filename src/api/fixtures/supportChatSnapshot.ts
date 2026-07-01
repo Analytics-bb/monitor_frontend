@@ -23,6 +23,7 @@ export const supportChatSnapshotSchema = z.object({
   messages: z.array(supportMessageSchema),
   context_generation: z.number().int(),
   context_reset: z.boolean(),
+  history_message_limit: z.number().int().positive().optional(),
   usage_total: tokenUsageSchema,
 })
 
@@ -56,6 +57,7 @@ export const supportChatSnapshotEmptyFixture: SupportChatSnapshot = {
   messages: [],
   context_generation: 0,
   context_reset: false,
+  history_message_limit: 40,
   usage_total: defaultUsageTotal,
 }
 
@@ -66,6 +68,7 @@ export const supportChatSnapshotFixture: SupportChatSnapshot = {
   state: 'active',
   context_generation: 1,
   context_reset: false,
+  history_message_limit: 40,
   usage_total: defaultUsageTotal,
   messages: [
     {

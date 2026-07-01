@@ -6,9 +6,15 @@ import {
   ContextResetBanner,
   SupportComposer,
   SupportHeader,
+  SupportHistoryLimitBanner,
   SupportMessageList,
 } from '@/components/support'
 import { useSupportChat } from '@/hooks/useSupportChat'
+import {
+  countSupportHistoryMessages,
+  getSupportHistoryLimitFromEnv,
+  isSupportHistoryLimitReached,
+} from '@/lib/supportHistory'
 
 /**
  * Страница `/support` — user-centric support-чат с вложениями и polling.
@@ -29,6 +35,7 @@ export function SupportPage() {
   const [dismissedContextGeneration, setDismissedContextGeneration] = useState<
     number | null
   >(null)
+  const [historyLimitDeclined, setHistoryLimitDeclined] = useState(false)
 
   useEffect(() => {
     if (error) {
@@ -42,8 +49,42 @@ export function SupportPage() {
     dismissedContextGeneration !== snapshot?.context_generation
 
   const messages = useMemo(() => snapshot?.messages ?? [], [snapshot?.messages])
+  const historyMessageCount = useMemo(
+    () => countSupportHistoryMessages(messages),
+    [messages],
+  )
+  const historyMessageLimit =
+    snapshot?.history_message_limit ?? getSupportHistoryLimitFromEnv()
+  const isHistoryLimitReached = isSupportHistoryLimitReached(
+    historyMessageCount,
+    historyMessageLimit,
+  )
+
+  useEffect(() => {
+    if (!isHistoryLimitReached) {
+      setHistoryLimitDeclined(false)
+    }
+  }, [isHistoryLimitReached])
+
+  const isComposerBlockedByHistory = isHistoryLimitReached
+  const composerDisabled = isProcessing || isComposerBlockedByHistory
+
+  const composerPlaceholder = useMemo(() => {
+    if (isProcessing) {
+      return 'Ожидание ответа агента…'
+    }
+    if (isComposerBlockedByHistory) {
+      return historyLimitDeclined
+        ? 'Отправка заблокирована — очистите историю'
+        : 'Очистите историю, чтобы продолжить'
+    }
+    return 'Напишите в support…'
+  }, [historyLimitDeclined, isComposerBlockedByHistory, isProcessing])
 
   const handleUpload = async (file: File) => {
+    if (isComposerBlockedByHistory) {
+      return
+    }
     const id = await uploadAttachment(file)
     if (id) {
       setPendingAttachments((current) => [
@@ -54,6 +95,9 @@ export function SupportPage() {
   }
 
   const handleSend = async (content: string, attachmentIds: string[]) => {
+    if (isComposerBlockedByHistory) {
+      return
+    }
     const ok = await sendMessage({
       content: content || undefined,
       attachment_ids: attachmentIds.length > 0 ? attachmentIds : undefined,
@@ -63,19 +107,33 @@ export function SupportPage() {
     }
   }
 
-  const handleReset = () => {
-    if (!window.confirm('Сбросить историю support-чата?')) {
-      return
-    }
+  const handleAcceptHistoryReset = () => {
+    setHistoryLimitDeclined(false)
+    setPendingAttachments([])
     void resetChat().catch(() => undefined)
+  }
+
+  const handleDeclineHistoryReset = () => {
+    setHistoryLimitDeclined(true)
+    setPendingAttachments([])
   }
 
   return (
     <section
-      className="flex h-[calc(100vh-4rem)] min-h-0 flex-col gap-3"
+      className="-mb-6 flex h-[calc(100svh-2.5rem)] min-h-0 flex-col gap-2 overflow-hidden"
       data-testid="support-page"
     >
-      <SupportHeader onReset={handleReset} />
+      <SupportHeader
+        historyMessageCount={historyMessageCount}
+        historyMessageLimit={historyMessageLimit}
+      />
+
+      <SupportHistoryLimitBanner
+        visible={isHistoryLimitReached}
+        declined={historyLimitDeclined}
+        onAcceptReset={handleAcceptHistoryReset}
+        onDecline={handleDeclineHistoryReset}
+      />
 
       <ContextResetBanner
         visible={showResetBanner}
@@ -101,10 +159,8 @@ export function SupportPage() {
         }
         composer={
           <SupportComposer
-            disabled={isProcessing}
-            placeholder={
-              isProcessing ? 'Ожидание ответа агента…' : 'Напишите в support…'
-            }
+            disabled={composerDisabled}
+            placeholder={composerPlaceholder}
             pendingAttachments={pendingAttachments}
             onUpload={handleUpload}
             onRemoveAttachment={(id) => {

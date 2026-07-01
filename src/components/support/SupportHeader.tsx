@@ -1,15 +1,20 @@
-import { Button } from '@/components/ui/button'
+import { SupportHistoryMeter } from '@/components/support/SupportHistoryMeter'
 import { cn } from '@/lib/utils'
 
 export interface SupportHeaderProps {
-  onReset?: () => void
+  historyMessageCount: number
+  historyMessageLimit: number
   className?: string
 }
 
 /**
- * Header страницы `/support`: заголовок, подзаголовок, сброс чата.
+ * Header страницы `/support`: заголовок, подзаголовок, шкала истории.
  */
-export function SupportHeader({ onReset, className }: SupportHeaderProps) {
+export function SupportHeader({
+  historyMessageCount,
+  historyMessageLimit,
+  className,
+}: SupportHeaderProps) {
   return (
     <header
       className={cn(
@@ -21,21 +26,14 @@ export function SupportHeader({ onReset, className }: SupportHeaderProps) {
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">Саппорт</h1>
         <p className="text-muted-foreground mt-1 text-sm">
-          Задайте вопрос support-агенту — текстом или файлом
+          Агент-саппорт: запросы к базе, аналитика Telegram-чатов и Google Таблиц
         </p>
       </div>
 
-      {onReset ? (
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          onClick={onReset}
-          data-testid="support-reset-button"
-        >
-          Сбросить чат
-        </Button>
-      ) : null}
+      <SupportHistoryMeter
+        messageCount={historyMessageCount}
+        limit={historyMessageLimit}
+      />
     </header>
   )
 }

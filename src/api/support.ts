@@ -8,6 +8,10 @@ import {
   type AttachmentUploadResponse,
   type SupportChatSnapshot,
 } from './fixtures/supportChatSnapshot'
+import {
+  countSupportHistoryMessages,
+  getSupportHistoryLimitFromEnv,
+} from '@/lib/supportHistory'
 
 const CHAT_PATH = '/api/support/chat'
 
@@ -17,6 +21,24 @@ interface FixtureSupportState {
 }
 
 let fixtureState: FixtureSupportState | null = null
+
+function getHistoryLimit(snapshot: SupportChatSnapshot): number {
+  return snapshot.history_message_limit ?? getSupportHistoryLimitFromEnv()
+}
+
+function rotateSupportHistoryIfNeeded(snapshot: SupportChatSnapshot): SupportChatSnapshot {
+  const limit = getHistoryLimit(snapshot)
+  if (countSupportHistoryMessages(snapshot.messages) < limit) {
+    return snapshot
+  }
+
+  return {
+    ...snapshot,
+    messages: [],
+    context_generation: snapshot.context_generation + 1,
+    context_reset: true,
+  }
+}
 
 function cloneSnapshot(snapshot: SupportChatSnapshot): SupportChatSnapshot {
   return {
@@ -99,6 +121,8 @@ export async function sendSupportMessage(
         message: 'Empty message',
       })
     }
+
+    state.snapshot = rotateSupportHistoryIfNeeded(state.snapshot)
 
     const userMessage = {
       message_id: `aaaaaaaa-aaaa-4aaa-8aaa-${String(state.snapshot.messages.length + 1).padStart(12, '0')}`,
