@@ -4,37 +4,37 @@ overview: "Страница /support: polling SupportChatSnapshot (M18), вло�
 todos:
   - id: m7-api-support
     content: "api/support.ts + Zod SupportChatSnapshot; multipart upload"
-    status: pending
+    status: completed
   - id: m7-fixture-support
     content: "fixtures/supportChatSnapshot.ts; wire в fixture index"
-    status: pending
+    status: completed
   - id: m7-use-support-chat
     content: "useSupportChat: GET mount, polling при processing, POST mutations, unmount stop"
-    status: pending
+    status: completed
   - id: m7-page-shell
     content: "SupportPage: header + ChatWindow full-height в AppLayout"
-    status: pending
+    status: completed
   - id: m7-composer-attachments
     content: "SupportComposer: file input, pending chips, send text+attachments"
-    status: pending
+    status: completed
   - id: m7-message-attachments
     content: "Отображение вложений в bubbles (имя из upload cache)"
-    status: pending
+    status: completed
   - id: m7-context-reset-banner
     content: "ContextResetBanner dismissible при context_reset=true"
-    status: pending
+    status: completed
   - id: m7-reset-action
     content: "Confirm + POST reset в header"
-    status: pending
+    status: completed
   - id: m7-header
     content: "StatusBadge + link /usage?agent_kind=support"
-    status: pending
+    status: completed
   - id: m7-usage-filter-support
     content: "usageFilters + UsageFilters: literal support в agent_kind (M14)"
-    status: pending
+    status: completed
   - id: m7-tests
     content: "Vitest + e2e по таблице «Тесты»; перенос SupportPage.test из unit/auth"
-    status: pending
+    status: completed
 isProject: true
 ---
 
