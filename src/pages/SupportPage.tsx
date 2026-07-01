@@ -26,13 +26,9 @@ export function SupportPage() {
   const [pendingAttachments, setPendingAttachments] = useState<
     { id: string; filename: string }[]
   >([])
-  const [bannerDismissed, setBannerDismissed] = useState(false)
-
-  useEffect(() => {
-    if (snapshot?.context_reset) {
-      setBannerDismissed(false)
-    }
-  }, [snapshot?.context_reset, snapshot?.context_generation])
+  const [dismissedContextGeneration, setDismissedContextGeneration] = useState<
+    number | null
+  >(null)
 
   useEffect(() => {
     if (error) {
@@ -42,7 +38,8 @@ export function SupportPage() {
 
   const isProcessing = snapshot?.state === 'processing'
   const showResetBanner =
-    Boolean(snapshot?.context_reset) && !bannerDismissed
+    Boolean(snapshot?.context_reset) &&
+    dismissedContextGeneration !== snapshot?.context_generation
 
   const messages = useMemo(() => snapshot?.messages ?? [], [snapshot?.messages])
 
@@ -82,7 +79,9 @@ export function SupportPage() {
 
       <ContextResetBanner
         visible={showResetBanner}
-        onDismiss={() => setBannerDismissed(true)}
+        onDismiss={() =>
+          setDismissedContextGeneration(snapshot?.context_generation ?? null)
+        }
       />
 
       <ChatWindow
