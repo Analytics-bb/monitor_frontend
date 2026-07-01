@@ -1,6 +1,5 @@
-import { X } from 'lucide-react'
+import { File, X } from 'lucide-react'
 
-import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
 export interface AttachmentChip {
@@ -15,7 +14,7 @@ export interface AttachmentChipsProps {
 }
 
 /**
- * Chips pending-вложений в composer.
+ * Chips вложений: иконка файла + имя; опционально remove в composer.
  */
 export function AttachmentChips({
   items,
@@ -27,24 +26,26 @@ export function AttachmentChips({
   }
 
   return (
-    <div className={cn('flex flex-wrap gap-2', className)} data-testid="attachment-chips">
+    <div
+      className={cn('flex max-w-full flex-wrap gap-2', className)}
+      data-testid="attachment-chips"
+    >
       {items.map((item) => (
         <span
           key={item.id}
-          className="bg-muted text-foreground inline-flex max-w-full items-center gap-1 rounded-full px-2 py-1 text-xs"
+          className="bg-muted/60 text-foreground inline-flex w-fit max-w-full items-center gap-1.5 rounded-full py-1 pr-1 pl-2.5 text-sm"
         >
+          <File className="text-muted-foreground size-3.5 shrink-0" aria-hidden />
           <span className="truncate">{item.filename}</span>
           {onRemove ? (
-            <Button
+            <button
               type="button"
-              variant="ghost"
-              size="icon"
-              className="size-5 shrink-0"
+              className="text-muted-foreground hover:text-foreground shrink-0 cursor-pointer rounded-full p-1 transition-colors"
               aria-label={`Удалить ${item.filename}`}
               onClick={() => onRemove(item.id)}
             >
-              <X className="size-3" aria-hidden />
-            </Button>
+              <X className="size-3.5" aria-hidden />
+            </button>
           ) : null}
         </span>
       ))}

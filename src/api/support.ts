@@ -103,7 +103,7 @@ export async function sendSupportMessage(
     const userMessage = {
       message_id: `aaaaaaaa-aaaa-4aaa-8aaa-${String(state.snapshot.messages.length + 1).padStart(12, '0')}`,
       role: 'user' as const,
-      content: content || '(вложение)',
+      content,
       attachment_ids: attachmentIds.length > 0 ? attachmentIds : undefined,
       created_at: '2025-07-14 12:00:00',
     }

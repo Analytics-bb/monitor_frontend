@@ -1,5 +1,6 @@
 export { AttachmentChips } from './AttachmentChips'
 export { ContextResetBanner } from './ContextResetBanner'
+export { SupportChatMessage } from './SupportChatMessage'
 export { SupportComposer } from './SupportComposer'
 export { SupportHeader } from './SupportHeader'
 export { SupportMessageList } from './SupportMessageList'

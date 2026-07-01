@@ -75,7 +75,7 @@ export function SupportPage() {
       className="flex h-[calc(100vh-4rem)] min-h-0 flex-col gap-3"
       data-testid="support-page"
     >
-      <SupportHeader snapshot={snapshot} onReset={handleReset} />
+      <SupportHeader onReset={handleReset} />
 
       <ContextResetBanner
         visible={showResetBanner}
@@ -86,6 +86,13 @@ export function SupportPage() {
 
       <ChatWindow
         className="min-h-0 flex-1"
+        emptyState={
+          messages.length === 0 ? (
+            <p className="text-muted-foreground text-base font-medium">
+              Задайте ваш вопрос
+            </p>
+          ) : undefined
+        }
         messages={
           <SupportMessageList
             messages={messages}

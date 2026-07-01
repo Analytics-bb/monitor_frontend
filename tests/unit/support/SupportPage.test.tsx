@@ -40,6 +40,8 @@ describe('SupportPage', () => {
     expect(screen.getByTestId('support-page')).toBeInTheDocument()
     expect(screen.getByTestId('chat-window')).toBeInTheDocument()
     expect(screen.getByTestId('support-composer')).toBeInTheDocument()
-    expect(screen.queryByText('Саппорт — скоро')).not.toBeInTheDocument()
+    expect(screen.getByTestId('chat-window-empty')).toHaveTextContent(
+      'Задайте ваш вопрос',
+    )
   })
 })

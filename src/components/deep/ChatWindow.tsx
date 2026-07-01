@@ -41,7 +41,10 @@ export function ChatWindow({
       data-testid="chat-window"
     >
       <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden">
-        <div className="min-h-0 flex-1" data-testid="chat-window-messages">
+        <div
+          className="min-h-0 flex-1 overflow-hidden"
+          data-testid="chat-window-messages"
+        >
           {messages}
         </div>
         {emptyState ? (

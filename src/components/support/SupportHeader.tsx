@@ -1,66 +1,41 @@
-import { Link } from 'react-router'
-
-import type { SupportChatSnapshot } from '@/api/fixtures/supportChatSnapshot'
-import { StatusBadge } from '@/components/StatusBadge'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
 export interface SupportHeaderProps {
-  snapshot: SupportChatSnapshot | null
   onReset?: () => void
   className?: string
 }
 
-function supportStateLabel(state: SupportChatSnapshot['state']): string | undefined {
-  if (state === 'processing') {
-    return 'Обработка…'
-  }
-  return undefined
-}
-
 /**
- * Header страницы `/support`: заголовок, статус, ссылка на usage, сброс чата.
+ * Header страницы `/support`: заголовок, подзаголовок, сброс чата.
  */
-export function SupportHeader({
-  snapshot,
-  onReset,
-  className,
-}: SupportHeaderProps) {
-  const state = snapshot?.state ?? 'active'
-  const badgeStatus = state === 'error' ? 'error' : 'active'
-
+export function SupportHeader({ onReset, className }: SupportHeaderProps) {
   return (
     <header
       className={cn(
-        'border-border flex flex-wrap items-center justify-between gap-3 border-b pb-3',
+        'flex flex-wrap items-start justify-between gap-3',
         className,
       )}
       data-testid="support-header"
     >
-      <div className="flex flex-wrap items-center gap-3">
-        <h1 className="text-lg font-semibold tracking-tight">Саппорт</h1>
-        <StatusBadge
-          status={badgeStatus}
-          label={supportStateLabel(state)}
-        />
+      <div>
+        <h1 className="text-2xl font-semibold tracking-tight">Саппорт</h1>
+        <p className="text-muted-foreground mt-1 text-sm">
+          Задайте вопрос support-агенту — текстом или файлом
+        </p>
       </div>
 
-      <div className="flex flex-wrap items-center gap-2">
-        <Button variant="link" className="h-auto px-0" asChild>
-          <Link to="/usage?agent_kind=support">Расход токенов</Link>
+      {onReset ? (
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={onReset}
+          data-testid="support-reset-button"
+        >
+          Сбросить чат
         </Button>
-        {onReset ? (
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={onReset}
-            data-testid="support-reset-button"
-          >
-            Сбросить чат
-          </Button>
-        ) : null}
-      </div>
+      ) : null}
     </header>
   )
 }
