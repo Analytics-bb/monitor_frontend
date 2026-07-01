@@ -7,7 +7,7 @@ export const usageStepBreakdownSchema = z.object({
 
 export const agentUsageRunSchema = z.object({
   run_id: z.string().uuid(),
-  agent_kind: z.enum(['hypothesis', 'deep']),
+  agent_kind: z.enum(['hypothesis', 'deep', 'support']),
   gate_id: z.string().nullable(),
   audit_id: z.string().uuid().nullable(),
   session_id: z.string().uuid().nullable(),
@@ -80,6 +80,26 @@ export const agentUsageRunHypothesisFixture: AgentUsageRun = {
   created_at: '2025-07-14 11:20:00',
 }
 
+/** Support run без gate/audit для dev и Vitest. */
+export const agentUsageRunSupportFixture: AgentUsageRun = {
+  run_id: '12121212-1212-4121-8121-121212121212',
+  agent_kind: 'support',
+  gate_id: null,
+  audit_id: null,
+  session_id: 'f5f5f5f5-f5f5-45f5-85f5-f5f5f5f5f5f5',
+  provider_run_id: 'prov-run-support-001',
+  model: 'claude-sonnet-4-20250514',
+  prompt_tokens: 800,
+  completion_tokens: 220,
+  total_tokens: 1020,
+  estimated_cost_usd: 0.019,
+  latency_ms: 1450,
+  status: 'success',
+  error: null,
+  step_breakdown: [],
+  created_at: '2025-07-14 11:30:00',
+}
+
 /** Daily rollups для fixture daily API. */
 export const agentUsageDailyRollupFixture: AgentUsageDailyRollup[] = [
   {
@@ -150,6 +170,7 @@ function buildGeneratedUsageRun(index: number): AgentUsageRun {
 export const agentUsageRunsListFixture: AgentUsageRun[] = [
   agentUsageRunFixture,
   agentUsageRunHypothesisFixture,
+  agentUsageRunSupportFixture,
   {
     run_id: 'ffffffff-ffff-4fff-8fff-ffffffffffff',
     agent_kind: 'deep',
@@ -168,8 +189,8 @@ export const agentUsageRunsListFixture: AgentUsageRun[] = [
     step_breakdown: [{ tool_name: 'mysql_query', latency_ms: 2340 }],
     created_at: '2025-07-13 18:05:00',
   },
-  ...Array.from({ length: FIXTURE_RUN_COUNT - 3 }, (_, offset) =>
-    buildGeneratedUsageRun(offset + 3),
+  ...Array.from({ length: FIXTURE_RUN_COUNT - 4 }, (_, offset) =>
+    buildGeneratedUsageRun(offset + 4),
   ),
 ]
 
