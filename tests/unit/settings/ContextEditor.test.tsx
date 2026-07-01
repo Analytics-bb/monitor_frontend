@@ -49,7 +49,7 @@ describe('ContextEditor', () => {
     const textarea = screen.getByTestId('context-content-input')
     await user.clear(textarea)
     await user.type(textarea, 'Updated body')
-    await user.click(screen.getByRole('button', { name: 'Save' }))
+    await user.click(screen.getByRole('button', { name: 'Применить' }))
 
     await waitFor(() => {
       expect(upsertContextMock).toHaveBeenCalledWith({

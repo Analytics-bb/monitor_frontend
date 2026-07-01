@@ -9,37 +9,37 @@ import { formatChartTimeBucket } from '@/lib/formatChartTime'
 
 const tx24hRowSchema = z.object({
   hour_bucket: z.string(),
-  tx_count: z.number(),
+  tx_count: z.coerce.number(),
 })
 
 const txStatus24hRowSchema = z.object({
   hour_bucket: z.string(),
-  approved_count: z.number(),
-  declined_count: z.number(),
+  approved_count: z.coerce.number(),
+  declined_count: z.coerce.number(),
 })
 
 const errors24hRowSchema = z.object({
   hour_bucket: z.string(),
   error_code: z.string(),
   error_description: z.string().optional(),
-  cnt: z.number(),
+  cnt: z.coerce.number(),
 })
 
 const usersTxBuckets24hRowSchema = z.object({
   hour_bucket: z.string(),
-  tx_count: z.number(),
-  user_count: z.number(),
+  tx_count: z.coerce.number(),
+  user_count: z.coerce.number(),
 })
 
 const usersTxBuckets3h10mRowSchema = z.object({
   time_bucket: z.string(),
-  tx_count: z.number(),
-  user_count: z.number(),
+  tx_count: z.coerce.number(),
+  user_count: z.coerce.number(),
 })
 
 const topIpsTxDetails3hRowSchema = z.object({
   ip: z.string(),
-  tx_count: z.number(),
+  tx_count: z.coerce.number(),
   customer_email: z.string().optional(),
   customer_country: z.string().optional(),
   customer_first_name: z.string().optional(),
@@ -50,9 +50,25 @@ const topIpsTxDetails3hRowSchema = z.object({
 const successRateByHourCountry24hRowSchema = z.object({
   hour_bucket: z.string(),
   customer_country: z.string(),
-  approved_count: z.number(),
-  declined_count: z.number(),
-  success_rate: z.number().nullable(),
+  approved_count: z.coerce.number(),
+  declined_count: z.coerce.number(),
+  success_rate: z.coerce.number().nullable(),
+})
+
+const METRICS_TOOL_KEYS = [
+  'tx_24h',
+  'tx_status_24h',
+  'errors_24h',
+  'users_tx_buckets_24h',
+  'users_tx_buckets_3h_10m',
+  'top_ips_tx_details_3h',
+  'success_rate_by_hour_country_24h',
+] as const
+
+const toolCallSchema = z.object({
+  tool_name: z.string(),
+  rows: z.array(z.record(z.string(), z.unknown())).optional(),
+  status: z.string().optional(),
 })
 
 /** Сырые результаты SQL-tools для графиков monitoring. */
@@ -655,4 +671,73 @@ export const metricsChartSlidesFixture =
  */
 export function parseMetricsTools(data: unknown): MetricsTools {
   return metricsToolsSchema.parse(data)
+}
+
+/**
+ * Собирает `metrics_tools` из `report.tool_calls` aggregated status.
+ *
+ * @param toolCalls - SQL-tool вызовы из AgentReport
+ * @returns Нормализованные наборы для графиков или `null`, если успешных tools нет
+ */
+export function buildMetricsToolsFromToolCalls(
+  toolCalls: unknown[] | undefined,
+): MetricsTools | null {
+  if (!toolCalls?.length) {
+    return null
+  }
+
+  const buckets: Partial<Record<keyof MetricsTools, unknown[]>> = {}
+
+  for (const call of toolCalls) {
+    const parsed = toolCallSchema.safeParse(call)
+    if (!parsed.success) {
+      continue
+    }
+
+    const { tool_name, rows, status } = parsed.data
+    if (status !== 'success' || !rows?.length) {
+      continue
+    }
+
+    if (
+      METRICS_TOOL_KEYS.includes(tool_name as (typeof METRICS_TOOL_KEYS)[number])
+    ) {
+      buckets[tool_name as keyof MetricsTools] = rows
+    }
+  }
+
+  if (Object.keys(buckets).length === 0) {
+    return null
+  }
+
+  const payload = Object.fromEntries(
+    METRICS_TOOL_KEYS.map((key) => [key, buckets[key] ?? []]),
+  )
+
+  return metricsToolsSchema.parse(payload)
+}
+
+/**
+ * Извлекает имя gate из tool `gate_name_by_gate_id`.
+ */
+export function extractGateNameFromToolCalls(
+  toolCalls: unknown[] | undefined,
+): string | null {
+  if (!toolCalls?.length) {
+    return null
+  }
+
+  for (const call of toolCalls) {
+    const parsed = toolCallSchema.safeParse(call)
+    if (!parsed.success || parsed.data.tool_name !== 'gate_name_by_gate_id') {
+      continue
+    }
+
+    const gateName = parsed.data.rows?.[0]?.gate_name
+    if (typeof gateName === 'string' && gateName.trim()) {
+      return gateName.trim()
+    }
+  }
+
+  return null
 }

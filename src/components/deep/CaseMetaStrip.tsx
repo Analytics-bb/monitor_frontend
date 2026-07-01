@@ -1,3 +1,4 @@
+import { formatDateTimeRuOrDash } from '@/lib/formatDateTime'
 import { cn } from '@/lib/utils'
 
 export interface CaseMetaStripProps {
@@ -48,7 +49,7 @@ export function CaseMetaStrip({
       <MetaField label="Название гейта" value={gateName?.trim() || '—'} />
       <MetaField
         label="Время детекции"
-        value={`${createdAt} MSK`}
+        value={`${formatDateTimeRuOrDash(createdAt)} MSK`}
         mono
       />
     </div>

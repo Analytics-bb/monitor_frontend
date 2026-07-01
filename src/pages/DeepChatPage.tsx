@@ -1,4 +1,4 @@
-import { ChevronLeft } from 'lucide-react'
+import { ChevronLeft, MessageCircleOff } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { Link, useLocation, useParams } from 'react-router'
 
@@ -171,15 +171,25 @@ export function DeepChatPage() {
   if (error && !snapshot) {
     return (
       <section
-        className="mx-auto flex max-w-lg flex-col gap-4 p-6"
+        className="mx-auto flex min-h-[calc(100svh-3rem)] w-full max-w-md flex-col items-center justify-center px-6 text-center"
         data-testid="deep-chat-error"
       >
-        <h1 className="text-lg font-semibold">Не удалось загрузить чат</h1>
-        <p className="text-muted-foreground text-sm">
-          Проверьте audit_id или вернитесь к списку.
-        </p>
-        <Button asChild variant="outline">
-          <Link to={deepListHref}>К списку</Link>
+        <h1 className="text-foreground/80 text-xl font-semibold tracking-tight">
+          Не удалось загрузить чат
+        </h1>
+
+        <div
+          className="bg-muted/60 text-muted-foreground my-8 flex size-20 items-center justify-center rounded-full"
+          aria-hidden
+        >
+          <MessageCircleOff className="size-10 stroke-[1.5]" />
+        </div>
+
+        <Button asChild size="lg" className="min-w-44 shadow-sm">
+          <Link to={deepListHref}>
+            <ChevronLeft className="size-4" aria-hidden />
+            К списку
+          </Link>
         </Button>
       </section>
     )

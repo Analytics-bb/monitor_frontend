@@ -44,7 +44,7 @@ describe('InstructionEditor', () => {
       />,
     )
 
-    await user.click(screen.getByRole('button', { name: 'Delete' }))
+    await user.click(screen.getByRole('button', { name: 'Удалить' }))
 
     expect(deleteInstructionMock).not.toHaveBeenCalled()
 
@@ -76,7 +76,7 @@ describe('InstructionEditor', () => {
     const nameInput = screen.getByDisplayValue(agentInstructionFixture.name)
     await user.clear(nameInput)
     await user.type(nameInput, 'hypothesis_generator')
-    await user.click(screen.getByRole('button', { name: 'Save' }))
+    await user.click(screen.getByRole('button', { name: 'Применить' }))
 
     await waitFor(() => {
       expect(
@@ -104,7 +104,7 @@ describe('InstructionEditor', () => {
       />,
     )
 
-    await user.click(screen.getByRole('button', { name: 'Delete' }))
+    await user.click(screen.getByRole('button', { name: 'Удалить' }))
     await user.click(screen.getByTestId('instruction-delete-confirm'))
 
     await waitFor(() => {

@@ -2,7 +2,7 @@ import { CheckCircle2, XCircle } from 'lucide-react'
 
 import type { StatusResponse } from '@/api/monitoring'
 import { getStatusScheduler } from '@/api/fixtures/statusResponse'
-import { formatDateTimeRu } from '@/lib/formatDateTime'
+import { formatDateTimeRuOrDash } from '@/lib/formatDateTime'
 import { cn } from '@/lib/utils'
 
 export interface StatusPanelProps {
@@ -15,7 +15,10 @@ export interface StatusPanelProps {
 }
 
 function formatOptionalDateTime(value: string | null | undefined): string {
-  return formatDateTimeRu(value) ?? 'нет'
+  if (!value) {
+    return 'нет'
+  }
+  return formatDateTimeRuOrDash(value)
 }
 
 function formatBoolean(value: boolean | null | undefined): string {
@@ -42,8 +45,9 @@ function formatCount(value: number | null | undefined): string {
   return value.toLocaleString('ru-RU')
 }
 
-function isSchedulerStatusOk(status: string | null | undefined): boolean {
-  return status === 'ok'
+/** Красный индикатор только при бизнес-ошибке тика; `no_events` — штатный исход. */
+function isSchedulerStatusError(status: string | null | undefined): boolean {
+  return status === 'error'
 }
 
 /**
@@ -111,17 +115,17 @@ export function StatusPanel({ data, isStale, isDegraded }: StatusPanelProps) {
         </div>
 
         {lastStatus ? (
-          isSchedulerStatusOk(lastStatus) ? (
-            <CheckCircle2
-              aria-label="Последний тик: успех"
-              className="text-status-success size-5 shrink-0"
-              data-testid="status-last-ok-icon"
-            />
-          ) : (
+          isSchedulerStatusError(lastStatus) ? (
             <XCircle
               aria-label="Последний тик: ошибка"
               className="text-status-error size-5 shrink-0"
               data-testid="status-last-error-icon"
+            />
+          ) : (
+            <CheckCircle2
+              aria-label="Последний тик: успех"
+              className="text-status-success size-5 shrink-0"
+              data-testid="status-last-ok-icon"
             />
           )
         ) : null}

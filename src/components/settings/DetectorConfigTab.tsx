@@ -137,7 +137,7 @@ export function DetectorConfigTab({ className }: DetectorConfigTabProps) {
             disabled={isResetting || isSaving}
             onClick={() => void handleReset()}
           >
-            {isResetting ? 'Resetting…' : 'Reset'}
+            {isResetting ? 'Сброс…' : 'Сбросить'}
           </Button>
         </div>
 
@@ -289,7 +289,7 @@ export function DetectorConfigTab({ className }: DetectorConfigTabProps) {
 
         <div className="flex justify-end sm:col-span-2 lg:col-span-3">
           <Button type="submit" disabled={isSaving || isResetting}>
-            {isSaving ? 'Saving…' : 'Save'}
+            {isSaving ? 'Применение…' : 'Применить'}
           </Button>
         </div>
       </form>

@@ -4,6 +4,7 @@ import { Link } from 'react-router'
 import type { AgentUsageRun } from '@/api/usage'
 import { StatusBadge } from '@/components/StatusBadge'
 import { Button } from '@/components/ui/button'
+import { formatDateTimeRuOrDash } from '@/lib/formatDateTime'
 import { cn } from '@/lib/utils'
 
 export interface UsageRunDetailProps {
@@ -53,6 +54,8 @@ function renderMetadataValue(run: AgentUsageRun, key: keyof AgentUsageRun) {
       return formatCost(run[key])
     case 'status':
       return <StatusBadge status={run.status} />
+    case 'created_at':
+      return formatDateTimeRuOrDash(run.created_at)
     case 'step_breakdown':
       return null
     default:

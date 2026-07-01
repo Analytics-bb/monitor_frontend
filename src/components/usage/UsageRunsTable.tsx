@@ -4,6 +4,7 @@ import { Link } from 'react-router'
 import type { AgentUsageRun } from '@/api/usage'
 import { StatusBadge } from '@/components/StatusBadge'
 import { Badge } from '@/components/ui/badge'
+import { formatDateTimeRuOrDash } from '@/lib/formatDateTime'
 import { cn } from '@/lib/utils'
 
 export interface UsageRunsTableProps {
@@ -86,7 +87,7 @@ export function UsageRunsTable({
               }}
             >
               <td className="text-muted-foreground px-3 py-2 font-mono text-xs whitespace-nowrap tabular-nums">
-                {item.created_at}
+                {formatDateTimeRuOrDash(item.created_at)}
               </td>
               <td className="px-3 py-2 text-center">
                 <Badge

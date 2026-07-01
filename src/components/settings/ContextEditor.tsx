@@ -80,7 +80,7 @@ export function ContextEditor({
             className={cancelButtonClassName}
             onClick={onClose}
           >
-            Cancel
+            Отменить
           </Button>
         </div>
 
@@ -106,7 +106,7 @@ export function ContextEditor({
 
         <div className="flex justify-end">
           <Button type="submit" disabled={isSaving}>
-            {isSaving ? 'Saving…' : 'Save'}
+            {isSaving ? 'Применение…' : 'Применить'}
           </Button>
         </div>
       </form>
