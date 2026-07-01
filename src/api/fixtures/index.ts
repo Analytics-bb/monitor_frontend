@@ -8,6 +8,7 @@ export {
   agentUsageDailyRollupFixture,
   agentUsageRunFixture,
   agentUsageRunHypothesisFixture,
+  agentUsageRunSupportFixture,
   agentUsageRunSchema,
   agentUsageRunsListFixture,
   parseAgentUsageDailyRollup,
@@ -22,6 +23,21 @@ export {
   parseChatSnapshot,
   type ChatSnapshot,
 } from './chatSnapshot'
+export {
+  attachmentUploadResponseSchema,
+  parseAttachmentUploadResponse,
+  parseSupportChatSnapshot,
+  supportChatSnapshotEmptyFixture,
+  supportChatSnapshotFixture,
+  supportChatSnapshotProcessingFixture,
+  supportChatSnapshotSchema,
+  supportMessageSchema,
+  tokenUsageSchema,
+  type AttachmentUploadResponse,
+  type SupportChatSnapshot,
+  type SupportMessage,
+  type TokenUsage,
+} from './supportChatSnapshot'
 export {
   deepCaseSummaryFixture,
   deepCaseSummarySchema,
