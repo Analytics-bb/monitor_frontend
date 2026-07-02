@@ -1,10 +1,6 @@
 import { useState } from 'react'
 
-import {
-  getStatusGateId,
-  getStatusGateName,
-  getStatusMetricsChartSlides,
-} from '@/api/fixtures/statusResponse'
+import { getStatusMetricsChartSlides } from '@/api/fixtures/statusResponse'
 import { useMonitoringPolling } from '@/hooks/useMonitoringPolling'
 import { cn } from '@/lib/utils'
 
@@ -57,11 +53,7 @@ export function MonitoringPage() {
       data-testid="monitoring-page"
     >
       <MonitoringZone label="Gate" testId="monitoring-gate">
-        <GateSelector
-          currentGateId={getStatusGateId(data)}
-          currentGateName={getStatusGateName(data)}
-          onActivated={refetch}
-        />
+        <GateSelector onActivated={refetch} />
       </MonitoringZone>
 
       <MonitoringZone label="Metrics charts" testId="monitoring-charts">

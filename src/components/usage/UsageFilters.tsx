@@ -26,6 +26,7 @@ const AGENT_KIND_OPTIONS: {
   { value: '', label: 'All' },
   { value: 'hypothesis', label: 'Hypothesis' },
   { value: 'deep', label: 'Deep' },
+  { value: 'support', label: 'Support' },
 ]
 
 const inputClassName =

@@ -1,31 +1,49 @@
-import { useState, type FormEvent } from 'react'
+import { useCallback, useEffect, useState, type FormEvent } from 'react'
 
-import { activateGate } from '@/api/monitoring'
-import { mapApiError } from '@/api/errors'
+import { ApiClientError, isApiErrorCode, mapApiError } from '@/api/errors'
+import { activateGate, getActiveGate } from '@/api/monitoring'
+import type { GateInfo } from '@/api/fixtures/gateInfo'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
 export interface GateSelectorProps {
-  /** Текущий gate из последнего status (`event.gate_id`). */
-  currentGateId: string | null | undefined
-  /** Имя gate из последнего status (`event.gate_name`). */
-  currentGateName?: string | null | undefined
-  /** Refetch status после успешной активации. */
+  /** Refetch status после успешной активации (метрики обновятся на следующем тике). */
   onActivated: () => Promise<void>
   className?: string
 }
 
 /**
- * Ввод номера gate и активация через `POST /api/gates/{gate_id}/activate`.
+ * Активный gate из `GET /api/gates/active` и смена через `POST /api/gates/{gate_id}/activate`.
  */
-export function GateSelector({
-  currentGateId,
-  currentGateName,
-  onActivated,
-  className,
-}: GateSelectorProps) {
+export function GateSelector({ onActivated, className }: GateSelectorProps) {
+  const [activeGate, setActiveGate] = useState<GateInfo | null>(null)
+  const [isLoadingActive, setIsLoadingActive] = useState(true)
   const [inputValue, setInputValue] = useState('')
   const [isActivating, setIsActivating] = useState(false)
+
+  const loadActiveGate = useCallback(async () => {
+    setIsLoadingActive(true)
+    try {
+      const gate = await getActiveGate()
+      setActiveGate(gate)
+    } catch (error) {
+      if (
+        !(
+          error instanceof ApiClientError &&
+          isApiErrorCode(error, 'no_active_gate')
+        )
+      ) {
+        mapApiError(error)
+      }
+      setActiveGate(null)
+    } finally {
+      setIsLoadingActive(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    void loadActiveGate()
+  }, [loadActiveGate])
 
   const handleInputChange = (value: string) => {
     setInputValue(value.replace(/\D/g, ''))
@@ -34,13 +52,14 @@ export function GateSelector({
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     const trimmed = inputValue.trim()
-    if (!trimmed || trimmed === currentGateId) {
+    if (!trimmed || trimmed === activeGate?.gate_id) {
       return
     }
 
     setIsActivating(true)
     try {
-      await activateGate(trimmed)
+      const gate = await activateGate(trimmed)
+      setActiveGate(gate)
       await onActivated()
       setInputValue('')
     } catch (error) {
@@ -49,6 +68,11 @@ export function GateSelector({
       setIsActivating(false)
     }
   }
+
+  const displayGateId = isLoadingActive ? '…' : (activeGate?.gate_id ?? '—')
+  const displayGateName = isLoadingActive
+    ? 'Загрузка…'
+    : (activeGate?.gate_name ?? 'Активный гейт не задан')
 
   return (
     <div
@@ -60,11 +84,9 @@ export function GateSelector({
     >
       <div className="min-w-0">
         <p className="font-mono text-2xl font-semibold tabular-nums">
-          {currentGateId ?? '—'}
+          {displayGateId}
         </p>
-        <p className="text-muted-foreground truncate text-sm">
-          {currentGateName ?? '—'}
-        </p>
+        <p className="text-muted-foreground truncate text-sm">{displayGateName}</p>
       </div>
 
       <form
@@ -82,12 +104,12 @@ export function GateSelector({
             onChange={(event) => handleInputChange(event.target.value)}
             placeholder="1001"
             aria-label="Номер gate"
-            disabled={isActivating}
+            disabled={isActivating || isLoadingActive}
           />
           <Button
             type="submit"
             className="h-9 shrink-0 px-4"
-            disabled={!inputValue.trim() || isActivating}
+            disabled={!inputValue.trim() || isActivating || isLoadingActive}
           >
             Сменить
           </Button>

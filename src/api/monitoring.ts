@@ -1,5 +1,10 @@
 import { apiFetch, apiGetJson, getApiBaseUrl } from './client'
 import {
+  activeGateFixture,
+  parseGateInfo,
+  type GateInfo,
+} from './fixtures/gateInfo'
+import {
   parseStatusResponse,
   statusResponseFixture,
   type StatusResponse,
@@ -20,18 +25,44 @@ export async function getStatus(): Promise<StatusResponse> {
 }
 
 /**
+ * Возвращает активный gate из Mongo (`GET /api/gates/active`).
+ *
+ * @throws {ApiClientError} При HTTP-ошибке (в т.ч. 404 `no_active_gate`)
+ */
+export async function getActiveGate(): Promise<GateInfo> {
+  if (!getApiBaseUrl()) {
+    return activeGateFixture
+  }
+
+  const json = await apiGetJson<unknown>('/api/gates/active')
+  return parseGateInfo(json)
+}
+
+/**
  * Активирует gate (`POST /api/gates/{gate_id}/activate`).
  *
+ * После успешного POST подтягивает `GET /api/gates/active` — имя гейта
+ * резолвится на бэкенде (MySQL lookup), тело POST может быть без `gate_name`.
+ *
+ * @returns Активный `GateInfo`
  * @throws {ApiClientError} При HTTP-ошибке (в т.ч. 404 `gate_not_found`)
  */
-export async function activateGate(gateId: string): Promise<void> {
+export async function activateGate(gateId: string): Promise<GateInfo> {
   if (!getApiBaseUrl()) {
-    return
+    return {
+      gate_id: gateId,
+      gate_name:
+        gateId === activeGateFixture.gate_id
+          ? activeGateFixture.gate_name
+          : `Gate ${gateId}`,
+    }
   }
 
   await apiFetch(`/api/gates/${encodeURIComponent(gateId)}/activate`, {
     method: 'POST',
   })
+
+  return getActiveGate()
 }
 
-export type { StatusResponse }
+export type { GateInfo, StatusResponse }
