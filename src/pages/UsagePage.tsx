@@ -297,7 +297,7 @@ export function UsagePage() {
         testId="usage-table-zone"
         className="flex min-h-0 flex-1 flex-col overflow-hidden"
       >
-        <div className="deep-table-scroll -mr-1 min-h-0 flex-1 overflow-x-auto overflow-y-auto pr-1">
+        <div className="deep-table-scroll -mr-1 flex min-h-0 flex-1 flex-col overflow-x-auto overflow-y-auto pr-1">
           {isLoading ? <TableSkeletonRows /> : null}
 
           {!isLoading && error ? (
@@ -319,12 +319,12 @@ export function UsagePage() {
           ) : null}
 
           {showGlobalEmpty || showFilteredEmpty ? (
-            <p
-              className="text-muted-foreground text-sm"
+            <div
+              className="flex flex-1 items-center justify-center p-8"
               data-testid="usage-table-empty"
             >
-              {emptyMessage}
-            </p>
+              <p className="text-muted-foreground text-base">{emptyMessage}</p>
+            </div>
           ) : null}
 
           {!isLoading && !error && items.length > 0 ? (

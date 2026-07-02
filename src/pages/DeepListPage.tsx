@@ -219,7 +219,7 @@ export function DeepListPage() {
         testId="deep-list-table"
         className="flex min-h-0 flex-1 flex-col overflow-hidden"
       >
-        <div className="deep-table-scroll -mr-1 min-h-0 flex-1 overflow-x-auto overflow-y-auto pr-1">
+        <div className="deep-table-scroll -mr-1 flex min-h-0 flex-1 flex-col overflow-x-auto overflow-y-auto pr-1">
           {isLoading ? <TableSkeletonRows /> : null}
 
           {!isLoading && error ? (
@@ -241,20 +241,20 @@ export function DeepListPage() {
           ) : null}
 
           {showGlobalEmpty ? (
-            <p
-              className="text-muted-foreground text-sm"
+            <div
+              className="flex flex-1 items-center justify-center p-8"
               data-testid="deep-list-table-empty"
             >
-              Нет deep cases
-            </p>
+              <p className="text-muted-foreground text-base">Нет deep cases</p>
+            </div>
           ) : null}
 
           {showFilteredEmpty ? (
             <div
-              className="space-y-3"
+              className="flex flex-1 flex-col items-center justify-center gap-3 p-8"
               data-testid="deep-list-table-filtered-empty"
             >
-              <p className="text-muted-foreground text-sm">
+              <p className="text-muted-foreground text-base">
                 Нет audits по фильтру
               </p>
               <Button
