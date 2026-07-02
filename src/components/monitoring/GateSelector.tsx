@@ -52,7 +52,7 @@ export function GateSelector({ onActivated, className }: GateSelectorProps) {
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     const trimmed = inputValue.trim()
-    if (!trimmed || trimmed === activeGate?.gate_id) {
+    if (!trimmed) {
       return
     }
 

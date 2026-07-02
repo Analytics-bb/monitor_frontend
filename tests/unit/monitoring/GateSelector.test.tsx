@@ -106,6 +106,28 @@ describe('GateSelector', () => {
     expect(onActivated).toHaveBeenCalledTimes(1)
   })
 
+  it('sends activate request for the same gate id', async () => {
+    getActiveGateMock.mockResolvedValue(activeGateFixture)
+    const user = userEvent.setup()
+    const onActivated = vi.fn(async () => undefined)
+
+    activateGateMock.mockResolvedValue(activeGateFixture)
+
+    render(<GateSelector onActivated={onActivated} />)
+
+    await waitFor(() => {
+      expect(screen.getByText('1001')).toBeInTheDocument()
+    })
+
+    await user.type(screen.getByLabelText('Номер gate'), '1001')
+    await user.click(screen.getByRole('button', { name: 'Сменить' }))
+
+    await waitFor(() => {
+      expect(activateGateMock).toHaveBeenCalledWith('1001')
+    })
+    expect(onActivated).toHaveBeenCalledTimes(1)
+  })
+
   it('shows empty state when no active gate', async () => {
     getActiveGateMock.mockRejectedValue(
       new ApiClientError(404, {
