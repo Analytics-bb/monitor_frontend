@@ -1,5 +1,5 @@
 import { ChevronLeft, MessageCircleOff } from 'lucide-react'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link, useLocation, useParams } from 'react-router'
 
 import type { ApiError } from '@/api/errors'
@@ -15,6 +15,8 @@ import { ChatWindow } from '@/components/deep/ChatWindow'
 import { StatusBadge, type StatusBadgeVariant } from '@/components/StatusBadge'
 import { Button } from '@/components/ui/button'
 import { useDeepChat } from '@/hooks/useDeepChat'
+import { buildDeepChatDisplayMessages } from '@/lib/deepChatDisplay'
+import { isFatalDeepChatLoadError } from '@/lib/deepChatErrors'
 
 const TERMINAL_STATES = new Set<ChatSnapshot['state']>([
   'completed',
@@ -35,7 +37,11 @@ function toStatusBadgeVariant(state: ChatSnapshot['state']): StatusBadgeVariant 
 function getComposerPlaceholder(
   state: ChatSnapshot['state'],
   customVariantMode: boolean,
+  isAgentThinking: boolean,
 ): string {
+  if (isAgentThinking) {
+    return 'Ожидание ответа агента…'
+  }
   if (customVariantMode) {
     return 'Опишите свой вариант действия…'
   }
@@ -63,6 +69,21 @@ function resolveSnapshotError(
   }
 }
 
+function shouldShowFullErrorPanel(
+  snapshot: ChatSnapshot,
+  displayMessageCount: number,
+): boolean {
+  if (snapshot.state !== 'error') {
+    return false
+  }
+
+  if (displayMessageCount > 0) {
+    return false
+  }
+
+  return true
+}
+
 /**
  * Страница `/deep/{audit_id}` — deep chat с LLM-layout.
  */
@@ -76,6 +97,8 @@ export function DeepChatPage() {
   const {
     snapshot,
     error,
+    optimisticUserMessage,
+    isAgentThinking,
     isOpening,
     sendMessage,
     approve,
@@ -88,22 +111,45 @@ export function DeepChatPage() {
     string | null
   >(null)
 
+  useEffect(() => {
+    if (
+      error &&
+      snapshot &&
+      !isFatalDeepChatLoadError(error) &&
+      snapshot.state !== 'error'
+    ) {
+      mapApiError(error)
+    }
+  }, [error, snapshot])
+
+  const displayMessages = useMemo(
+    () =>
+      snapshot
+        ? buildDeepChatDisplayMessages(snapshot, { optimisticUserMessage })
+        : [],
+    [optimisticUserMessage, snapshot],
+  )
+
   const customVariantMode =
     customVariantActionId !== null &&
     customVariantActionId === snapshot?.pending_action?.action_id
 
-  const isErrorState = snapshot?.state === 'error'
   const isTerminal = snapshot ? TERMINAL_STATES.has(snapshot.state) : false
   const isClosedChat = snapshot ? CLOSED_CHAT_STATES.has(snapshot.state) : false
   const isPending = Boolean(snapshot?.pending_action)
+  const showFullErrorPanel = snapshot
+    ? shouldShowFullErrorPanel(snapshot, displayMessages.length)
+    : false
+
   const composerDisabled =
     isTerminal ||
     isOpening ||
+    isAgentThinking ||
     snapshot?.state === 'not_started' ||
     (isPending && !customVariantMode) ||
     (snapshot?.state === 'awaiting_approval' && !customVariantMode)
 
-  const hideApprove = budgetExceeded || isErrorState
+  const hideApprove = budgetExceeded || showFullErrorPanel
 
   const handleApprove = async (actionId: string) => {
     try {
@@ -145,30 +191,29 @@ export function DeepChatPage() {
   }, [isClosedChat, snapshot])
 
   const chatMessages = useMemo(() => {
-    if (!snapshot || isErrorState) {
+    if (!snapshot || showFullErrorPanel) {
       return null
     }
 
-    if (snapshot.messages.length > 0) {
-      return <ChatMessageList messages={snapshot.messages} />
-    }
-
-    if (isOpening) {
+    if (displayMessages.length > 0 || isAgentThinking || isOpening) {
       return (
-        <p className="text-muted-foreground p-4 text-sm">Загружаем summary…</p>
+        <ChatMessageList
+          messages={displayMessages}
+          isAgentThinking={isAgentThinking || isOpening}
+        />
       )
     }
 
     return (
       <p className="text-muted-foreground p-4 text-sm">Сообщений пока нет</p>
     )
-  }, [isErrorState, isOpening, snapshot])
+  }, [displayMessages, isAgentThinking, isOpening, showFullErrorPanel, snapshot])
 
   if (!auditId) {
     return null
   }
 
-  if (error && !snapshot) {
+  if (error && !snapshot && isFatalDeepChatLoadError(error)) {
     return (
       <section
         className="mx-auto flex min-h-[calc(100svh-3rem)] w-full max-w-md flex-col items-center justify-center px-6 text-center"
@@ -214,9 +259,9 @@ export function DeepChatPage() {
             <div className="flex min-w-0 flex-wrap items-center gap-x-4 gap-y-1">
               {snapshot ? (
                 <CaseMetaStrip
-                  gateId={snapshot.gate_id}
+                  gateId={snapshot.gate_id ?? '—'}
                   gateName={snapshot.gate_name}
-                  createdAt={snapshot.created_at}
+                  createdAt={snapshot.created_at ?? ''}
                 />
               ) : null}
               <Link
@@ -237,14 +282,17 @@ export function DeepChatPage() {
 
       <ChatWindow
         messages={
-          isErrorState && snapshot ? (
+          showFullErrorPanel && snapshot ? (
             <ChatErrorPanel error={resolveSnapshotError(snapshot, error)} />
           ) : (
             chatMessages
           )
         }
         overlay={
-          snapshot?.pending_action && !isErrorState && !customVariantMode ? (
+          snapshot?.pending_action &&
+          !showFullErrorPanel &&
+          !customVariantMode &&
+          !isAgentThinking ? (
             <ApprovalOverlay
               pendingAction={snapshot.pending_action}
               onApprove={handleApprove}
@@ -263,7 +311,11 @@ export function DeepChatPage() {
           snapshot && !isTerminal ? (
             <ChatComposer
               disabled={composerDisabled}
-              placeholder={getComposerPlaceholder(snapshot.state, customVariantMode)}
+              placeholder={getComposerPlaceholder(
+                snapshot.state,
+                customVariantMode,
+                isAgentThinking,
+              )}
               onSend={async (content) => {
                 if (customVariantMode && snapshot.pending_action) {
                   await handleCustomVariant(

@@ -6,19 +6,25 @@ import {
   type ReactNode,
 } from 'react'
 
-import type { ChatMessage as ChatMessageType } from '@/api/fixtures/chatSnapshot'
+import { AgentThinkingIndicator } from '@/components/deep/AgentThinkingIndicator'
 import { ChatMessage } from '@/components/deep/ChatMessage'
+import type { DeepChatDisplayMessage } from '@/lib/deepChatDisplay'
 import { cn } from '@/lib/utils'
 
 export interface ChatMessageListProps {
-  messages: ChatMessageType[]
+  messages: DeepChatDisplayMessage[]
+  isAgentThinking?: boolean
   className?: string
 }
 
 /**
- * Список сообщений с auto scroll-to-bottom и optional chip «N новых».
+ * Список сообщений с auto scroll-to-bottom, chip «N новых» и индикатором thinking.
  */
-export function ChatMessageList({ messages, className }: ChatMessageListProps) {
+export function ChatMessageList({
+  messages,
+  isAgentThinking = false,
+  className,
+}: ChatMessageListProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const [unreadCount, setUnreadCount] = useState(0)
   const [isAtBottom, setIsAtBottom] = useState(true)
@@ -74,20 +80,26 @@ export function ChatMessageList({ messages, className }: ChatMessageListProps) {
     if (isAtBottom) {
       scrollToBottom()
     }
-  }, [messages, isAtBottom, scrollToBottom])
+  }, [messages, isAtBottom, isAgentThinking, scrollToBottom])
 
   let content: ReactNode = (
     <p className="text-muted-foreground text-sm">Сообщений пока нет</p>
   )
 
-  if (messages.length > 0) {
-    content = messages.map((message, index) => (
-      <ChatMessage
-        key={`${message.role}-${index}`}
-        role={message.role}
-        content={message.content}
-      />
-    ))
+  if (messages.length > 0 || isAgentThinking) {
+    content = (
+      <>
+        {messages.map((message) => (
+          <ChatMessage
+            key={message.id}
+            role={message.role}
+            content={message.content}
+            variant={message.variant}
+          />
+        ))}
+        {isAgentThinking ? <AgentThinkingIndicator /> : null}
+      </>
+    )
   }
 
   return (

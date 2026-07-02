@@ -9,6 +9,26 @@ import {
   type PendingAction,
 } from './fixtures/chatSnapshot'
 
+const FIXTURE_DEEP_AGENT_SUMMARY = `Кратко: просадка tx_count на gate 42 три цикла подряд; SR в норме, но поток критически ниже baseline.
+
+Предлагаю:
+1. Проверить доступность upstream-провайдера
+2. Сверить логи за интервал 12:10–12:40 MSK
+3. При подтверждении — эскалация в L2`
+
+function buildFixtureOpenMessages(): ChatSnapshot['messages'] {
+  return [
+    {
+      role: 'system',
+      content: `## Audit snapshot (read-only)\ngate_id: 42\ndetected_at: 2025-07-14 12:30:00\nconclusion: ${auditSummaryFixtureContent}\nhypothesis_prompt: fixture`,
+    },
+    {
+      role: 'assistant',
+      content: FIXTURE_DEEP_AGENT_SUMMARY,
+    },
+  ]
+}
+
 const TERMINAL_STATES = new Set<ChatSnapshot['state']>([
   'completed',
   'cancelled',
@@ -85,12 +105,7 @@ export async function openChat(auditId: string): Promise<ChatSnapshot> {
       state.snapshot = cloneSnapshot({
         ...state.snapshot,
         state: 'active',
-        messages: [
-          {
-            role: 'assistant',
-            content: auditSummaryFixtureContent,
-          },
-        ],
+        messages: buildFixtureOpenMessages(),
       })
     }
     return cloneSnapshot(state.snapshot)

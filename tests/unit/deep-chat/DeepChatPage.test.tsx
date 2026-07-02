@@ -22,7 +22,7 @@ describe('DeepChatPage', () => {
     setFixtureChatSnapshot(AUDIT_ID, chatSnapshotNotStartedFixture)
   })
 
-  it('auto-opens chat and shows audit summary', async () => {
+  it('auto-opens chat with hypothesis user message and agent summary', async () => {
     const { DeepChatPage } = await import('@/pages/DeepChatPage')
 
     render(
@@ -33,9 +33,10 @@ describe('DeepChatPage', () => {
       </MemoryRouter>,
     )
 
-    expect(await screen.findByTestId('audit-summary')).toBeInTheDocument()
+    expect(await screen.findByTestId('chat-message-hypothesis')).toBeInTheDocument()
     expect(screen.getByText(/Детекция/)).toBeVisible()
-    expect(screen.getByText(/ЭСКАЛИРОВАТЬ/)).toBeVisible()
+    expect(screen.getByText(/Кратко:/)).toBeVisible()
+    expect(screen.getByText(/Предлагаю:/)).toBeVisible()
   })
 
   it('shows error panel instead of chat when state is error', async () => {
@@ -92,7 +93,7 @@ describe('DeepChatPage', () => {
     setFixtureChatAwaitingApproval(AUDIT_ID, {
       action_id: 'act-1',
       tool_name: 'run_query',
-      args_summary: 'SELECT 1',
+      arguments_preview: 'SELECT 1',
     })
     const { DeepChatPage } = await import('@/pages/DeepChatPage')
 

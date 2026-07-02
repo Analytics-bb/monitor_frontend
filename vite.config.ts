@@ -19,5 +19,8 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: ['./tests/unit/setup.ts'],
     include: ['tests/unit/**/*.{test,spec}.{ts,tsx}'],
+    env: {
+      VITE_ANOMALY_API_BASE_URL: '',
+    },
   },
 })

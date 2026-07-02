@@ -1,5 +1,20 @@
 import { z } from 'zod'
 
+/** DECIMAL из API может прийти строкой; нормализуем в `number`. */
+const usdAmountSchema = z
+  .union([z.string(), z.number()])
+  .transform((value) => (typeof value === 'number' ? value : Number(value)))
+
+const nullableUsdAmountSchema = z
+  .union([z.string(), z.number(), z.null()])
+  .transform((value) => {
+    if (value === null) {
+      return null
+    }
+
+    return typeof value === 'number' ? value : Number(value)
+  })
+
 export const usageStepBreakdownSchema = z.object({
   tool_name: z.string(),
   latency_ms: z.number().int().nonnegative(),
@@ -16,7 +31,7 @@ export const agentUsageRunSchema = z.object({
   prompt_tokens: z.number().int().nullable(),
   completion_tokens: z.number().int().nullable(),
   total_tokens: z.number().int().nullable(),
-  estimated_cost_usd: z.number().nullable(),
+  estimated_cost_usd: nullableUsdAmountSchema,
   latency_ms: z.number().int().nonnegative(),
   status: z.enum(['success', 'error', 'skipped']),
   error: z.string().nullable(),
@@ -29,7 +44,7 @@ export const agentUsageDailyRollupSchema = z.object({
   gate_id: z.string(),
   agent_kind: z.literal('deep'),
   total_tokens: z.number().int().nonnegative(),
-  total_cost_usd: z.number(),
+  total_cost_usd: usdAmountSchema,
   run_count: z.number().int().nonnegative(),
 })
 

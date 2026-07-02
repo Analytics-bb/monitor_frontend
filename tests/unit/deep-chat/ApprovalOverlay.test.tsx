@@ -14,7 +14,7 @@ describe('ApprovalOverlay', () => {
         pendingAction={{
           action_id: 'act-1',
           tool_name: 'run_query',
-          args_summary: 'SELECT 1',
+          arguments_preview: 'SELECT 1',
         }}
         onApprove={onApprove}
         onReject={vi.fn()}
@@ -40,7 +40,7 @@ describe('ApprovalOverlay', () => {
         pendingAction={{
           action_id: 'act-2',
           tool_name: 'notify_provider',
-          args_summary: 'send alert',
+          arguments_preview: 'send alert',
         }}
         onApprove={vi.fn()}
         onReject={vi.fn()}

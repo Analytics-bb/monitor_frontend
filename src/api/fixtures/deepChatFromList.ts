@@ -12,7 +12,7 @@ import {
 const DEMO_PENDING_ACTION: PendingAction = {
   action_id: 'act-demo-approve',
   tool_name: 'notify_provider',
-  args_summary: 'Отправить алерт провайдеру по gate',
+  arguments_preview: 'Отправить алерт провайдеру по gate',
 }
 
 function withListMeta(

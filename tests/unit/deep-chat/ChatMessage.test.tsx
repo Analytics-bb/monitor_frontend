@@ -19,11 +19,16 @@ describe('ChatMessage', () => {
     expect(assistantBubble.className).toContain('justify-start')
   })
 
-  it('renders structured audit summary for assistant fixture', () => {
-    render(<ChatMessage role="assistant" content={auditSummaryFixtureContent} />)
+  it('renders hypothesis output as user bubble on the right', () => {
+    render(
+      <ChatMessage
+        role="user"
+        variant="hypothesis"
+        content={auditSummaryFixtureContent}
+      />,
+    )
 
-    expect(screen.getByTestId('audit-summary')).toBeInTheDocument()
+    expect(screen.getByTestId('chat-message-hypothesis')).toBeInTheDocument()
     expect(screen.getByText(/Детекция/)).toBeVisible()
-    expect(screen.getByText(/gate_id: 42/)).toBeVisible()
   })
 })

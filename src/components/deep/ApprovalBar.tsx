@@ -30,7 +30,7 @@ export function ApprovalBar({
   hideApprove = false,
   className,
 }: ApprovalBarProps) {
-  const summary = redactArgsSummary(pendingAction.args_summary)
+  const summary = redactArgsSummary(pendingAction.arguments_preview)
 
   return (
     <div
