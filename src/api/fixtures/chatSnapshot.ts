@@ -2,7 +2,7 @@ import { z } from 'zod'
 
 import { apiErrorEnvelopeSchema } from '@/api/errors'
 
-import { auditSummaryFixtureContent } from './auditSummaryFixture'
+import { auditSummaryFixtureContent, deepAgentSummaryFixtureContent } from './auditSummaryFixture'
 
 const deepChatStateSchema = z.enum([
   'not_started',
@@ -24,6 +24,8 @@ export const pendingActionSchema = z.object({
   action_id: z.string(),
   tool_name: z.string(),
   arguments_preview: z.string(),
+  tool_call_id: z.string().optional(),
+  arguments: z.record(z.string(), z.unknown()).optional(),
   created_at: z.string().optional(),
 })
 
@@ -54,6 +56,32 @@ export type ChatSnapshot = z.infer<typeof chatSnapshotSchema>
 
 const FIXTURE_AUDIT_ID = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890'
 const FIXTURE_SESSION_ID = 'b2c3d4e5-f6a7-8901-bcde-f12345678901'
+
+/** System seed после open — формат docs/api.md §System message. */
+export function buildFixtureSystemMessage(auditId = FIXTURE_AUDIT_ID): string {
+  return [
+    `audit_id: ${auditId}`,
+    'gate_id: 42',
+    'detected_at: 2025-07-14 12:30:00',
+    `conclusion: ${auditSummaryFixtureContent}`,
+    'hypothesis_prompt: fixture hypothesis prompt',
+  ].join('\n')
+}
+
+export const fixtureSystemMessageContent = buildFixtureSystemMessage()
+
+function buildFixtureOpenMessages(auditId = FIXTURE_AUDIT_ID): ChatMessage[] {
+  return [
+    {
+      role: 'system',
+      content: buildFixtureSystemMessage(auditId),
+    },
+    {
+      role: 'assistant',
+      content: deepAgentSummaryFixtureContent,
+    },
+  ]
+}
 
 function extractDisplayMetaFromMessages(
   messages: ChatMessage[],
@@ -108,7 +136,7 @@ export function parseChatSnapshot(data: unknown): ChatSnapshot {
   }
 }
 
-/** Fixture ChatSnapshot для dev и Vitest. */
+/** Fixture ChatSnapshot для dev и Vitest (после open). */
 export const chatSnapshotFixture: ChatSnapshot = {
   audit_id: FIXTURE_AUDIT_ID,
   session_id: FIXTURE_SESSION_ID,
@@ -116,12 +144,7 @@ export const chatSnapshotFixture: ChatSnapshot = {
   gate_name: 'Gate 42',
   created_at: '2025-07-14 12:30:00',
   state: 'active',
-  messages: [
-    {
-      role: 'assistant',
-      content: auditSummaryFixtureContent,
-    },
-  ],
+  messages: buildFixtureOpenMessages(),
   pending_action: null,
 }
 
@@ -137,10 +160,12 @@ export const chatSnapshotNotStartedFixture: ChatSnapshot = {
   pending_action: null,
 }
 
-/** Snapshot для terminal state `error`. */
+/** Snapshot для terminal state `error` без истории (full-page error panel). */
 export const chatSnapshotErrorFixture: ChatSnapshot = {
-  ...chatSnapshotFixture,
+  ...chatSnapshotNotStartedFixture,
+  session_id: FIXTURE_SESSION_ID,
   state: 'error',
+  messages: [],
   pending_action: null,
   last_error: {
     error_code: 'budget_exceeded',

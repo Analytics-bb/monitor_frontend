@@ -77,10 +77,10 @@ export function ChatMessageList({
   }, [messages, isAtBottom, scrollToBottom])
 
   useEffect(() => {
-    if (isAtBottom) {
+    if (isAgentThinking || isAtBottom) {
       scrollToBottom()
     }
-  }, [messages, isAtBottom, isAgentThinking, scrollToBottom])
+  }, [messages, isAgentThinking, isAtBottom, scrollToBottom])
 
   let content: ReactNode = (
     <p className="text-muted-foreground text-sm">Сообщений пока нет</p>

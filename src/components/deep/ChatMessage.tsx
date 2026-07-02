@@ -64,8 +64,10 @@ export function ChatMessage({
         <div className="bg-elevated text-foreground max-w-[85%] min-w-0 rounded-3xl px-4 py-2.5 text-sm leading-relaxed">
           {isHtmlContent(content) ? (
             <AgentConclusionContent content={content} />
-          ) : (
+          ) : isAuditSummaryContent(content) ? (
             <AuditSummaryContent content={content} />
+          ) : (
+            <p className="whitespace-pre-wrap">{content}</p>
           )}
         </div>
       </div>
@@ -78,7 +80,7 @@ export function ChatMessage({
         className={cn('mb-6 flex justify-start', className)}
         data-testid="chat-message-assistant"
       >
-        <div className="max-w-full min-w-0 flex-1">
+        <div className="border-border bg-card max-w-full min-w-0 flex-1 rounded-xl border px-4 py-3 shadow-sm">
           <AuditSummaryContent content={content} />
         </div>
       </div>

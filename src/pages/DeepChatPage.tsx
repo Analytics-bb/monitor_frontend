@@ -15,6 +15,7 @@ import { ChatWindow } from '@/components/deep/ChatWindow'
 import { StatusBadge, type StatusBadgeVariant } from '@/components/StatusBadge'
 import { Button } from '@/components/ui/button'
 import { useDeepChat } from '@/hooks/useDeepChat'
+import { findFixtureDeepCaseConclusion } from '@/lib/deepCaseConclusion'
 import { buildDeepChatDisplayMessages } from '@/lib/deepChatDisplay'
 import { isFatalDeepChatLoadError } from '@/lib/deepChatErrors'
 
@@ -28,6 +29,8 @@ const CLOSED_CHAT_STATES = new Set<ChatSnapshot['state']>(['completed', 'cancell
 
 interface DeepChatLocationState {
   deepListSearch?: string
+  /** Conclusion hypothesis-агента из deep list до POST open. */
+  hypothesisConclusion?: string
 }
 
 function toStatusBadgeVariant(state: ChatSnapshot['state']): StatusBadgeVariant {
@@ -90,9 +93,8 @@ function shouldShowFullErrorPanel(
 export function DeepChatPage() {
   const { auditId } = useParams()
   const location = useLocation()
-  const deepListSearch = (location.state as DeepChatLocationState | null)
-    ?.deepListSearch
-  const deepListHref = deepListSearch ? `/deep?${deepListSearch}` : '/deep'
+  const locationState = location.state as DeepChatLocationState | null
+  const deepListSearch = locationState?.deepListSearch
 
   const {
     snapshot,
@@ -105,6 +107,15 @@ export function DeepChatPage() {
     reject,
     refetch,
   } = useDeepChat(auditId ?? '')
+
+  const seedHypothesisConclusion =
+    snapshot?.state === 'error' ||
+    snapshot?.state === 'completed' ||
+    snapshot?.state === 'cancelled'
+      ? null
+      : (locationState?.hypothesisConclusion ??
+        (auditId ? findFixtureDeepCaseConclusion(auditId) : null))
+  const deepListHref = deepListSearch ? `/deep?${deepListSearch}` : '/deep'
 
   const [budgetExceeded, setBudgetExceeded] = useState(false)
   const [customVariantActionId, setCustomVariantActionId] = useState<
@@ -125,10 +136,31 @@ export function DeepChatPage() {
   const displayMessages = useMemo(
     () =>
       snapshot
-        ? buildDeepChatDisplayMessages(snapshot, { optimisticUserMessage })
-        : [],
-    [optimisticUserMessage, snapshot],
+        ? buildDeepChatDisplayMessages(snapshot, {
+            optimisticUserMessage,
+            seedHypothesisConclusion,
+          })
+        : !snapshot && seedHypothesisConclusion
+          ? buildDeepChatDisplayMessages(
+              {
+                audit_id: auditId ?? '',
+                session_id: null,
+                state: 'not_started',
+                messages: [],
+                pending_action: null,
+              },
+              { seedHypothesisConclusion },
+            )
+          : [],
+    [auditId, optimisticUserMessage, seedHypothesisConclusion, snapshot],
   )
+
+  const showAgentThinking =
+    isAgentThinking &&
+    (Boolean(optimisticUserMessage) ||
+      displayMessages.some(
+        (message) => message.role === 'user' || message.variant === 'hypothesis',
+      ))
 
   const customVariantMode =
     customVariantActionId !== null &&
@@ -195,11 +227,11 @@ export function DeepChatPage() {
       return null
     }
 
-    if (displayMessages.length > 0 || isAgentThinking || isOpening) {
+    if (displayMessages.length > 0 || showAgentThinking) {
       return (
         <ChatMessageList
           messages={displayMessages}
-          isAgentThinking={isAgentThinking || isOpening}
+          isAgentThinking={showAgentThinking}
         />
       )
     }
@@ -207,7 +239,7 @@ export function DeepChatPage() {
     return (
       <p className="text-muted-foreground p-4 text-sm">Сообщений пока нет</p>
     )
-  }, [displayMessages, isAgentThinking, isOpening, showFullErrorPanel, snapshot])
+  }, [displayMessages, showAgentThinking, showFullErrorPanel, snapshot])
 
   if (!auditId) {
     return null
@@ -292,7 +324,7 @@ export function DeepChatPage() {
           snapshot?.pending_action &&
           !showFullErrorPanel &&
           !customVariantMode &&
-          !isAgentThinking ? (
+          !showAgentThinking ? (
             <ApprovalOverlay
               pendingAction={snapshot.pending_action}
               onApprove={handleApprove}

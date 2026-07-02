@@ -34,9 +34,10 @@ describe('DeepChatPage', () => {
     )
 
     expect(await screen.findByTestId('chat-message-hypothesis')).toBeInTheDocument()
-    expect(screen.getByText(/Детекция/)).toBeVisible()
-    expect(screen.getByText(/Кратко:/)).toBeVisible()
-    expect(screen.getByText(/Предлагаю:/)).toBeVisible()
+    expect(await screen.findByText(/Deep analysis/)).toBeVisible()
+    expect(screen.getAllByText(/Действия/).length).toBeGreaterThanOrEqual(1)
+    expect(await screen.findByTestId('approval-overlay')).toBeInTheDocument()
+    expect(screen.getByText('check_provider_status')).toBeVisible()
   })
 
   it('shows error panel instead of chat when state is error', async () => {

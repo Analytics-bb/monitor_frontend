@@ -52,4 +52,21 @@ describe('parseChatSnapshot', () => {
 
     expect(snapshot.pending_action?.arguments_preview).toBe('SELECT 1')
   })
+
+  it('parses optional pending_action tool_call_id and arguments', () => {
+    const snapshot = parseChatSnapshot({
+      ...liveApiChatSnapshot,
+      state: 'awaiting_approval',
+      pending_action: {
+        action_id: 'act-1',
+        tool_name: 'run_query',
+        arguments_preview: 'SELECT 1',
+        tool_call_id: 'call-abc',
+        arguments: { sql: 'SELECT 1' },
+      },
+    })
+
+    expect(snapshot.pending_action?.tool_call_id).toBe('call-abc')
+    expect(snapshot.pending_action?.arguments).toEqual({ sql: 'SELECT 1' })
+  })
 })

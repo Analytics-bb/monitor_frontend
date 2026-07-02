@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { flushSync } from 'react-dom'
 
 import {
   approveChatAction,
@@ -10,11 +11,16 @@ import {
   type ChatSnapshot,
 } from '@/api/deepChat'
 import { ApiClientError, isApiErrorCode, mapApiError } from '@/api/errors'
-import { hasAssistantReplyAfterLastUser } from '@/lib/deepChatDisplay'
+import {
+  createAwaitingReplyBaseline,
+  shouldKeepAgentThinking,
+  type AwaitingReplyBaseline,
+} from '@/lib/deepChatDisplay'
 import {
   isFatalDeepChatLoadError,
   isRecoverableDeepChatMutationError,
 } from '@/lib/deepChatErrors'
+import { mergeChatSnapshot } from '@/lib/deepChatSnapshotMerge'
 import { usePolling } from '@/hooks/usePolling'
 
 /** Интервал polling в `active` (середина 1–2 с). */
@@ -72,18 +78,6 @@ function isPollingEnabled(snapshot: ChatSnapshot | null): boolean {
   return true
 }
 
-function shouldKeepThinking(snapshot: ChatSnapshot | null): boolean {
-  if (!snapshot) {
-    return true
-  }
-
-  if (snapshot.state === 'awaiting_approval') {
-    return false
-  }
-
-  return !hasAssistantReplyAfterLastUser(snapshot)
-}
-
 /**
  * Polling и мутации deep chat для `/deep/{audit_id}`.
  *
@@ -102,6 +96,7 @@ export function useDeepChat(auditId: string): UseDeepChatResult {
   const [isAgentThinking, setIsAgentThinking] = useState(false)
   const hasAutoOpenedRef = useRef(false)
   const awaitingReplyRef = useRef(false)
+  const awaitingBaselineRef = useRef<AwaitingReplyBaseline | null>(null)
   const snapshotRef = useRef<ChatSnapshot | null>(null)
 
   useEffect(() => {
@@ -111,23 +106,53 @@ export function useDeepChat(auditId: string): UseDeepChatResult {
   useEffect(() => {
     hasAutoOpenedRef.current = false
     awaitingReplyRef.current = false
+    awaitingBaselineRef.current = null
     setOptimisticUserMessage(null)
     setIsAgentThinking(false)
   }, [auditId])
 
+  const beginAwaitingReply = useCallback(
+    (options?: { additionalUsers?: number }) => {
+      awaitingBaselineRef.current = createAwaitingReplyBaseline(
+        snapshotRef.current,
+        options,
+      )
+      awaitingReplyRef.current = true
+    },
+    [],
+  )
+
+  const finishAwaitingReply = useCallback(() => {
+    awaitingReplyRef.current = false
+    awaitingBaselineRef.current = null
+    setIsAgentThinking(false)
+    setOptimisticUserMessage(null)
+  }, [])
+
+  const syncThinkingWithSnapshot = useCallback(
+    (nextSnapshot: ChatSnapshot) => {
+      if (
+        awaitingReplyRef.current &&
+        !shouldKeepAgentThinking(nextSnapshot, awaitingBaselineRef.current)
+      ) {
+        finishAwaitingReply()
+      }
+    },
+    [finishAwaitingReply],
+  )
+
   const fetcher = useCallback(async (): Promise<ChatSnapshot | null> => {
     try {
       const result = await getChat(auditId)
-      setSnapshot(result)
+      let mergedResult: ChatSnapshot = result
+      setSnapshot((previous) => {
+        mergedResult = mergeChatSnapshot(previous, result)
+        return mergedResult
+      })
       setError(null)
+      syncThinkingWithSnapshot(mergedResult)
 
-      if (awaitingReplyRef.current && !shouldKeepThinking(result)) {
-        awaitingReplyRef.current = false
-        setIsAgentThinking(false)
-        setOptimisticUserMessage(null)
-      }
-
-      return result
+      return mergedResult
     } catch (err) {
       if (!snapshotRef.current || isFatalDeepChatLoadError(err)) {
         setError(err)
@@ -136,7 +161,7 @@ export function useDeepChat(auditId: string): UseDeepChatResult {
       }
       return null
     }
-  }, [auditId])
+  }, [auditId, syncThinkingWithSnapshot])
 
   const intervalMs = useMemo(
     () => getPollingIntervalMs(snapshot?.state ?? 'active'),
@@ -159,21 +184,15 @@ export function useDeepChat(auditId: string): UseDeepChatResult {
   }, [refetch])
 
   const openSession = useCallback(async () => {
-    awaitingReplyRef.current = true
+    beginAwaitingReply()
     setIsAgentThinking(true)
     try {
       const result = await openChat(auditId)
-      setSnapshot(result)
+      setSnapshot((previous) => mergeChatSnapshot(previous, result))
       setError(null)
-      await refetch()
-
-      if (!shouldKeepThinking(result)) {
-        awaitingReplyRef.current = false
-        setIsAgentThinking(false)
-      }
+      syncThinkingWithSnapshot(result)
     } catch (err) {
-      awaitingReplyRef.current = false
-      setIsAgentThinking(false)
+      finishAwaitingReply()
       if (isFatalDeepChatLoadError(err)) {
         setError(err)
       } else {
@@ -181,12 +200,13 @@ export function useDeepChat(auditId: string): UseDeepChatResult {
       }
       throw err
     }
-  }, [auditId, refetch])
+  }, [auditId, beginAwaitingReply, finishAwaitingReply, syncThinkingWithSnapshot])
 
   useEffect(() => {
     if (
       !snapshot ||
       snapshot.state !== 'not_started' ||
+      TERMINAL_STATES.has(snapshot.state) ||
       hasAutoOpenedRef.current
     ) {
       return
@@ -208,36 +228,28 @@ export function useDeepChat(auditId: string): UseDeepChatResult {
         return false
       }
 
-      setOptimisticUserMessage(trimmed)
-      awaitingReplyRef.current = true
-      setIsAgentThinking(true)
-      setError(null)
+      flushSync(() => {
+        setOptimisticUserMessage(trimmed)
+        beginAwaitingReply({ additionalUsers: 1 })
+        setIsAgentThinking(true)
+        setError(null)
+      })
 
       try {
         const result = await sendChatMessage(auditId, trimmed)
-        setSnapshot(result)
-        await refetch()
-
-        if (!shouldKeepThinking(result)) {
-          awaitingReplyRef.current = false
-          setIsAgentThinking(false)
-          setOptimisticUserMessage(null)
-        }
+        setSnapshot((previous) => mergeChatSnapshot(previous, result))
+        syncThinkingWithSnapshot(result)
 
         return true
       } catch (err) {
         if (isRecoverableDeepChatMutationError(err)) {
           mapApiError(err)
           await refetch()
-          awaitingReplyRef.current = false
-          setIsAgentThinking(false)
-          setOptimisticUserMessage(null)
+          finishAwaitingReply()
           return false
         }
 
-        awaitingReplyRef.current = false
-        setIsAgentThinking(false)
-        setOptimisticUserMessage(null)
+        finishAwaitingReply()
 
         if (err instanceof ApiClientError && err.status === 409) {
           await refetch()
@@ -247,26 +259,26 @@ export function useDeepChat(auditId: string): UseDeepChatResult {
         return false
       }
     },
-    [auditId, refetch],
+    [
+      auditId,
+      beginAwaitingReply,
+      finishAwaitingReply,
+      refetch,
+      syncThinkingWithSnapshot,
+    ],
   )
 
   const approve = useCallback(
     async (actionId: string) => {
-      awaitingReplyRef.current = true
+      beginAwaitingReply()
       setIsAgentThinking(true)
       try {
         const result = await approveChatAction(auditId, actionId)
-        setSnapshot(result)
+        setSnapshot((previous) => mergeChatSnapshot(previous, result))
         setError(null)
-        await refetch()
-
-        if (!shouldKeepThinking(result)) {
-          awaitingReplyRef.current = false
-          setIsAgentThinking(false)
-        }
+        syncThinkingWithSnapshot(result)
       } catch (err) {
-        awaitingReplyRef.current = false
-        setIsAgentThinking(false)
+        finishAwaitingReply()
 
         if (isApiErrorCode(err, 'budget_exceeded')) {
           setSnapshot((current) =>
@@ -284,26 +296,26 @@ export function useDeepChat(auditId: string): UseDeepChatResult {
         throw err
       }
     },
-    [auditId, refetch],
+    [
+      auditId,
+      beginAwaitingReply,
+      finishAwaitingReply,
+      refetch,
+      syncThinkingWithSnapshot,
+    ],
   )
 
   const reject = useCallback(
     async (actionId: string) => {
-      awaitingReplyRef.current = true
+      beginAwaitingReply()
       setIsAgentThinking(true)
       try {
         const result = await rejectChatAction(auditId, actionId)
-        setSnapshot(result)
+        setSnapshot((previous) => mergeChatSnapshot(previous, result))
         setError(null)
-        await refetch()
-
-        if (!shouldKeepThinking(result)) {
-          awaitingReplyRef.current = false
-          setIsAgentThinking(false)
-        }
+        syncThinkingWithSnapshot(result)
       } catch (err) {
-        awaitingReplyRef.current = false
-        setIsAgentThinking(false)
+        finishAwaitingReply()
 
         if (isRecoverableDeepChatMutationError(err)) {
           mapApiError(err)
@@ -315,7 +327,13 @@ export function useDeepChat(auditId: string): UseDeepChatResult {
         throw err
       }
     },
-    [auditId, refetch],
+    [
+      auditId,
+      beginAwaitingReply,
+      finishAwaitingReply,
+      refetch,
+      syncThinkingWithSnapshot,
+    ],
   )
 
   return {

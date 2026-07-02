@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils'
 
 export interface DeepCasesTableProps {
   items: DeepCaseSummary[]
-  onRowClick?: (auditId: string) => void
+  onRowClick?: (item: DeepCaseSummary) => void
   className?: string
 }
 
@@ -52,7 +52,7 @@ export function DeepCasesTable({
               data-testid="deep-cases-table-row"
               tabIndex={onRowClick ? 0 : undefined}
               role={onRowClick ? 'button' : undefined}
-              onClick={() => onRowClick?.(item.audit_id)}
+              onClick={() => onRowClick?.(item)}
               onKeyDown={(event) => {
                 if (!onRowClick) {
                   return
@@ -60,7 +60,7 @@ export function DeepCasesTable({
 
                 if (event.key === 'Enter' || event.key === ' ') {
                   event.preventDefault()
-                  onRowClick(item.audit_id)
+                  onRowClick(item)
                 }
               }}
             >

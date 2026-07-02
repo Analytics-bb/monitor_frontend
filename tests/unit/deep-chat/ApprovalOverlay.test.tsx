@@ -53,4 +53,22 @@ describe('ApprovalOverlay', () => {
     expect(onUseCustomInput).toHaveBeenCalledTimes(1)
     expect(screen.queryByLabelText('Свой вариант')).not.toBeInTheDocument()
   })
+
+  it('shows pending tool name and arguments preview', () => {
+    render(
+      <ApprovalOverlay
+        pendingAction={{
+          action_id: 'act-2',
+          tool_name: 'notify_provider',
+          arguments_preview: 'send alert',
+        }}
+        onApprove={vi.fn()}
+        onReject={vi.fn()}
+        onUseCustomInput={vi.fn()}
+      />,
+    )
+
+    expect(screen.getByText('notify_provider')).toBeVisible()
+    expect(screen.getByText('send alert')).toBeVisible()
+  })
 })

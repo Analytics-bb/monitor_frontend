@@ -171,9 +171,12 @@ export function DeepListPage() {
     )
   }
 
-  const handleRowClick = (auditId: string) => {
-    navigate(`/deep/${auditId}`, {
-      state: { deepListSearch: searchParams.toString() },
+  const handleRowClick = (item: (typeof items)[number]) => {
+    navigate(`/deep/${item.audit_id}`, {
+      state: {
+        deepListSearch: searchParams.toString(),
+        hypothesisConclusion: item.conclusion,
+      },
     })
   }
 

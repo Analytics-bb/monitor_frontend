@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 
@@ -23,5 +23,28 @@ describe('ChatComposer', () => {
     await user.click(screen.getByRole('button', { name: 'Отправить сообщение' }))
 
     expect(onSend).toHaveBeenCalledWith('hello')
+  })
+
+  it('clears draft immediately while onSend is pending', async () => {
+    const user = userEvent.setup()
+    let resolveSend: (() => void) | undefined
+    const onSend = vi.fn(
+      () =>
+        new Promise<void>((resolve) => {
+          resolveSend = resolve
+        }),
+    )
+
+    render(<ChatComposer onSend={onSend} />)
+
+    const textarea = screen.getByTestId('chat-composer-textarea')
+    await user.type(textarea, 'pending message')
+    await user.click(screen.getByRole('button', { name: 'Отправить сообщение' }))
+
+    expect(textarea).toHaveValue('')
+    resolveSend?.()
+    await waitFor(() => {
+      expect(onSend).toHaveBeenCalledWith('pending message')
+    })
   })
 })

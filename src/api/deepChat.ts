@@ -1,30 +1,33 @@
 import { apiFetch, apiGetJson } from './client'
 import { ApiClientError } from './errors'
-import { auditSummaryFixtureContent } from './fixtures/auditSummaryFixture'
+import {
+  deepAgentFollowUpFixtureContent,
+  deepAgentSummaryFixtureContent,
+} from './fixtures/auditSummaryFixture'
 import { buildFixtureSnapshotFromList } from './fixtures/deepChatFromList'
 import {
+  buildFixtureSystemMessage,
   chatSnapshotFixture,
   parseChatSnapshot,
   type ChatSnapshot,
   type PendingAction,
 } from './fixtures/chatSnapshot'
 
-const FIXTURE_DEEP_AGENT_SUMMARY = `Кратко: просадка tx_count на gate 42 три цикла подряд; SR в норме, но поток критически ниже baseline.
+const FIXTURE_PENDING_ACTION: PendingAction = {
+  action_id: 'act-fixture-check-provider',
+  tool_name: 'check_provider_status',
+  arguments_preview: 'gate_id=42, provider=upstream-main',
+}
 
-Предлагаю:
-1. Проверить доступность upstream-провайдера
-2. Сверить логи за интервал 12:10–12:40 MSK
-3. При подтверждении — эскалация в L2`
-
-function buildFixtureOpenMessages(): ChatSnapshot['messages'] {
+function buildFixtureOpenMessages(auditId: string): ChatSnapshot['messages'] {
   return [
     {
       role: 'system',
-      content: `## Audit snapshot (read-only)\ngate_id: 42\ndetected_at: 2025-07-14 12:30:00\nconclusion: ${auditSummaryFixtureContent}\nhypothesis_prompt: fixture`,
+      content: buildFixtureSystemMessage(auditId),
     },
     {
       role: 'assistant',
-      content: FIXTURE_DEEP_AGENT_SUMMARY,
+      content: deepAgentSummaryFixtureContent,
     },
   ]
 }
@@ -104,8 +107,10 @@ export async function openChat(auditId: string): Promise<ChatSnapshot> {
     if (state.snapshot.state === 'not_started') {
       state.snapshot = cloneSnapshot({
         ...state.snapshot,
-        state: 'active',
-        messages: buildFixtureOpenMessages(),
+        session_id: chatSnapshotFixture.session_id,
+        state: 'awaiting_approval',
+        messages: buildFixtureOpenMessages(auditId),
+        pending_action: FIXTURE_PENDING_ACTION,
       })
     }
     return cloneSnapshot(state.snapshot)
@@ -131,7 +136,7 @@ export async function sendChatMessage(
     const state = getFixtureState(auditId)
     if (state.snapshot.pending_action) {
       throw new ApiClientError(409, {
-        error_code: 'message',
+        error_code: 'pending_action_blocks_message',
         message: 'Pending action blocks new messages',
       })
     }
@@ -143,7 +148,7 @@ export async function sendChatMessage(
         { role: 'user', content },
         {
           role: 'assistant',
-          content: 'Принял сообщение, продолжаю анализ.',
+          content: deepAgentFollowUpFixtureContent,
         },
       ],
     })
@@ -218,6 +223,8 @@ function applyActionResolution(
     return cloneSnapshot(snapshot)
   }
 
+  const toolName = snapshot.pending_action.tool_name
+
   return cloneSnapshot({
     ...snapshot,
     state: 'active',
@@ -226,7 +233,11 @@ function applyActionResolution(
       ...snapshot.messages,
       {
         role: 'tool',
-        content: `${resolution === 'approve' ? 'Approved' : 'Rejected'}: ${snapshot.pending_action.tool_name}`,
+        content: `${resolution === 'approve' ? 'Approved' : 'Rejected'}: ${toolName}`,
+      },
+      {
+        role: 'assistant',
+        content: deepAgentFollowUpFixtureContent,
       },
     ],
   })

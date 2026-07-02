@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 
-import { auditSummaryFixtureContent } from '@/api/fixtures/auditSummaryFixture'
+import { auditSummaryFixtureContent, deepAgentSummaryFixtureContent } from '@/api/fixtures/auditSummaryFixture'
 import { ChatMessage } from '@/components/deep/ChatMessage'
 
 describe('ChatMessage', () => {
@@ -30,5 +30,15 @@ describe('ChatMessage', () => {
 
     expect(screen.getByTestId('chat-message-hypothesis')).toBeInTheDocument()
     expect(screen.getByText(/Детекция/)).toBeVisible()
+  })
+
+  it('renders structured assistant summary in card layout', () => {
+    render(
+      <ChatMessage role="assistant" content={deepAgentSummaryFixtureContent} />,
+    )
+
+    expect(screen.getByTestId('chat-message-assistant')).toBeInTheDocument()
+    expect(screen.getByTestId('audit-summary')).toBeInTheDocument()
+    expect(screen.getByText(/Deep analysis/)).toBeVisible()
   })
 })
