@@ -328,7 +328,12 @@ export function UsagePage() {
           ) : null}
 
           {!isLoading && !error && items.length > 0 ? (
-            <UsageRunsTable items={items} onRowClick={handleRowClick} />
+            <>
+              <p className="text-muted-foreground mb-2 px-1 text-xs">
+                Нажмите на строку для полной детализации run
+              </p>
+              <UsageRunsTable items={items} onRowClick={handleRowClick} />
+            </>
           ) : null}
         </div>
       </UsageZone>

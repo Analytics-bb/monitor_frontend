@@ -5,6 +5,7 @@ import type { AgentUsageRun } from '@/api/usage'
 import { StatusBadge } from '@/components/StatusBadge'
 import { Button } from '@/components/ui/button'
 import { formatDateTimeRuOrDash } from '@/lib/formatDateTime'
+import { formatCostUsd } from '@/lib/formatCost'
 import { cn } from '@/lib/utils'
 
 export interface UsageRunDetailProps {
@@ -26,7 +27,7 @@ function formatNumber(value: number | null): string {
 }
 
 function formatCost(value: number | null): string {
-  return value === null ? '—' : value.toFixed(4)
+  return formatCostUsd(value)
 }
 
 const metadataLabels: { key: keyof AgentUsageRun; label: string }[] = [
@@ -156,7 +157,11 @@ export function UsageRunDetail({
               </table>
             </div>
           ) : (
-            <p className="text-muted-foreground text-sm">—</p>
+            <p className="text-muted-foreground text-sm" data-testid="usage-step-breakdown-empty">
+              MCP-шаги не зафиксированы — run содержит только LLM-вызов(ы).
+              Нажмите «Назад» и откройте другой run или проверьте запись
+              `step_breakdown` на бэкенде.
+            </p>
           )}
         </section>
       ) : null}
