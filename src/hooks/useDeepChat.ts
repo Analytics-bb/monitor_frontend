@@ -2,49 +2,52 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { flushSync } from 'react-dom'
 
 import {
-  approveChatAction,
   getChat,
   openChat,
-  rejectChatAction,
   sendChatMessage,
   TERMINAL_STATES,
   type ChatSnapshot,
 } from '@/api/deepChat'
-import { ApiClientError, isApiErrorCode, mapApiError } from '@/api/errors'
+import { ApiClientError, mapApiError, type ApiError } from '@/api/errors'
 import {
   createAwaitingReplyBaseline,
+  hasUserMessagesInSnapshot,
+  resolveConclusionForInitialMessage,
   shouldKeepAgentThinking,
   type AwaitingReplyBaseline,
 } from '@/lib/deepChatDisplay'
-import {
-  isFatalDeepChatLoadError,
-  isRecoverableDeepChatMutationError,
-} from '@/lib/deepChatErrors'
+import { toApiErrorFromUnknown } from '@/lib/deepChatErrorMessage'
+import { isRecoverableDeepChatMutationError } from '@/lib/deepChatErrors'
 import { mergeChatSnapshot } from '@/lib/deepChatSnapshotMerge'
 import { usePolling } from '@/hooks/usePolling'
 
-/** Интервал polling в `active` (середина 1–2 с). */
-const ACTIVE_INTERVAL_MS = 1_500
+/** Интервал polling (середина 1–2 с). */
+const POLLING_INTERVAL_MS = 1_500
 
-/** Интервал polling в `awaiting_approval` (середина 3–5 с). */
-const AWAITING_APPROVAL_INTERVAL_MS = 4_000
+export interface UseDeepChatOptions {
+  /**
+   * Conclusion hypothesis-агента до POST open (deep list / navigation state).
+   * После open приоритет у `system.conclusion` из snapshot.
+   */
+  seedConclusion?: string | null
+}
 
 export interface UseDeepChatResult {
   /** Последний snapshot или `null` до первого успешного GET. */
   snapshot: ChatSnapshot | null
-  /** Последняя ошибка fetch/mutation. */
-  error: unknown
+  /** Ошибка для отображения в ленте до ответа бэка. */
+  clientChatError: ApiError | null
   /** Optimistic user message до refetch. */
   optimisticUserMessage: string | null
-  /** Агент формирует ответ (после send/open). */
+  /** Агент формирует ответ (после send / auto conclusion). */
   isAgentThinking: boolean
   /** Polling включён по текущемu state. */
   isPolling: boolean
-  /** Идёт автоматический POST open при `not_started`. */
+  /** Идёт POST open (+ auto conclusion) при `not_started`. */
   isOpening: boolean
   /** Немедленный GET snapshot. */
   refetch: () => Promise<void>
-  /** POST open; после успеха — refetch и polling по state. */
+  /** POST open; при новой сессии — auto POST conclusion. */
   openSession: () => Promise<void>
   /**
    * POST message. Сначала optimistic user bubble, затем thinking до ответа агента.
@@ -52,17 +55,10 @@ export interface UseDeepChatResult {
    * @returns `true` если сообщение отправлено
    */
   sendMessage: (content: string) => Promise<boolean>
-  /** POST approve; refetch после успеха. */
-  approve: (actionId: string) => Promise<void>
-  /** POST reject; refetch после успеха. */
-  reject: (actionId: string) => Promise<void>
 }
 
-function getPollingIntervalMs(state: ChatSnapshot['state']): number {
-  if (state === 'awaiting_approval') {
-    return AWAITING_APPROVAL_INTERVAL_MS
-  }
-  return ACTIVE_INTERVAL_MS
+function getPollingIntervalMs(_state: ChatSnapshot['state']): number {
+  return POLLING_INTERVAL_MS
 }
 
 function isPollingEnabled(snapshot: ChatSnapshot | null): boolean {
@@ -81,14 +77,19 @@ function isPollingEnabled(snapshot: ChatSnapshot | null): boolean {
 /**
  * Polling и мутации deep chat для `/deep/{audit_id}`.
  *
- * Optimistic user message + thinking indicator между send и ответом агента.
- * Recoverable ошибки (409/422) не ломают чат — toast + refetch.
+ * Bootstrap: `POST open` (system seed) → auto `POST messages` с conclusion → ответ агента.
+ * Optimistic user message + thinking между send и ответом агента.
  *
  * @param auditId - UUID audit из route params
+ * @param options - seed conclusion до open
  */
-export function useDeepChat(auditId: string): UseDeepChatResult {
+export function useDeepChat(
+  auditId: string,
+  options?: UseDeepChatOptions,
+): UseDeepChatResult {
+  const seedConclusion = options?.seedConclusion ?? null
   const [snapshot, setSnapshot] = useState<ChatSnapshot | null>(null)
-  const [error, setError] = useState<unknown>(null)
+  const [clientChatError, setClientChatError] = useState<ApiError | null>(null)
   const [isOpening, setIsOpening] = useState(false)
   const [optimisticUserMessage, setOptimisticUserMessage] = useState<
     string | null
@@ -98,10 +99,15 @@ export function useDeepChat(auditId: string): UseDeepChatResult {
   const awaitingReplyRef = useRef(false)
   const awaitingBaselineRef = useRef<AwaitingReplyBaseline | null>(null)
   const snapshotRef = useRef<ChatSnapshot | null>(null)
+  const seedConclusionRef = useRef(seedConclusion)
 
   useEffect(() => {
     snapshotRef.current = snapshot
   }, [snapshot])
+
+  useEffect(() => {
+    seedConclusionRef.current = seedConclusion
+  }, [seedConclusion])
 
   useEffect(() => {
     hasAutoOpenedRef.current = false
@@ -109,13 +115,14 @@ export function useDeepChat(auditId: string): UseDeepChatResult {
     awaitingBaselineRef.current = null
     setOptimisticUserMessage(null)
     setIsAgentThinking(false)
+    setClientChatError(null)
   }, [auditId])
 
   const beginAwaitingReply = useCallback(
-    (options?: { additionalUsers?: number }) => {
+    (replyOptions?: { additionalUsers?: number }) => {
       awaitingBaselineRef.current = createAwaitingReplyBaseline(
         snapshotRef.current,
-        options,
+        replyOptions,
       )
       awaitingReplyRef.current = true
     },
@@ -149,17 +156,14 @@ export function useDeepChat(auditId: string): UseDeepChatResult {
         mergedResult = mergeChatSnapshot(previous, result)
         return mergedResult
       })
-      setError(null)
+      setClientChatError(null)
       syncThinkingWithSnapshot(mergedResult)
 
       return mergedResult
     } catch (err) {
-      if (!snapshotRef.current || isFatalDeepChatLoadError(err)) {
-        setError(err)
-      } else {
-        mapApiError(err)
-      }
-      return null
+      setClientChatError(toApiErrorFromUnknown(err))
+      mapApiError(err)
+      return snapshotRef.current
     }
   }, [auditId, syncThinkingWithSnapshot])
 
@@ -183,24 +187,72 @@ export function useDeepChat(auditId: string): UseDeepChatResult {
     await refetch()
   }, [refetch])
 
-  const openSession = useCallback(async () => {
-    beginAwaitingReply()
-    setIsAgentThinking(true)
-    try {
-      const result = await openChat(auditId)
-      setSnapshot((previous) => mergeChatSnapshot(previous, result))
-      setError(null)
-      syncThinkingWithSnapshot(result)
-    } catch (err) {
-      finishAwaitingReply()
-      if (isFatalDeepChatLoadError(err)) {
-        setError(err)
-      } else {
+  const sendInitialConclusion = useCallback(
+    async (openedSnapshot: ChatSnapshot): Promise<void> => {
+      if (hasUserMessagesInSnapshot(openedSnapshot)) {
+        return
+      }
+
+      const conclusion = resolveConclusionForInitialMessage(
+        openedSnapshot,
+        seedConclusionRef.current,
+      )
+      if (!conclusion) {
+        return
+      }
+
+      beginAwaitingReply({ additionalUsers: 1 })
+      setIsAgentThinking(true)
+      setClientChatError(null)
+
+      try {
+        const result = await sendChatMessage(auditId, conclusion)
+        setSnapshot((previous) => mergeChatSnapshot(previous, result))
+        syncThinkingWithSnapshot(result)
+      } catch (err) {
+        finishAwaitingReply()
+        setClientChatError(toApiErrorFromUnknown(err))
+
+        if (isRecoverableDeepChatMutationError(err)) {
+          mapApiError(err)
+          await refetch()
+          return
+        }
+
+        if (err instanceof ApiClientError && err.status === 409) {
+          await refetch()
+        }
+
         mapApiError(err)
       }
-      throw err
+    },
+    [
+      auditId,
+      beginAwaitingReply,
+      finishAwaitingReply,
+      refetch,
+      syncThinkingWithSnapshot,
+    ],
+  )
+
+  const bootstrapSession = useCallback(async (): Promise<void> => {
+    setIsOpening(true)
+    try {
+      const opened = await openChat(auditId)
+      setSnapshot((previous) => mergeChatSnapshot(previous, opened))
+      setClientChatError(null)
+      await sendInitialConclusion(opened)
+    } catch (err) {
+      setClientChatError(toApiErrorFromUnknown(err))
+      mapApiError(err)
+    } finally {
+      setIsOpening(false)
     }
-  }, [auditId, beginAwaitingReply, finishAwaitingReply, syncThinkingWithSnapshot])
+  }, [auditId, sendInitialConclusion])
+
+  const openSession = useCallback(async () => {
+    await bootstrapSession()
+  }, [bootstrapSession])
 
   useEffect(() => {
     if (
@@ -213,13 +265,8 @@ export function useDeepChat(auditId: string): UseDeepChatResult {
     }
 
     hasAutoOpenedRef.current = true
-    setIsOpening(true)
-    void openSession()
-      .catch(() => undefined)
-      .finally(() => {
-        setIsOpening(false)
-      })
-  }, [snapshot, openSession])
+    void bootstrapSession()
+  }, [snapshot, bootstrapSession])
 
   const sendMessage = useCallback(
     async (content: string): Promise<boolean> => {
@@ -232,7 +279,7 @@ export function useDeepChat(auditId: string): UseDeepChatResult {
         setOptimisticUserMessage(trimmed)
         beginAwaitingReply({ additionalUsers: 1 })
         setIsAgentThinking(true)
-        setError(null)
+        setClientChatError(null)
       })
 
       try {
@@ -243,6 +290,7 @@ export function useDeepChat(auditId: string): UseDeepChatResult {
         return true
       } catch (err) {
         if (isRecoverableDeepChatMutationError(err)) {
+          setClientChatError(toApiErrorFromUnknown(err))
           mapApiError(err)
           await refetch()
           finishAwaitingReply()
@@ -250,6 +298,7 @@ export function useDeepChat(auditId: string): UseDeepChatResult {
         }
 
         finishAwaitingReply()
+        setClientChatError(toApiErrorFromUnknown(err))
 
         if (err instanceof ApiClientError && err.status === 409) {
           await refetch()
@@ -268,77 +317,9 @@ export function useDeepChat(auditId: string): UseDeepChatResult {
     ],
   )
 
-  const approve = useCallback(
-    async (actionId: string) => {
-      beginAwaitingReply()
-      setIsAgentThinking(true)
-      try {
-        const result = await approveChatAction(auditId, actionId)
-        setSnapshot((previous) => mergeChatSnapshot(previous, result))
-        setError(null)
-        syncThinkingWithSnapshot(result)
-      } catch (err) {
-        finishAwaitingReply()
-
-        if (isApiErrorCode(err, 'budget_exceeded')) {
-          setSnapshot((current) =>
-            current ? { ...current, state: 'error' } : current,
-          )
-        }
-
-        if (isRecoverableDeepChatMutationError(err)) {
-          mapApiError(err)
-          await refetch()
-          return
-        }
-
-        mapApiError(err)
-        throw err
-      }
-    },
-    [
-      auditId,
-      beginAwaitingReply,
-      finishAwaitingReply,
-      refetch,
-      syncThinkingWithSnapshot,
-    ],
-  )
-
-  const reject = useCallback(
-    async (actionId: string) => {
-      beginAwaitingReply()
-      setIsAgentThinking(true)
-      try {
-        const result = await rejectChatAction(auditId, actionId)
-        setSnapshot((previous) => mergeChatSnapshot(previous, result))
-        setError(null)
-        syncThinkingWithSnapshot(result)
-      } catch (err) {
-        finishAwaitingReply()
-
-        if (isRecoverableDeepChatMutationError(err)) {
-          mapApiError(err)
-          await refetch()
-          return
-        }
-
-        setError(err)
-        throw err
-      }
-    },
-    [
-      auditId,
-      beginAwaitingReply,
-      finishAwaitingReply,
-      refetch,
-      syncThinkingWithSnapshot,
-    ],
-  )
-
   return {
     snapshot,
-    error,
+    clientChatError,
     optimisticUserMessage,
     isAgentThinking,
     isPolling: pollingEnabled,
@@ -346,7 +327,5 @@ export function useDeepChat(auditId: string): UseDeepChatResult {
     refetch: refetchSnapshot,
     openSession,
     sendMessage,
-    approve,
-    reject,
   }
 }

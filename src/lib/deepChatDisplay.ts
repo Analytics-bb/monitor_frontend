@@ -1,4 +1,10 @@
 import type { ChatMessage, ChatSnapshot } from '@/api/fixtures/chatSnapshot'
+import type { ApiError } from '@/api/errors'
+
+import {
+  buildDeepChatErrorAssistantContent,
+  isErrorCoveredByAssistantMessage,
+} from '@/lib/deepChatErrorMessage'
 
 import { chatMessageStableKey } from './deepChatSnapshotMerge'
 
@@ -8,6 +14,32 @@ export type DeepChatDisplayMessage = {
   content: string
   /** Вывод hypothesis-агента в первом user-сообщении. */
   variant?: 'hypothesis' | 'default'
+}
+
+/**
+ * Есть ли user-сообщения в snapshot (первый turn уже отправлен).
+ */
+export function hasUserMessagesInSnapshot(snapshot: ChatSnapshot): boolean {
+  return snapshot.messages.some((message) => message.role === 'user')
+}
+
+/**
+ * Текст conclusion для автоматического первого POST /messages после open.
+ *
+ * Приоритет: `system.conclusion` из snapshot, затем seed из deep list / navigation.
+ */
+export function resolveConclusionForInitialMessage(
+  snapshot: ChatSnapshot,
+  seedConclusion?: string | null,
+): string | null {
+  const systemMessage = snapshot.messages.find(
+    (message) => message.role === 'system',
+  )
+  const fromSystem = systemMessage
+    ? extractHypothesisConclusionFromSystem(systemMessage.content)
+    : null
+  const resolved = (fromSystem ?? seedConclusion?.trim() ?? '').trim()
+  return resolved.length > 0 ? resolved : null
 }
 
 /**
@@ -90,6 +122,8 @@ export function buildDeepChatDisplayMessages(
     optimisticUserMessage?: string | null
     /** Conclusion из списка / navigation state до POST open. */
     seedHypothesisConclusion?: string | null
+    /** Клиентская ошибка мутации/fetch до ответа бэка в snapshot. */
+    clientError?: ApiError | null
   },
 ): DeepChatDisplayMessage[] {
   const result: DeepChatDisplayMessage[] = []
@@ -114,6 +148,9 @@ export function buildDeepChatDisplayMessages(
   const showHypothesisSeed = Boolean(hypothesis) && !hypothesisAlreadyAsUser
   let hypothesisBubbleRendered = false
 
+  const isHypothesisUserContent = (content: string): boolean =>
+    Boolean(hypothesis) && content.trim() === hypothesis!.trim()
+
   const pushHypothesisIfNeeded = () => {
     if (!showHypothesisSeed || hypothesisBubbleRendered || !hypothesis) {
       return
@@ -134,7 +171,15 @@ export function buildDeepChatDisplayMessages(
     }
 
     if (message.role === 'user') {
-      result.push(mapApiMessage(message))
+      result.push({
+        ...mapApiMessage(message),
+        ...(isHypothesisUserContent(message.content)
+          ? { variant: 'hypothesis' as const }
+          : {}),
+      })
+      if (isHypothesisUserContent(message.content)) {
+        hypothesisBubbleRendered = true
+      }
       continue
     }
 
@@ -160,13 +205,29 @@ export function buildDeepChatDisplayMessages(
     const alreadyInSnapshot = apiUserMessages.some(
       (message) => message.content.trim() === optimistic,
     )
-    if (!alreadyInSnapshot) {
+    if (!alreadyInSnapshot && !isHypothesisUserContent(optimistic)) {
       result.push({
         id: 'optimistic-user',
         role: 'user',
         content: optimistic,
       })
     }
+  }
+
+  const displayError = options?.clientError ?? snapshot.last_error ?? null
+  if (
+    displayError &&
+    !result.some(
+      (message) =>
+        message.role === 'assistant' &&
+        isErrorCoveredByAssistantMessage(message.content, displayError),
+    )
+  ) {
+    result.push({
+      id: `assistant-error-${displayError.error_code}`,
+      role: 'assistant',
+      content: buildDeepChatErrorAssistantContent(displayError),
+    })
   }
 
   return result
@@ -276,10 +337,6 @@ export function shouldKeepAgentThinking(
 ): boolean {
   if (!snapshot) {
     return true
-  }
-
-  if (snapshot.state === 'awaiting_approval') {
-    return false
   }
 
   if (!baseline) {

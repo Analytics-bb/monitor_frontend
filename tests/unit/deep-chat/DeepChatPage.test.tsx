@@ -4,7 +4,6 @@ import { beforeEach, describe, expect, it } from 'vitest'
 
 import {
   resetDeepChatFixtureStore,
-  setFixtureChatAwaitingApproval,
   setFixtureChatSnapshot,
 } from '@/api/deepChat'
 import {
@@ -34,13 +33,16 @@ describe('DeepChatPage', () => {
     )
 
     expect(await screen.findByTestId('chat-message-hypothesis')).toBeInTheDocument()
-    expect(await screen.findByText(/Deep analysis/)).toBeVisible()
+    expect(
+      await screen.findByRole('heading', { name: /Обновление/i }),
+    ).toBeVisible()
+    expect(screen.getAllByTestId('chat-message-assistant').length).toBeGreaterThanOrEqual(1)
     expect(screen.getAllByText(/Действия/).length).toBeGreaterThanOrEqual(1)
-    expect(await screen.findByTestId('approval-overlay')).toBeInTheDocument()
-    expect(screen.getByText('check_provider_status')).toBeVisible()
+    expect(screen.queryByTestId('approval-overlay')).not.toBeInTheDocument()
+    expect(screen.getByTestId('chat-window-composer')).toBeInTheDocument()
   })
 
-  it('shows error panel instead of chat when state is error', async () => {
+  it('shows agent error in chat but keeps composer when state is error', async () => {
     setFixtureChatSnapshot(AUDIT_ID, chatSnapshotErrorFixture)
     const { DeepChatPage } = await import('@/pages/DeepChatPage')
 
@@ -52,9 +54,12 @@ describe('DeepChatPage', () => {
       </MemoryRouter>,
     )
 
-    expect(await screen.findByTestId('chat-error-panel')).toBeInTheDocument()
-    expect(screen.getByText('budget_exceeded')).toBeVisible()
-    expect(screen.queryByTestId('chat-window-composer')).not.toBeInTheDocument()
+    expect(await screen.findByTestId('chat-message-list')).toBeInTheDocument()
+    expect(screen.getByText(/budget_exceeded/)).toBeVisible()
+    expect(screen.getByText(/Превышен лимит токенов/)).toBeVisible()
+    expect(screen.queryByTestId('chat-state-notice-error')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('chat-error-panel')).not.toBeInTheDocument()
+    expect(screen.getByTestId('chat-window-composer')).toBeInTheDocument()
   })
 
   it('shows completed notice and hides composer', async () => {
@@ -89,13 +94,7 @@ describe('DeepChatPage', () => {
     expect(screen.queryByTestId('chat-window-composer')).not.toBeInTheDocument()
   })
 
-  it('shows approval overlay when awaiting approval', async () => {
-    setFixtureChatSnapshot(AUDIT_ID, chatSnapshotCompletedFixture)
-    setFixtureChatAwaitingApproval(AUDIT_ID, {
-      action_id: 'act-1',
-      tool_name: 'run_query',
-      arguments_preview: 'SELECT 1',
-    })
+  it('keeps composer enabled after open without approval step', async () => {
     const { DeepChatPage } = await import('@/pages/DeepChatPage')
 
     render(
@@ -106,11 +105,14 @@ describe('DeepChatPage', () => {
       </MemoryRouter>,
     )
 
-    expect(await screen.findByTestId('approval-overlay')).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Свой вариант' })).toBeVisible()
+    await screen.findByTestId('chat-message-hypothesis')
+    await screen.findByRole('heading', { name: /Обновление/i })
+    expect(screen.getAllByTestId('chat-message-assistant').length).toBeGreaterThanOrEqual(1)
+    expect(screen.queryByTestId('approval-overlay')).not.toBeInTheDocument()
+    expect(screen.getByTestId('chat-composer-textarea')).not.toBeDisabled()
   })
 
-  it('links usage page with audit_id query', async () => {
+  it('links usage page without filters', async () => {
     const { DeepChatPage } = await import('@/pages/DeepChatPage')
 
     render(
@@ -122,7 +124,7 @@ describe('DeepChatPage', () => {
     )
 
     const link = await screen.findByRole('link', { name: 'Расход токенов' })
-    expect(link).toHaveAttribute('href', `/usage?audit_id=${AUDIT_ID}`)
+    expect(link).toHaveAttribute('href', '/usage')
   })
 
   it('restores deep list query in back link', async () => {

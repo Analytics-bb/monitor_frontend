@@ -18,7 +18,7 @@ export interface ChatMessageListProps {
 }
 
 /**
- * Список сообщений с auto scroll-to-bottom, chip «N новых» и индикатором thinking.
+ * Список сообщений с auto scroll-to-bottom при «у низа», chip «N новых» и индикатором thinking.
  */
 export function ChatMessageList({
   messages,
@@ -77,7 +77,7 @@ export function ChatMessageList({
   }, [messages, isAtBottom, scrollToBottom])
 
   useEffect(() => {
-    if (isAgentThinking || isAtBottom) {
+    if (isAtBottom) {
       scrollToBottom()
     }
   }, [messages, isAgentThinking, isAtBottom, scrollToBottom])

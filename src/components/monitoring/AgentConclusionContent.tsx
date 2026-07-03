@@ -1,36 +1,32 @@
+import { isAuditSummaryContent } from '@/api/fixtures/auditSummaryFixture'
+import { ChatMarkdown } from '@/components/chat/ChatMarkdown'
+import { isHtmlChatContent } from '@/lib/normalizeChatMarkdown'
 import { cn } from '@/lib/utils'
 
 export interface AgentConclusionContentProps {
-  /** HTML или plain text из `report.conclusion`. */
+  /** HTML или structured markdown из `report.conclusion`. */
   content: string
   className?: string
 }
 
-function isHtmlContent(content: string): boolean {
-  return /^\s*</.test(content)
-}
-
 /**
- * Рендер вывода агента: HTML через `dangerouslySetInnerHTML` или plain text fallback.
+ * Рендер вывода hypothesis-агента на мониторинге.
+ *
+ * HTML и structured markdown — через {@link ChatMarkdown} (как в deep chat).
  */
 export function AgentConclusionContent({
   content,
   className,
 }: AgentConclusionContentProps) {
-  if (!isHtmlContent(content)) {
-    return (
-      <p
-        className={cn('text-sm leading-relaxed whitespace-pre-wrap', className)}
-      >
-        {content}
-      </p>
-    )
-  }
+  const structured =
+    isHtmlChatContent(content) || isAuditSummaryContent(content)
 
   return (
-    <div
-      className={cn('agent-conclusion text-sm leading-relaxed', className)}
-      dangerouslySetInnerHTML={{ __html: content }}
+    <ChatMarkdown
+      content={content}
+      tone="assistant"
+      structured={structured}
+      className={cn('text-sm', className)}
     />
   )
 }

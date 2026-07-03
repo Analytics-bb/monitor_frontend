@@ -69,4 +69,25 @@ describe('parseChatSnapshot', () => {
     expect(snapshot.pending_action?.tool_call_id).toBe('call-abc')
     expect(snapshot.pending_action?.arguments).toEqual({ sql: 'SELECT 1' })
   })
+
+  it('parses usage_total with estimated_cost_usd', () => {
+    const snapshot = parseChatSnapshot({
+      ...liveApiChatSnapshot,
+      usage_total: {
+        model: 'claude-sonnet-4-6',
+        prompt_tokens: 5793,
+        completion_tokens: 194,
+        total_tokens: 5987,
+        estimated_cost_usd: '0.018420',
+      },
+    })
+
+    expect(snapshot.usage_total).toEqual({
+      model: 'claude-sonnet-4-6',
+      prompt_tokens: 5793,
+      completion_tokens: 194,
+      total_tokens: 5987,
+      estimated_cost_usd: 0.01842,
+    })
+  })
 })

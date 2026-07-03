@@ -1,6 +1,8 @@
 import { z } from 'zod'
 
 import { apiErrorEnvelopeSchema } from '@/api/errors'
+import { tokenUsageSchema } from '@/api/tokenUsage'
+import { buildDeepChatErrorAssistantContent } from '@/lib/deepChatErrorMessage'
 
 import { auditSummaryFixtureContent, deepAgentSummaryFixtureContent } from './auditSummaryFixture'
 
@@ -36,6 +38,7 @@ export const chatSnapshotApiSchema = z.object({
   state: deepChatStateSchema,
   messages: z.array(chatMessageSchema),
   pending_action: pendingActionSchema.nullable(),
+  usage_total: tokenUsageSchema.nullable().optional(),
 })
 
 /** UI-поля вне ChatSnapshot API (fixtures, обогащение из list/system). */
@@ -146,6 +149,13 @@ export const chatSnapshotFixture: ChatSnapshot = {
   state: 'active',
   messages: buildFixtureOpenMessages(),
   pending_action: null,
+  usage_total: {
+    model: 'claude-sonnet-4-6',
+    prompt_tokens: 12_400,
+    completion_tokens: 890,
+    total_tokens: 13_290,
+    estimated_cost_usd: 0.0523,
+  },
 }
 
 /** Snapshot для состояния `not_started` (пустой чат до open). */
@@ -160,12 +170,25 @@ export const chatSnapshotNotStartedFixture: ChatSnapshot = {
   pending_action: null,
 }
 
-/** Snapshot для terminal state `error` без истории (full-page error panel). */
+/** Snapshot для terminal state `error` с ответом агента в ленте. */
 export const chatSnapshotErrorFixture: ChatSnapshot = {
   ...chatSnapshotNotStartedFixture,
   session_id: FIXTURE_SESSION_ID,
   state: 'error',
-  messages: [],
+  messages: [
+    {
+      role: 'system',
+      content: buildFixtureSystemMessage(),
+    },
+    {
+      role: 'assistant',
+      content: buildDeepChatErrorAssistantContent({
+        error_code: 'budget_exceeded',
+        message: 'Превышен лимит токенов для deep chat сессии.',
+        details: { audit_id: FIXTURE_AUDIT_ID, limit_usd: 5 },
+      }),
+    },
+  ],
   pending_action: null,
   last_error: {
     error_code: 'budget_exceeded',

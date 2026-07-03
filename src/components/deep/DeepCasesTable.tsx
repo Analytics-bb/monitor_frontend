@@ -78,8 +78,11 @@ export function DeepCasesTable({
                 </span>
               </td>
               <td className="max-w-[20rem] px-3 py-2">
-                <span className="block truncate" title={item.conclusion}>
-                  {item.conclusion}
+                <span
+                  className="block truncate"
+                  title={item.conclusion ?? undefined}
+                >
+                  {item.conclusion ?? '—'}
                 </span>
               </td>
               <td className="px-3 py-2 text-center">

@@ -7,7 +7,9 @@ import {
   createAwaitingReplyBaseline,
   extractHypothesisConclusionFromSystem,
   hasAssistantReplySinceBaseline,
+  hasUserMessagesInSnapshot,
   isHypothesisEchoContent,
+  resolveConclusionForInitialMessage,
 } from '@/lib/deepChatDisplay'
 import { mergeChatSnapshot } from '@/lib/deepChatSnapshotMerge'
 
@@ -40,6 +42,52 @@ describe('deepChatDisplay', () => {
       isHypothesisEchoContent(
         'success_rate LOW @ 1001\n\n<article>x</article>',
       ),
+    ).toBe(true)
+  })
+
+  it('resolves initial conclusion from system over seed', () => {
+    const snapshot: ChatSnapshot = {
+      ...baseSnapshot,
+      messages: [
+        {
+          role: 'system',
+          content: `conclusion: ${auditSummaryFixtureContent}`,
+        },
+      ],
+    }
+
+    expect(
+      resolveConclusionForInitialMessage(snapshot, 'seed fallback'),
+    ).toBe(auditSummaryFixtureContent)
+  })
+
+  it('renders API user message with hypothesis variant when content matches conclusion', () => {
+    const messages = buildDeepChatDisplayMessages({
+      ...baseSnapshot,
+      messages: [
+        {
+          role: 'system',
+          content: `conclusion: ${auditSummaryFixtureContent}`,
+        },
+        { role: 'user', content: auditSummaryFixtureContent },
+        { role: 'assistant', content: deepAgentSummaryFixtureContent },
+      ],
+    })
+
+    expect(messages).toHaveLength(2)
+    expect(messages[0]).toMatchObject({
+      role: 'user',
+      variant: 'hypothesis',
+    })
+  })
+
+  it('detects user messages in snapshot', () => {
+    expect(hasUserMessagesInSnapshot(baseSnapshot)).toBe(false)
+    expect(
+      hasUserMessagesInSnapshot({
+        ...baseSnapshot,
+        messages: [{ role: 'user', content: 'hello' }],
+      }),
     ).toBe(true)
   })
 })
@@ -219,5 +267,39 @@ describe('buildDeepChatDisplayMessages chronological', () => {
       content: 'Новый вопрос',
       id: 'optimistic-user',
     })
+  })
+
+  it('appends assistant error message from last_error when missing in thread', () => {
+    const messages = buildDeepChatDisplayMessages({
+      ...baseSnapshot,
+      state: 'error',
+      messages: [],
+      last_error: {
+        error_code: 'pipeline_error',
+        message: 'LLM недоступен',
+      },
+    })
+
+    expect(messages.at(-1)).toMatchObject({
+      role: 'assistant',
+      content: expect.stringContaining('pipeline_error'),
+    })
+  })
+
+  it('does not duplicate assistant error message already in thread', () => {
+    const error = {
+      error_code: 'budget_exceeded',
+      message: 'Превышен лимит',
+    }
+    const assistantContent = `📈 **Ошибка**\n\n**Код:** \`budget_exceeded\`\n\nПревышен лимит`
+
+    const messages = buildDeepChatDisplayMessages({
+      ...baseSnapshot,
+      state: 'error',
+      messages: [{ role: 'assistant', content: assistantContent }],
+      last_error: error,
+    })
+
+    expect(messages.filter((message) => message.role === 'assistant')).toHaveLength(1)
   })
 })

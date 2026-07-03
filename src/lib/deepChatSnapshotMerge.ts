@@ -56,5 +56,9 @@ export function mergeChatSnapshot(
   return {
     ...incoming,
     messages: ordered,
+    gate_name: incoming.gate_name ?? previous.gate_name,
+    gate_id: incoming.gate_id ?? previous.gate_id,
+    created_at: incoming.created_at ?? previous.created_at,
+    usage_total: incoming.usage_total ?? previous.usage_total,
   }
 }

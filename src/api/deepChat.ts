@@ -1,8 +1,7 @@
-import { apiFetch, apiGetJson } from './client'
+import { apiFetch, apiGetJson, DEEP_CHAT_MUTATION_TIMEOUT_MS } from './client'
 import { ApiClientError } from './errors'
 import {
   deepAgentFollowUpFixtureContent,
-  deepAgentSummaryFixtureContent,
 } from './fixtures/auditSummaryFixture'
 import { buildFixtureSnapshotFromList } from './fixtures/deepChatFromList'
 import {
@@ -13,21 +12,11 @@ import {
   type PendingAction,
 } from './fixtures/chatSnapshot'
 
-const FIXTURE_PENDING_ACTION: PendingAction = {
-  action_id: 'act-fixture-check-provider',
-  tool_name: 'check_provider_status',
-  arguments_preview: 'gate_id=42, provider=upstream-main',
-}
-
-function buildFixtureOpenMessages(auditId: string): ChatSnapshot['messages'] {
+function buildFixtureSystemOnlyMessages(auditId: string): ChatSnapshot['messages'] {
   return [
     {
       role: 'system',
       content: buildFixtureSystemMessage(auditId),
-    },
-    {
-      role: 'assistant',
-      content: deepAgentSummaryFixtureContent,
     },
   ]
 }
@@ -35,7 +24,6 @@ function buildFixtureOpenMessages(auditId: string): ChatSnapshot['messages'] {
 const TERMINAL_STATES = new Set<ChatSnapshot['state']>([
   'completed',
   'cancelled',
-  'error',
 ])
 
 interface FixtureChatState {
@@ -108,9 +96,9 @@ export async function openChat(auditId: string): Promise<ChatSnapshot> {
       state.snapshot = cloneSnapshot({
         ...state.snapshot,
         session_id: chatSnapshotFixture.session_id,
-        state: 'awaiting_approval',
-        messages: buildFixtureOpenMessages(auditId),
-        pending_action: FIXTURE_PENDING_ACTION,
+        state: 'active',
+        messages: buildFixtureSystemOnlyMessages(auditId),
+        pending_action: null,
       })
     }
     return cloneSnapshot(state.snapshot)
@@ -134,12 +122,6 @@ export async function sendChatMessage(
 ): Promise<ChatSnapshot> {
   if (isFixtureMode()) {
     const state = getFixtureState(auditId)
-    if (state.snapshot.pending_action) {
-      throw new ApiClientError(409, {
-        error_code: 'pending_action_blocks_message',
-        message: 'Pending action blocks new messages',
-      })
-    }
 
     state.snapshot = cloneSnapshot({
       ...state.snapshot,
@@ -158,6 +140,7 @@ export async function sendChatMessage(
   const response = await apiFetch(chatPath(auditId, '/messages'), {
     method: 'POST',
     body: JSON.stringify({ content }),
+    timeoutMs: DEEP_CHAT_MUTATION_TIMEOUT_MS,
   })
   const json: unknown = await response.json()
   return parseChatSnapshot(json)

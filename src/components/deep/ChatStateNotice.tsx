@@ -14,7 +14,7 @@ const NOTICE_COPY: Record<ChatStateNoticeProps['state'], string> = {
 }
 
 /**
- * Системное уведомление внизу фрейма чата для `completed` и `cancelled`.
+ * Системное уведомление внизу фрейма чата для завершённых диалогов.
  */
 export function ChatStateNotice({ state, className }: ChatStateNoticeProps) {
   return (

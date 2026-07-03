@@ -60,7 +60,7 @@ export const deepAgentSummaryFixtureContent = `📈 Deep analysis
 
 🎯 Итог: НАБЛЮДАТЬ
 
-Требуется подтверждение первого шага — проверка провайдера.
+Проверка провайдера выполнена автоматически; продолжаю анализ.
 
 ---
 gate_id: 42 | step: 1/3 | ts: 2025-07-14 12:41:00 MSK`
@@ -81,5 +81,6 @@ gate_id: 42 | step: 2/3`
 
 /** Проверяет, что контент — structured summary deep/hypothesis агента. */
 export function isAuditSummaryContent(content: string): boolean {
-  return content.trimStart().startsWith('📈')
+  const trimmed = content.trimStart()
+  return trimmed.startsWith('📈') || /^\d+\.\s/.test(trimmed)
 }

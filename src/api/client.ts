@@ -3,6 +3,12 @@ import { ApiClientError, parseApiError } from './errors'
 /** Таймаут HTTP-запроса по умолчанию (M17 §10.z.1). */
 export const DEFAULT_API_TIMEOUT_MS = 30_000
 
+/**
+ * Таймаут мутаций deep chat: propose + MCP + 2 LLM-вызова на бэкенде.
+ * Обычный {@link DEFAULT_API_TIMEOUT_MS} обрывает `POST .../chat/messages` до ответа.
+ */
+export const DEEP_CHAT_MUTATION_TIMEOUT_MS = 120_000
+
 const MAX_GET_RETRIES = 3
 const RETRYABLE_STATUSES = new Set([502, 503, 504])
 

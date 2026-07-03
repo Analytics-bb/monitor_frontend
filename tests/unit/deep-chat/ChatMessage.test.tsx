@@ -5,18 +5,27 @@ import { auditSummaryFixtureContent, deepAgentSummaryFixtureContent } from '@/ap
 import { ChatMessage } from '@/components/deep/ChatMessage'
 
 describe('ChatMessage', () => {
-  it('renders user message on the right and assistant on the left', () => {
-    const { rerender } = render(
-      <ChatMessage role="user" content="Привет" />,
+  it('renders assistant on the left without card chrome', () => {
+    render(<ChatMessage role="assistant" content="Ответ" />)
+
+    const assistant = screen.getByTestId('chat-message-assistant')
+    expect(assistant.className).not.toMatch(/border|shadow|bg-card/)
+    expect(assistant.closest('[data-testid="chat-message-assistant-wrapper"]')).toHaveClass(
+      'justify-start',
+    )
+  })
+
+  it('renders structured assistant summary without borders', () => {
+    render(
+      <ChatMessage role="assistant" content={deepAgentSummaryFixtureContent} />,
     )
 
-    const userBubble = screen.getByTestId('chat-message-user')
-    expect(userBubble.className).toContain('justify-end')
-
-    rerender(<ChatMessage role="assistant" content="Ответ" />)
-
-    const assistantBubble = screen.getByTestId('chat-message-assistant')
-    expect(assistantBubble.className).toContain('justify-start')
+    expect(screen.getByTestId('chat-message-assistant')).toBeInTheDocument()
+    expect(screen.getByTestId('audit-summary')).toBeInTheDocument()
+    expect(screen.getByText(/Deep analysis/)).toBeVisible()
+    expect(screen.getByTestId('chat-message-assistant').className).not.toMatch(
+      /border|shadow|bg-card/,
+    )
   })
 
   it('renders hypothesis output as user bubble on the right', () => {
@@ -32,13 +41,11 @@ describe('ChatMessage', () => {
     expect(screen.getByText(/Детекция/)).toBeVisible()
   })
 
-  it('renders structured assistant summary in card layout', () => {
-    render(
-      <ChatMessage role="assistant" content={deepAgentSummaryFixtureContent} />,
-    )
+  it('renders user message on the right', () => {
+    render(<ChatMessage role="user" content="Привет" />)
 
-    expect(screen.getByTestId('chat-message-assistant')).toBeInTheDocument()
-    expect(screen.getByTestId('audit-summary')).toBeInTheDocument()
-    expect(screen.getByText(/Deep analysis/)).toBeVisible()
+    expect(screen.getByTestId('chat-message-user').className).toContain(
+      'justify-end',
+    )
   })
 })
