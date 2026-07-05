@@ -194,7 +194,7 @@ FE извлекает hypothesis bubble из `conclusion:` (`extractHypothesisCo
 
 **Assistant message (hypothesis):** Markdown (react-markdown): заголовки ``##`` с emoji, списки, blockquote, inline `` `code` ``. Без HTML.
 
-**Assistant message (deep):** Markdown (react-markdown): ``## 📈 Детекция``, ``## 🔧 Действия``, ``## 🎯 Итог``, … Ошибки backend/MCP — текст в ленте, ``state=error``.
+**Assistant message (deep):** Markdown (react-markdown): ``## 📈 Детекция``, ``## 🔧 Действия``, ``## 🎯 Итог``, … При исчерпании MCP auto-retry — ``state=error`` и текст ошибки в ленте; промежуточные неудачные SQL не показываются.
 
 ### ChatSnapshot
 
