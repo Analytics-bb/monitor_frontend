@@ -13,6 +13,7 @@ import { useDeepChat } from '@/hooks/useDeepChat'
 import { useGateDisplayName } from '@/hooks/useGateDisplayName'
 import { findFixtureDeepCaseConclusion } from '@/lib/deepCaseConclusion'
 import { buildDeepChatDisplayMessages } from '@/lib/deepChatDisplay'
+import { getAgentThinkingLabel, type AgentThinkingPhase } from '@/lib/deepChatThinking'
 import { buildDeepChatUsageHref } from '@/lib/usageNavigation'
 
 const CLOSED_CHAT_STATES = new Set<ChatSnapshot['state']>([
@@ -32,9 +33,12 @@ function toStatusBadgeVariant(state: ChatSnapshot['state']): StatusBadgeVariant 
   return state
 }
 
-function getComposerPlaceholder(isAgentThinking: boolean): string {
+function getComposerPlaceholder(
+  isAgentThinking: boolean,
+  thinkingPhase: AgentThinkingPhase,
+): string {
   if (isAgentThinking) {
-    return 'Ожидание ответа агента…'
+    return getAgentThinkingLabel(thinkingPhase)
   }
   return 'Напишите агенту…'
 }
@@ -71,6 +75,7 @@ export function DeepChatPage() {
     clientChatError,
     optimisticUserMessage,
     isAgentThinking,
+    agentThinkingPhase,
     isOpening,
     sendMessage,
     refetch,
@@ -159,6 +164,7 @@ export function DeepChatPage() {
         <ChatMessageList
           messages={displayMessages}
           isAgentThinking={showAgentThinking}
+          agentThinkingPhase={agentThinkingPhase}
         />
       )
     }
@@ -219,7 +225,10 @@ export function DeepChatPage() {
           snapshot && !isTerminal ? (
             <ChatComposer
               disabled={composerDisabled}
-              placeholder={getComposerPlaceholder(isAgentThinking)}
+              placeholder={getComposerPlaceholder(
+                isAgentThinking,
+                agentThinkingPhase,
+              )}
               onSend={async (content) => {
                 const sent = await sendMessage(content)
                 if (!sent) {

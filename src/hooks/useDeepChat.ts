@@ -18,6 +18,10 @@ import {
 } from '@/lib/deepChatDisplay'
 import { toApiErrorFromUnknown } from '@/lib/deepChatErrorMessage'
 import { isRecoverableDeepChatMutationError } from '@/lib/deepChatErrors'
+import {
+  resolveAgentThinkingPhase,
+  type AgentThinkingPhase,
+} from '@/lib/deepChatThinking'
 import { mergeChatSnapshot } from '@/lib/deepChatSnapshotMerge'
 import { usePolling } from '@/hooks/usePolling'
 
@@ -41,6 +45,8 @@ export interface UseDeepChatResult {
   optimisticUserMessage: string | null
   /** Агент формирует ответ (после send / auto conclusion). */
   isAgentThinking: boolean
+  /** Фаза thinking: MCP / auto-retry (`docs/api.md`). */
+  agentThinkingPhase: AgentThinkingPhase
   /** Polling включён по текущемu state. */
   isPolling: boolean
   /** Идёт POST open (+ auto conclusion) при `not_started`. */
@@ -95,9 +101,14 @@ export function useDeepChat(
     string | null
   >(null)
   const [isAgentThinking, setIsAgentThinking] = useState(false)
+  const [agentThinkingPhase, setAgentThinkingPhase] =
+    useState<AgentThinkingPhase>('forming')
   const hasAutoOpenedRef = useRef(false)
   const awaitingReplyRef = useRef(false)
   const awaitingBaselineRef = useRef<AwaitingReplyBaseline | null>(null)
+  const thinkingStartedAtRef = useRef<number | null>(null)
+  const thinkingUsageLastRef = useRef(0)
+  const thinkingUsageIncrementsRef = useRef(0)
   const snapshotRef = useRef<ChatSnapshot | null>(null)
   const seedConclusionRef = useRef(seedConclusion)
 
@@ -115,8 +126,47 @@ export function useDeepChat(
     awaitingBaselineRef.current = null
     setOptimisticUserMessage(null)
     setIsAgentThinking(false)
+    setAgentThinkingPhase('forming')
     setClientChatError(null)
   }, [auditId])
+
+  const beginThinkingTracking = useCallback(() => {
+    thinkingStartedAtRef.current = Date.now()
+    const baselineTokens = snapshotRef.current?.usage_total?.total_tokens ?? 0
+    thinkingUsageLastRef.current = baselineTokens
+    thinkingUsageIncrementsRef.current = 0
+    setAgentThinkingPhase('forming')
+  }, [])
+
+  const updateThinkingPhaseFromSnapshot = useCallback(
+    (nextSnapshot: ChatSnapshot) => {
+      if (!awaitingReplyRef.current || thinkingStartedAtRef.current == null) {
+        return
+      }
+
+      const currentTokens = nextSnapshot.usage_total?.total_tokens ?? 0
+      if (currentTokens > thinkingUsageLastRef.current) {
+        thinkingUsageIncrementsRef.current += 1
+        thinkingUsageLastRef.current = currentTokens
+      }
+
+      const elapsedMs = Date.now() - thinkingStartedAtRef.current
+      setAgentThinkingPhase(
+        resolveAgentThinkingPhase({
+          elapsedMs,
+          usageIncrements: thinkingUsageIncrementsRef.current,
+        }),
+      )
+    },
+    [],
+  )
+
+  const resetThinkingTracking = useCallback(() => {
+    thinkingStartedAtRef.current = null
+    thinkingUsageLastRef.current = 0
+    thinkingUsageIncrementsRef.current = 0
+    setAgentThinkingPhase('forming')
+  }, [])
 
   const beginAwaitingReply = useCallback(
     (replyOptions?: { additionalUsers?: number }) => {
@@ -133,8 +183,9 @@ export function useDeepChat(
     awaitingReplyRef.current = false
     awaitingBaselineRef.current = null
     setIsAgentThinking(false)
+    resetThinkingTracking()
     setOptimisticUserMessage(null)
-  }, [])
+  }, [resetThinkingTracking])
 
   const syncThinkingWithSnapshot = useCallback(
     (nextSnapshot: ChatSnapshot) => {
@@ -158,6 +209,7 @@ export function useDeepChat(
       })
       setClientChatError(null)
       syncThinkingWithSnapshot(mergedResult)
+      updateThinkingPhaseFromSnapshot(mergedResult)
 
       return mergedResult
     } catch (err) {
@@ -165,7 +217,7 @@ export function useDeepChat(
       mapApiError(err)
       return snapshotRef.current
     }
-  }, [auditId, syncThinkingWithSnapshot])
+  }, [auditId, syncThinkingWithSnapshot, updateThinkingPhaseFromSnapshot])
 
   const intervalMs = useMemo(
     () => getPollingIntervalMs(snapshot?.state ?? 'active'),
@@ -202,6 +254,7 @@ export function useDeepChat(
       }
 
       beginAwaitingReply({ additionalUsers: 1 })
+      beginThinkingTracking()
       setIsAgentThinking(true)
       setClientChatError(null)
 
@@ -229,11 +282,28 @@ export function useDeepChat(
     [
       auditId,
       beginAwaitingReply,
+      beginThinkingTracking,
       finishAwaitingReply,
       refetch,
       syncThinkingWithSnapshot,
     ],
   )
+
+  useEffect(() => {
+    if (!isAgentThinking) {
+      return undefined
+    }
+
+    const timerId = window.setInterval(() => {
+      if (snapshotRef.current) {
+        updateThinkingPhaseFromSnapshot(snapshotRef.current)
+      }
+    }, 1_000)
+
+    return () => {
+      window.clearInterval(timerId)
+    }
+  }, [isAgentThinking, updateThinkingPhaseFromSnapshot])
 
   const bootstrapSession = useCallback(async (): Promise<void> => {
     setIsOpening(true)
@@ -278,6 +348,7 @@ export function useDeepChat(
       flushSync(() => {
         setOptimisticUserMessage(trimmed)
         beginAwaitingReply({ additionalUsers: 1 })
+        beginThinkingTracking()
         setIsAgentThinking(true)
         setClientChatError(null)
       })
@@ -311,6 +382,7 @@ export function useDeepChat(
     [
       auditId,
       beginAwaitingReply,
+      beginThinkingTracking,
       finishAwaitingReply,
       refetch,
       syncThinkingWithSnapshot,
@@ -322,6 +394,7 @@ export function useDeepChat(
     clientChatError,
     optimisticUserMessage,
     isAgentThinking,
+    agentThinkingPhase,
     isPolling: pollingEnabled,
     isOpening,
     refetch: refetchSnapshot,

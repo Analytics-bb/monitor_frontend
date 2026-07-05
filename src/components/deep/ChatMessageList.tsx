@@ -8,12 +8,14 @@ import {
 
 import { AgentThinkingIndicator } from '@/components/deep/AgentThinkingIndicator'
 import { ChatMessage } from '@/components/deep/ChatMessage'
+import type { AgentThinkingPhase } from '@/lib/deepChatThinking'
 import type { DeepChatDisplayMessage } from '@/lib/deepChatDisplay'
 import { cn } from '@/lib/utils'
 
 export interface ChatMessageListProps {
   messages: DeepChatDisplayMessage[]
   isAgentThinking?: boolean
+  agentThinkingPhase?: AgentThinkingPhase
   className?: string
 }
 
@@ -23,6 +25,7 @@ export interface ChatMessageListProps {
 export function ChatMessageList({
   messages,
   isAgentThinking = false,
+  agentThinkingPhase = 'forming',
   className,
 }: ChatMessageListProps) {
   const containerRef = useRef<HTMLDivElement>(null)
@@ -97,7 +100,9 @@ export function ChatMessageList({
             variant={message.variant}
           />
         ))}
-        {isAgentThinking ? <AgentThinkingIndicator /> : null}
+        {isAgentThinking ? (
+          <AgentThinkingIndicator phase={agentThinkingPhase} />
+        ) : null}
       </>
     )
   }
