@@ -2,8 +2,9 @@ import { render, screen } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { MOCK_SESSION_STORAGE_KEY } from '@/auth/mockSession'
+import { authLoginFixture } from '@/api/fixtures/authSession'
 import { ProtectedRoute } from '@/app/ProtectedRoute'
+import { SESSION_STORAGE_KEY } from '@/auth/sessionStorage'
 
 function ProtectedProbe() {
   return <div>protected content</div>
@@ -13,6 +14,7 @@ describe('ProtectedRoute', () => {
   beforeEach(() => {
     localStorage.clear()
     vi.unstubAllEnvs()
+    vi.stubEnv('VITE_MOCK_AUTH_ENABLED', 'true')
     vi.resetModules()
   })
 
@@ -67,7 +69,7 @@ describe('ProtectedRoute', () => {
   })
 
   it('renders children with active session', () => {
-    localStorage.setItem(MOCK_SESSION_STORAGE_KEY, 'true')
+    localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(authLoginFixture))
 
     render(
       <MemoryRouter initialEntries={['/monitoring']}>

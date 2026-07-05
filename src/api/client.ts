@@ -1,4 +1,9 @@
 import { ApiClientError, parseApiError } from './errors'
+import { dispatchAuthChanged } from '@/auth/authEvents'
+import {
+  clearStoredSession,
+  getSessionToken,
+} from '@/auth/sessionStorage'
 
 /** Таймаут HTTP-запроса по умолчанию (M17 §10.z.1). */
 export const DEFAULT_API_TIMEOUT_MS = 30_000
@@ -17,6 +22,8 @@ export interface ApiFetchOptions extends RequestInit {
   timeoutMs?: number
   /** Повторять GET при 502/503/504 (max 3); по умолчанию `true` для GET. */
   retry?: boolean
+  /** Не добавлять Bearer (login и публичные эндпоинты). */
+  skipAuth?: boolean
 }
 
 /**
@@ -121,6 +128,13 @@ export async function apiFetch(
     headers.set('Content-Type', 'application/json')
   }
 
+  if (!init.skipAuth) {
+    const token = getSessionToken()
+    if (token && !headers.has('Authorization')) {
+      headers.set('Authorization', `Bearer ${token}`)
+    }
+  }
+
   const requestInit: RequestInit = {
     ...init,
     method,
@@ -149,6 +163,13 @@ export async function apiFetch(
   const response = lastResponse!
   if (!response.ok) {
     const apiError = await parseApiError(response.clone())
+    if (
+      response.status === 401 &&
+      apiError?.error_code === 'not_authenticated'
+    ) {
+      clearStoredSession()
+      dispatchAuthChanged()
+    }
     throw new ApiClientError(response.status, apiError)
   }
 

@@ -1,11 +1,13 @@
-import { render, screen } from '@testing-library/react'
+import { screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router'
-import { describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { MOCK_SESSION_STORAGE_KEY } from '@/auth/mockSession'
+import { authLoginFixture } from '@/api/fixtures/authSession'
 import { AuthSlot } from '@/app/layout/AuthSlot'
 import { SidebarCollapsedContext } from '@/app/layout/sidebarCollapsedContext'
+import { SESSION_STORAGE_KEY } from '@/auth/sessionStorage'
+import { renderWithAuth } from '../../helpers/renderWithAuth'
 
 const navigateMock = vi.fn()
 
@@ -18,7 +20,7 @@ vi.mock('react-router', async (importOriginal) => {
 })
 
 function renderAuthSlot() {
-  return render(
+  return renderWithAuth(
     <MemoryRouter>
       <SidebarCollapsedContext.Provider value={false}>
         <AuthSlot />
@@ -28,18 +30,30 @@ function renderAuthSlot() {
 }
 
 describe('AuthSlot', () => {
-  it('shows Login link after logout', async () => {
-    const user = userEvent.setup()
+  beforeEach(() => {
+    localStorage.clear()
     navigateMock.mockReset()
-    localStorage.setItem(MOCK_SESSION_STORAGE_KEY, 'true')
+    vi.stubEnv('VITE_MOCK_AUTH_ENABLED', 'true')
+  })
+
+  it('shows logout for active session', () => {
+    localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(authLoginFixture))
 
     renderAuthSlot()
 
     expect(screen.getByRole('button', { name: 'Logout' })).toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: authLoginFixture.username })).not.toBeInTheDocument()
+  })
+
+  it('shows Login link after logout', async () => {
+    const user = userEvent.setup()
+    localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(authLoginFixture))
+
+    renderAuthSlot()
 
     await user.click(screen.getByRole('button', { name: 'Logout' }))
 
-    expect(localStorage.getItem(MOCK_SESSION_STORAGE_KEY)).toBeNull()
+    expect(localStorage.getItem(SESSION_STORAGE_KEY)).toBeNull()
     expect(navigateMock).toHaveBeenCalledWith('/login')
     expect(screen.getByRole('link', { name: 'Login' })).toBeInTheDocument()
   })

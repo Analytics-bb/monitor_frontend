@@ -1,21 +1,27 @@
 import { render, screen } from '@testing-library/react'
 import { createMemoryRouter, RouterProvider } from 'react-router'
-import { describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { appRoutes } from '@/app/routes'
 import { ThemeProvider } from '@/app/providers/ThemeProvider'
+import { AuthProvider } from '@/auth/AuthProvider'
 
 describe('routes auth guard', () => {
-  it('redirects /deep to /login without session', () => {
+  beforeEach(() => {
     localStorage.clear()
+    vi.stubEnv('VITE_MOCK_AUTH_ENABLED', 'true')
+  })
 
+  it('redirects /deep to /login without session', () => {
     const memoryRouter = createMemoryRouter(appRoutes, {
       initialEntries: ['/deep'],
     })
 
     render(
       <ThemeProvider>
-        <RouterProvider router={memoryRouter} />
+        <AuthProvider>
+          <RouterProvider router={memoryRouter} />
+        </AuthProvider>
       </ThemeProvider>,
     )
 
