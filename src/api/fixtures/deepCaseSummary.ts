@@ -4,7 +4,7 @@ export const deepCaseSummarySchema = z.object({
   audit_id: z.string().uuid(),
   gate_id: z.string(),
   event_summary: z.string(),
-  conclusion: z.string(),
+  conclusion: z.string().nullish(),
   deep_chat_state: z.enum([
     'not_started',
     'active',
@@ -75,5 +75,9 @@ export const deepCasesListFixture: DeepCaseSummary[] =
   buildDeepCasesListFixture(30)
 
 export function parseDeepCaseSummary(data: unknown): DeepCaseSummary {
-  return deepCaseSummarySchema.parse(data)
+  const parsed = deepCaseSummarySchema.parse(data)
+  return {
+    ...parsed,
+    conclusion: parsed.conclusion ?? null,
+  }
 }

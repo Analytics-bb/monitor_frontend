@@ -4,6 +4,7 @@ import {
   agentUsageRunFixture,
   agentUsageRunHypothesisFixture,
   agentUsageRunSchema,
+  parseAgentUsageDailyRollup,
   parseAgentUsageRun,
 } from '@/api/fixtures/agentUsageRun'
 import { getUsageRun, listUsageRuns } from '@/api/usage'
@@ -58,5 +59,25 @@ describe('usage API fixtures', () => {
       )
       return true
     })
+  })
+
+  it('coerces string USD amounts from API', () => {
+    const run = parseAgentUsageRun({
+      ...agentUsageRunFixture,
+      estimated_cost_usd: '0.042500',
+    })
+
+    expect(run.estimated_cost_usd).toBe(0.0425)
+
+    const rollup = parseAgentUsageDailyRollup({
+      date: '2026-07-02',
+      gate_id: '1001',
+      agent_kind: 'deep',
+      total_tokens: 7883,
+      total_cost_usd: '0.0',
+      run_count: 1,
+    })
+
+    expect(rollup.total_cost_usd).toBe(0)
   })
 })

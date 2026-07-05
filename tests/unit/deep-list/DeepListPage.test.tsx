@@ -39,7 +39,10 @@ describe('DeepListPage navigation', () => {
     expect(navigateMock).toHaveBeenCalledWith(
       expect.stringMatching(/^\/deep\//),
       expect.objectContaining({
-        state: { deepListSearch: 'gate_id=42&page=1&page_size=20' },
+        state: {
+          deepListSearch: 'gate_id=42&page=1&page_size=20',
+          hypothesisConclusion: expect.any(String),
+        },
       }),
     )
   })

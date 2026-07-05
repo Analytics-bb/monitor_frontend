@@ -1,4 +1,5 @@
 import type { AgentUsageDailyRollup } from '@/api/usage'
+import { formatCostUsd } from '@/lib/formatCost'
 import { sumUsageDailyRollups } from '@/lib/usageDaily'
 import { cn } from '@/lib/utils'
 
@@ -68,7 +69,7 @@ export function UsageDailySummary({
       />
       <SummaryCard
         label="Deep cost USD"
-        value={totals.totalCostUsd.toFixed(4)}
+        value={formatCostUsd(totals.totalCostUsd)}
         testId="usage-daily-cost"
       />
       <SummaryCard

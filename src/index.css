@@ -217,6 +217,9 @@
   scrollbar-width: thin;
   scrollbar-color: color-mix(in oklab, var(--muted-foreground) 16%, transparent)
     transparent;
+  -webkit-user-select: text;
+  user-select: text;
+  cursor: auto;
 }
 
 .chat-message-scroll::-webkit-scrollbar {
@@ -332,4 +335,33 @@
   border-top: 1px solid var(--border);
   color: var(--muted-foreground);
   font-size: 0.75rem;
+}
+
+.chat-markdown .agent-conclusion-meta {
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border);
+  color: var(--muted-foreground);
+  font-size: 0.75rem;
+}
+
+.chat-markdown hr + p {
+  margin-top: 0.25rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.75rem;
+  line-height: 1.5;
+  color: color-mix(in oklab, var(--muted-foreground) 70%, transparent);
+}
+
+.chat-markdown,
+.chat-markdown * {
+  -webkit-user-select: text;
+  user-select: text;
+  cursor: text;
+}
+
+.chat-message-scroll button {
+  -webkit-user-select: none;
+  user-select: none;
+  cursor: pointer;
 }

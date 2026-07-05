@@ -72,7 +72,13 @@ export function mapApiError(error: unknown): void {
   }
 
   if (error instanceof Error) {
-    toast.error('unknown_error', { description: error.message })
+    const isTimeout =
+      error.name === 'AbortError' || /aborted/i.test(error.message)
+    toast.error(isTimeout ? 'request_timeout' : 'unknown_error', {
+      description: isTimeout
+        ? 'Сервер не успел ответить. Обновите чат — ответ мог уже сохраниться.'
+        : error.message,
+    })
     return
   }
 

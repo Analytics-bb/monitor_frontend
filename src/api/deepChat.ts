@@ -1,18 +1,29 @@
-import { apiFetch, apiGetJson } from './client'
+import { apiFetch, apiGetJson, DEEP_CHAT_MUTATION_TIMEOUT_MS } from './client'
 import { ApiClientError } from './errors'
-import { auditSummaryFixtureContent } from './fixtures/auditSummaryFixture'
+import {
+  deepAgentFollowUpFixtureContent,
+} from './fixtures/auditSummaryFixture'
 import { buildFixtureSnapshotFromList } from './fixtures/deepChatFromList'
 import {
+  buildFixtureSystemMessage,
   chatSnapshotFixture,
   parseChatSnapshot,
   type ChatSnapshot,
   type PendingAction,
 } from './fixtures/chatSnapshot'
 
+function buildFixtureSystemOnlyMessages(auditId: string): ChatSnapshot['messages'] {
+  return [
+    {
+      role: 'system',
+      content: buildFixtureSystemMessage(auditId),
+    },
+  ]
+}
+
 const TERMINAL_STATES = new Set<ChatSnapshot['state']>([
   'completed',
   'cancelled',
-  'error',
 ])
 
 interface FixtureChatState {
@@ -84,13 +95,10 @@ export async function openChat(auditId: string): Promise<ChatSnapshot> {
     if (state.snapshot.state === 'not_started') {
       state.snapshot = cloneSnapshot({
         ...state.snapshot,
+        session_id: chatSnapshotFixture.session_id,
         state: 'active',
-        messages: [
-          {
-            role: 'assistant',
-            content: auditSummaryFixtureContent,
-          },
-        ],
+        messages: buildFixtureSystemOnlyMessages(auditId),
+        pending_action: null,
       })
     }
     return cloneSnapshot(state.snapshot)
@@ -114,12 +122,6 @@ export async function sendChatMessage(
 ): Promise<ChatSnapshot> {
   if (isFixtureMode()) {
     const state = getFixtureState(auditId)
-    if (state.snapshot.pending_action) {
-      throw new ApiClientError(409, {
-        error_code: 'message',
-        message: 'Pending action blocks new messages',
-      })
-    }
 
     state.snapshot = cloneSnapshot({
       ...state.snapshot,
@@ -128,7 +130,7 @@ export async function sendChatMessage(
         { role: 'user', content },
         {
           role: 'assistant',
-          content: 'Принял сообщение, продолжаю анализ.',
+          content: deepAgentFollowUpFixtureContent,
         },
       ],
     })
@@ -138,6 +140,7 @@ export async function sendChatMessage(
   const response = await apiFetch(chatPath(auditId, '/messages'), {
     method: 'POST',
     body: JSON.stringify({ content }),
+    timeoutMs: DEEP_CHAT_MUTATION_TIMEOUT_MS,
   })
   const json: unknown = await response.json()
   return parseChatSnapshot(json)
@@ -203,6 +206,8 @@ function applyActionResolution(
     return cloneSnapshot(snapshot)
   }
 
+  const toolName = snapshot.pending_action.tool_name
+
   return cloneSnapshot({
     ...snapshot,
     state: 'active',
@@ -211,7 +216,11 @@ function applyActionResolution(
       ...snapshot.messages,
       {
         role: 'tool',
-        content: `${resolution === 'approve' ? 'Approved' : 'Rejected'}: ${snapshot.pending_action.tool_name}`,
+        content: `${resolution === 'approve' ? 'Approved' : 'Rejected'}: ${toolName}`,
+      },
+      {
+        role: 'assistant',
+        content: deepAgentFollowUpFixtureContent,
       },
     ],
   })

@@ -37,7 +37,50 @@ export const auditSummaryFixtureContent = `📈 Детекция
 ---
 gate_id: 42 | decision: escalate | ts: 2025-07-14 12:40:39 MSK`
 
-/** Проверяет, что контент — структурированный audit summary. */
+/**
+ * Structured summary deep-агента после open / propose (отличается от hypothesis conclusion).
+ */
+export const deepAgentSummaryFixtureContent = `📈 Deep analysis
+
+\`Первичный обзор audit | gate 42\`
+
+• Подтверждена просадка tx_count три цикла подряд
+• error_rate растёт параллельно с падением потока
+
+⚠️ Риски
+
+• upstream-провайдер может быть недоступен
+• SLA эскалации близок к порогу
+
+🔧 Действия
+
+1. Проверить доступность upstream-провайдера на gate 42
+2. Сверить логи за интервал 12:10–12:40 MSK
+3. При подтверждении — эскалация в L2
+
+🎯 Итог: НАБЛЮДАТЬ
+
+Проверка провайдера выполнена автоматически; продолжаю анализ.
+
+---
+gate_id: 42 | step: 1/3 | ts: 2025-07-14 12:41:00 MSK`
+
+/** Короткий structured follow-up после approve/reject или user message. */
+export const deepAgentFollowUpFixtureContent = `📈 Обновление
+
+• Шаг выполнен, продолжаю анализ по плану
+
+🔧 Действия
+
+1. Сверить логи за интервал 12:10–12:40 MSK
+
+🎯 Итог: НАБЛЮДАТЬ
+
+---
+gate_id: 42 | step: 2/3`
+
+/** Проверяет, что контент — structured summary deep/hypothesis агента. */
 export function isAuditSummaryContent(content: string): boolean {
-  return content.trimStart().startsWith('📈')
+  const trimmed = content.trimStart()
+  return trimmed.startsWith('📈') || /^\d+\.\s/.test(trimmed)
 }

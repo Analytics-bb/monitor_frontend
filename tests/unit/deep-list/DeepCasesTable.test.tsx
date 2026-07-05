@@ -65,7 +65,7 @@ describe('DeepCasesTable', () => {
 
     await user.click(screen.getByTestId('deep-cases-table-row'))
 
-    expect(onRowClick).toHaveBeenCalledWith(deepCaseSummaryFixture.audit_id)
+    expect(onRowClick).toHaveBeenCalledWith(deepCaseSummaryFixture)
   })
 
   it('calls onRowClick on Enter for not_started row', async () => {
@@ -83,6 +83,9 @@ describe('DeepCasesTable', () => {
     row.focus()
     await user.keyboard('{Enter}')
 
-    expect(onRowClick).toHaveBeenCalledWith(deepCaseSummaryFixture.audit_id)
+    expect(onRowClick).toHaveBeenCalledWith({
+      ...deepCaseSummaryFixture,
+      deep_chat_state: 'not_started',
+    })
   })
 })

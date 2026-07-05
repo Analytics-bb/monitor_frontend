@@ -1,12 +1,8 @@
 import { z } from 'zod'
 
-export const tokenUsageSchema = z.object({
-  model: z.string(),
-  prompt_tokens: z.number().int().nullable(),
-  completion_tokens: z.number().int().nullable(),
-  total_tokens: z.number().int().nullable(),
-  estimated_cost_usd: z.number().nullable(),
-})
+import { tokenUsageSchema, type TokenUsage } from '@/api/tokenUsage'
+
+export { tokenUsageSchema, type TokenUsage }
 
 export const supportMessageSchema = z.object({
   message_id: z.string().uuid(),
@@ -34,7 +30,6 @@ export const attachmentUploadResponseSchema = z.object({
   size_bytes: z.number().int().nonnegative(),
 })
 
-export type TokenUsage = z.infer<typeof tokenUsageSchema>
 export type SupportMessage = z.infer<typeof supportMessageSchema>
 export type SupportChatSnapshot = z.infer<typeof supportChatSnapshotSchema>
 export type AttachmentUploadResponse = z.infer<

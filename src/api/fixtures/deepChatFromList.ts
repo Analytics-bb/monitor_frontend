@@ -6,14 +6,7 @@ import {
   chatSnapshotFixture,
   chatSnapshotNotStartedFixture,
   type ChatSnapshot,
-  type PendingAction,
 } from './chatSnapshot'
-
-const DEMO_PENDING_ACTION: PendingAction = {
-  action_id: 'act-demo-approve',
-  tool_name: 'notify_provider',
-  args_summary: 'Отправить алерт провайдеру по gate',
-}
 
 function withListMeta(
   snapshot: ChatSnapshot,
@@ -60,16 +53,7 @@ export function buildFixtureSnapshotFromList(auditId: string): ChatSnapshot {
     case 'active':
       return withListMeta(chatSnapshotFixture, gate_id, created_at, auditId)
     case 'awaiting_approval':
-      return withListMeta(
-        {
-          ...chatSnapshotFixture,
-          state: 'awaiting_approval',
-          pending_action: DEMO_PENDING_ACTION,
-        },
-        gate_id,
-        created_at,
-        auditId,
-      )
+      return withListMeta(chatSnapshotFixture, gate_id, created_at, auditId)
     case 'completed':
       return withListMeta(
         chatSnapshotCompletedFixture,

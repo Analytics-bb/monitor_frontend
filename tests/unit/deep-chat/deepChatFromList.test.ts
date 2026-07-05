@@ -15,14 +15,14 @@ describe('buildFixtureSnapshotFromList', () => {
     expect(snapshot.messages.length).toBeGreaterThan(0)
   })
 
-  it('returns awaiting_approval with pending action', () => {
+  it('maps legacy awaiting_approval list row to active snapshot without pending', () => {
     const item = deepCasesListFixture[2]!
     expect(item.deep_chat_state).toBe('awaiting_approval')
 
     const snapshot = buildFixtureSnapshotFromList(item.audit_id)
 
-    expect(snapshot.state).toBe('awaiting_approval')
-    expect(snapshot.pending_action).not.toBeNull()
+    expect(snapshot.state).toBe('active')
+    expect(snapshot.pending_action).toBeNull()
   })
 
   it('returns error snapshot for error list row', () => {

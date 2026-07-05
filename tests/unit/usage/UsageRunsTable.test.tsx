@@ -24,6 +24,37 @@ describe('UsageRunsTable', () => {
     expect(screen.getByText(/1[\s,]?200/)).toBeVisible()
   })
 
+  it('renders step summary for deep runs', () => {
+    render(
+      <MemoryRouter>
+        <UsageRunsTable items={[agentUsageRunFixture]} />
+      </MemoryRouter>,
+    )
+
+    expect(screen.getByTestId('usage-run-steps-cell')).toHaveTextContent(
+      'mysql_query, summarize',
+    )
+  })
+
+  it('renders LLM-only label when deep run has no MCP steps', () => {
+    render(
+      <MemoryRouter>
+        <UsageRunsTable
+          items={[
+            {
+              ...agentUsageRunFixture,
+              step_breakdown: [],
+            },
+          ]}
+        />
+      </MemoryRouter>,
+    )
+
+    expect(screen.getByTestId('usage-run-steps-cell')).toHaveTextContent(
+      'Только LLM',
+    )
+  })
+
   it('renders audit link when audit_id present', () => {
     render(
       <MemoryRouter>

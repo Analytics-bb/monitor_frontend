@@ -15,7 +15,7 @@ describe('ApprovalBar', () => {
         pendingAction={{
           action_id: 'act-1',
           tool_name: 'run_query',
-          args_summary: 'SELECT 1',
+          arguments_preview: 'SELECT 1',
         }}
         onApprove={onApprove}
         onReject={onReject}

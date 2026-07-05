@@ -1,5 +1,6 @@
 import type { PendingAction } from '@/api/fixtures/chatSnapshot'
 import { Button } from '@/components/ui/button'
+import { redactArgsPreview } from '@/lib/deepChatPending'
 import { cn } from '@/lib/utils'
 
 export interface ApprovalBarProps {
@@ -8,16 +9,6 @@ export interface ApprovalBarProps {
   onReject: (actionId: string) => void | Promise<void>
   hideApprove?: boolean
   className?: string
-}
-
-const SECRET_PATTERN =
-  /(token|password|secret|api[_-]?key|authorization)\s*[:=]\s*\S+/gi
-
-/**
- * Скрывает потенциальные секреты в summary аргументов tool.
- */
-function redactArgsSummary(summary: string): string {
-  return summary.replace(SECRET_PATTERN, '$1: [redacted]')
 }
 
 /**
@@ -30,7 +21,7 @@ export function ApprovalBar({
   hideApprove = false,
   className,
 }: ApprovalBarProps) {
-  const summary = redactArgsSummary(pendingAction.args_summary)
+  const summary = redactArgsPreview(pendingAction.arguments_preview)
 
   return (
     <div

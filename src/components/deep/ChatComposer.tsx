@@ -45,10 +45,12 @@ export function ChatComposer({
       return
     }
 
+    setDraft('')
     setSending(true)
     try {
       await onSend(trimmed)
-      setDraft('')
+    } catch {
+      setDraft(trimmed)
     } finally {
       setSending(false)
     }

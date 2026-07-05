@@ -1,30 +1,31 @@
-import type { ChatMessage as ChatMessageType } from '@/api/fixtures/chatSnapshot'
-import { isAuditSummaryContent } from '@/api/fixtures/auditSummaryFixture'
-import { AuditSummaryContent } from '@/components/deep/AuditSummaryContent'
+import type { DeepChatDisplayMessage } from '@/lib/deepChatDisplay'
+import { ChatMarkdown } from '@/components/chat/ChatMarkdown'
 import { cn } from '@/lib/utils'
 
 export interface ChatMessageProps {
-  role: ChatMessageType['role']
+  role: DeepChatDisplayMessage['role']
   content: string
+  variant?: DeepChatDisplayMessage['variant']
   className?: string
 }
 
-const ROLE_LABELS: Record<ChatMessageType['role'], string> = {
+const ROLE_LABELS: Record<DeepChatDisplayMessage['role'], string> = {
   user: 'Вы',
   assistant: 'Агент',
-  system: 'Система',
   tool: 'Tool',
 }
 
 /**
- * Одно сообщение чата: bubble layout по роли.
- *
- * Assistant audit summary — структурированный блок без bubble; user — справа.
+ * Одно сообщение deep chat: user bubble справа, assistant — borderless markdown.
  */
-export function ChatMessage({ role, content, className }: ChatMessageProps) {
+export function ChatMessage({
+  role,
+  content,
+  variant = 'default',
+  className,
+}: ChatMessageProps) {
   const isUser = role === 'user'
-  const isCompact = role === 'system' || role === 'tool'
-  const isSummary = role === 'assistant' && isAuditSummaryContent(content)
+  const isCompact = role === 'tool'
 
   if (isCompact) {
     return (
@@ -34,48 +35,51 @@ export function ChatMessage({ role, content, className }: ChatMessageProps) {
       >
         <div
           className={cn(
-            'border-border bg-muted/40 max-w-[90%] rounded-md border px-3 py-2 font-mono text-xs',
-            role === 'tool' && 'border-l-status-awaiting-approval border-l-2',
+            'border-border bg-muted/40 max-w-[90%] rounded-md border px-3 py-2 select-text',
+            'border-l-status-awaiting-approval border-l-2',
           )}
         >
-          <span className="text-muted-foreground mr-2">{ROLE_LABELS[role]}:</span>
-          <span className="whitespace-pre-wrap">{content}</span>
+          <span className="text-muted-foreground mr-2 font-mono text-xs">
+            {ROLE_LABELS[role]}:
+          </span>
+          <ChatMarkdown content={content} tone="compact" className="inline" />
         </div>
       </div>
     )
   }
 
-  if (isSummary) {
+  if (isUser && variant === 'hypothesis') {
     return (
       <div
-        className={cn('mb-6 flex justify-start', className)}
-        data-testid="chat-message-assistant"
+        className={cn('mb-6 flex justify-end', className)}
+        data-testid="chat-message-hypothesis"
       >
-        <div className="max-w-full min-w-0 flex-1">
-          <AuditSummaryContent content={content} />
+        <div className="bg-elevated text-foreground max-w-[85%] min-w-0 rounded-3xl px-4 py-2.5 select-text">
+          <ChatMarkdown content={content} tone="user" structured />
         </div>
+      </div>
+    )
+  }
+
+  if (!isUser) {
+    return (
+      <div
+        className={cn('mb-8 flex w-full justify-start', className)}
+        data-testid="chat-message-assistant-wrapper"
+      >
+        <ChatMarkdown content={content} tone="assistant" structured />
       </div>
     )
   }
 
   return (
     <div
-      className={cn(
-        'mb-4 flex',
-        isUser ? 'justify-end' : 'justify-start',
-        className,
-      )}
+      className={cn('mb-4 flex justify-end', className)}
       data-testid={`chat-message-${role}`}
     >
-      {isUser ? (
-        <div className="bg-elevated text-foreground max-w-[80%] rounded-3xl px-4 py-2.5 text-sm leading-relaxed whitespace-pre-wrap">
-          {content}
-        </div>
-      ) : (
-        <p className="text-foreground max-w-[80%] text-sm leading-relaxed whitespace-pre-wrap">
-          {content}
-        </p>
-      )}
+      <div className="bg-elevated text-foreground max-w-[80%] rounded-3xl px-4 py-2.5 select-text">
+        <ChatMarkdown content={content} tone="user" />
+      </div>
     </div>
   )
 }

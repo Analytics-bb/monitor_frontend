@@ -2,6 +2,7 @@ import { useState } from 'react'
 
 import type { PendingAction } from '@/api/fixtures/chatSnapshot'
 import { Button } from '@/components/ui/button'
+import { redactArgsPreview } from '@/lib/deepChatPending'
 import { cn } from '@/lib/utils'
 
 export interface ApprovalOverlayProps {
@@ -17,7 +18,7 @@ export interface ApprovalOverlayProps {
 /**
  * Всплывающая панель подтверждения MCP-шага над чатом при `awaiting_approval`.
  *
- * Да — approve; Нет — reject; «Свой вариант» — фокус на composer.
+ * Показывает tool + preview; текст агента остаётся в ленте выше.
  */
 export function ApprovalOverlay({
   pendingAction,
@@ -28,6 +29,7 @@ export function ApprovalOverlay({
   className,
 }: ApprovalOverlayProps) {
   const [submitting, setSubmitting] = useState(false)
+  const argsPreview = redactArgsPreview(pendingAction.arguments_preview)
 
   const run = async (action: () => void | Promise<void>) => {
     setSubmitting(true)
@@ -52,9 +54,21 @@ export function ApprovalOverlay({
           'dark:border-status-awaiting-approval/25 dark:bg-elevated dark:shadow-md dark:shadow-black/20',
         )}
       >
-        <p className="text-foreground text-sm font-semibold">
-          Подтвердить действия агента?
-        </p>
+        <div className="space-y-1">
+          <p className="text-foreground text-sm font-semibold">
+            Подтвердить действие агента?
+          </p>
+          <p className="text-muted-foreground text-xs">
+            Ответ агента с предложенными шагами — в ленте выше.
+          </p>
+        </div>
+
+        <div className="border-border bg-muted/30 space-y-1 rounded-lg border px-3 py-2 text-sm">
+          <p className="text-foreground font-medium">{pendingAction.tool_name}</p>
+          <p className="text-muted-foreground text-xs leading-relaxed whitespace-pre-wrap">
+            {argsPreview}
+          </p>
+        </div>
 
         <div className="flex flex-wrap items-center gap-2">
           {!hideApprove ? (

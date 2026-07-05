@@ -5,6 +5,8 @@ import type { AgentUsageRun } from '@/api/usage'
 import { StatusBadge } from '@/components/StatusBadge'
 import { Badge } from '@/components/ui/badge'
 import { formatDateTimeRuOrDash } from '@/lib/formatDateTime'
+import { formatCostUsd } from '@/lib/formatCost'
+import { formatUsageStepSummary } from '@/lib/usageNavigation'
 import { cn } from '@/lib/utils'
 
 export interface UsageRunsTableProps {
@@ -20,7 +22,7 @@ function formatMetric(value: number | null): string {
 }
 
 function formatCost(value: number | null): string {
-  return value === null ? '—' : value.toFixed(4)
+  return formatCostUsd(value)
 }
 
 function formatGate(gateId: string | null): string {
@@ -54,6 +56,7 @@ export function UsageRunsTable({
             <th className={cn(headerCellClassName, 'text-right')}>
               Tokens out
             </th>
+            <th className={headerCellClassName}>MCP / шаги</th>
             <th
               className={cn(headerCellClassName, 'text-right')}
               aria-label="Estimated cost USD"
@@ -130,6 +133,13 @@ export function UsageRunsTable({
               </td>
               <td className="px-3 py-2 text-right font-mono text-xs tabular-nums">
                 {formatMetric(item.completion_tokens)}
+              </td>
+              <td
+                className="max-w-[12rem] px-3 py-2 text-center text-xs"
+                title={formatUsageStepSummary(item)}
+                data-testid="usage-run-steps-cell"
+              >
+                <span className="block truncate">{formatUsageStepSummary(item)}</span>
               </td>
               <td
                 className="px-3 py-2 text-right font-mono text-xs tabular-nums"
