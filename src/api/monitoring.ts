@@ -20,7 +20,7 @@ export async function getStatus(): Promise<StatusResponse> {
     return statusResponseFixture
   }
 
-  const json = await apiGetJson<unknown>('/api/status')
+  const json = await apiGetJson<unknown>('/status')
   return parseStatusResponse(json)
 }
 
@@ -34,7 +34,7 @@ export async function getActiveGate(): Promise<GateInfo> {
     return activeGateFixture
   }
 
-  const json = await apiGetJson<unknown>('/api/gates/active')
+  const json = await apiGetJson<unknown>('/gates/active')
   return parseGateInfo(json)
 }
 
@@ -58,7 +58,7 @@ export async function activateGate(gateId: string): Promise<GateInfo> {
     }
   }
 
-  await apiFetch(`/api/gates/${encodeURIComponent(gateId)}/activate`, {
+  await apiFetch(`/gates/${encodeURIComponent(gateId)}/activate`, {
     method: 'POST',
   })
 

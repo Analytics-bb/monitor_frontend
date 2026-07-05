@@ -85,7 +85,7 @@ export async function listDeepCases(
   const page = params.page ?? 1
   const pageSize = params.page_size ?? 20
 
-  if (!import.meta.env.VITE_ANOMALY_API_BASE_URL) {
+  if (!import.meta.env.VITE_API_BASE_URL) {
     const filtered = filterFixtureItems(params)
     return paginateFixture(filtered, page, pageSize)
   }
@@ -107,7 +107,7 @@ export async function listDeepCases(
   search.set('page_size', String(pageSize))
 
   const query = search.toString()
-  const path = query ? `/api/deep/cases?${query}` : '/api/deep/cases'
+  const path = query ? `/deep/cases?${query}` : '/deep/cases'
   const json = await apiGetJson<unknown>(path)
   const envelope = deepCasesListEnvelopeSchema.parse(json)
 

@@ -43,7 +43,7 @@ export async function listDetectorConfigs(): Promise<DetectorConfig[]> {
     return detectorFixtureStore.map((item) => ({ ...item }))
   }
 
-  const json = await apiGetJson<unknown>('/api/settings/detector')
+  const json = await apiGetJson<unknown>('/settings/detector')
   return parseDetectorConfigList(json)
 }
 
@@ -55,7 +55,7 @@ export async function getGlobalDetectorConfig(): Promise<DetectorConfig> {
     return findGlobalConfig()
   }
 
-  const json = await apiGetJson<unknown>('/api/settings/detector/effective')
+  const json = await apiGetJson<unknown>('/settings/detector/effective')
   return parseDetectorConfig(json)
 }
 
@@ -89,7 +89,7 @@ export async function patchGlobalDetectorConfig(
     return { ...updated }
   }
 
-  const response = await apiFetch('/api/settings/detector', {
+  const response = await apiFetch('/settings/detector', {
     method: 'PATCH',
     body: JSON.stringify(patch),
   })
@@ -113,7 +113,7 @@ export async function resetGlobalDetectorConfig(): Promise<void> {
     return
   }
 
-  await apiFetch('/api/settings/detector/reset', { method: 'POST' })
+  await apiFetch('/settings/detector/reset', { method: 'POST' })
 }
 
 export type { DetectorConfig, DetectorConfigPatch }

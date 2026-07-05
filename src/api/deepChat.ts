@@ -32,7 +32,7 @@ interface FixtureChatState {
 }
 
 function isFixtureMode(): boolean {
-  return !import.meta.env.VITE_ANOMALY_API_BASE_URL
+  return !import.meta.env.VITE_API_BASE_URL
 }
 
 const fixtureStore = new Map<string, FixtureChatState>()
@@ -67,7 +67,7 @@ export function resetDeepChatFixtureStore(): void {
 }
 
 function chatPath(auditId: string, suffix = ''): string {
-  return `/api/deep/cases/${encodeURIComponent(auditId)}/chat${suffix}`
+  return `/deep/cases/${encodeURIComponent(auditId)}/chat${suffix}`
 }
 
 /**
@@ -169,7 +169,7 @@ export async function approveChatAction(
   }
 
   const response = await apiFetch(
-    `/api/deep/cases/${encodeURIComponent(auditId)}/actions/${encodeURIComponent(actionId)}/approve`,
+    `/deep/cases/${encodeURIComponent(auditId)}/actions/${encodeURIComponent(actionId)}/approve`,
     { method: 'POST' },
   )
   const json: unknown = await response.json()
@@ -190,7 +190,7 @@ export async function rejectChatAction(
   }
 
   const response = await apiFetch(
-    `/api/deep/cases/${encodeURIComponent(auditId)}/actions/${encodeURIComponent(actionId)}/reject`,
+    `/deep/cases/${encodeURIComponent(auditId)}/actions/${encodeURIComponent(actionId)}/reject`,
     { method: 'POST' },
   )
   const json: unknown = await response.json()

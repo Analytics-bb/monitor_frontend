@@ -27,12 +27,12 @@ export interface ApiFetchOptions extends RequestInit {
 }
 
 /**
- * Режим fixtures: нет `VITE_ANOMALY_API_BASE_URL` и разрешена offline-сборка.
+ * Режим fixtures: нет `VITE_API_BASE_URL` и разрешена offline-сборка.
  *
  * В dev — всегда при пустом base URL. В prod — только при `VITE_USE_API_FIXTURES=true`.
  */
 export function isFixtureMode(): boolean {
-  if (import.meta.env.VITE_ANOMALY_API_BASE_URL) {
+  if (import.meta.env.VITE_API_BASE_URL) {
     return false
   }
   return (
@@ -50,19 +50,30 @@ export function isFixtureMode(): boolean {
  * @throws {Error} В prod-сборке без API URL и без `VITE_USE_API_FIXTURES`
  */
 export function getApiBaseUrl(): string | null {
-  const baseUrl = import.meta.env.VITE_ANOMALY_API_BASE_URL
+  const baseUrl = import.meta.env.VITE_API_BASE_URL
   if (!baseUrl) {
     if (isFixtureMode()) {
       if (import.meta.env.DEV) {
         console.warn(
-          'VITE_ANOMALY_API_BASE_URL is not configured; use fixtures or set .env',
+          'VITE_API_BASE_URL is not configured; use fixtures or set .env',
         )
       }
       return null
     }
-    throw new Error('VITE_ANOMALY_API_BASE_URL is not configured')
+    throw new Error('VITE_API_BASE_URL is not configured')
   }
   return baseUrl.replace(/\/$/, '')
+}
+
+function redirectToLogin(): void {
+  if (typeof window === 'undefined') {
+    return
+  }
+
+  const loginPath = `${import.meta.env.BASE_URL}login`
+  if (!window.location.pathname.endsWith('/login')) {
+    window.location.assign(loginPath)
+  }
 }
 
 function sleep(ms: number): Promise<void> {
@@ -107,7 +118,7 @@ export async function apiFetch(
 ): Promise<Response> {
   const baseUrl = getApiBaseUrl()
   if (!baseUrl) {
-    throw new Error('VITE_ANOMALY_API_BASE_URL is not configured')
+    throw new Error('VITE_API_BASE_URL is not configured')
   }
 
   const normalizedPath = path.startsWith('/') ? path : `/${path}`
@@ -163,12 +174,10 @@ export async function apiFetch(
   const response = lastResponse!
   if (!response.ok) {
     const apiError = await parseApiError(response.clone())
-    if (
-      response.status === 401 &&
-      apiError?.error_code === 'not_authenticated'
-    ) {
+    if (response.status === 401) {
       clearStoredSession()
       dispatchAuthChanged()
+      redirectToLogin()
     }
     throw new ApiClientError(response.status, apiError)
   }

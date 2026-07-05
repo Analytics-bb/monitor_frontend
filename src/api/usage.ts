@@ -161,13 +161,13 @@ export async function listUsageRuns(
   const page = params.page ?? 1
   const pageSize = params.page_size ?? 50
 
-  if (!import.meta.env.VITE_ANOMALY_API_BASE_URL) {
+  if (!import.meta.env.VITE_API_BASE_URL) {
     const filtered = filterFixtureRuns(params)
     return paginateFixtureRuns(filtered, page, pageSize)
   }
 
   const search = buildUsageRunsSearch({ ...params, page, page_size: pageSize })
-  const path = `/api/agent/usage/runs?${search.toString()}`
+  const path = `/agent/usage/runs?${search.toString()}`
   const json = await apiGetJson<unknown>(path)
   const envelope = usageRunListEnvelopeSchema.parse(json)
 
@@ -187,7 +187,7 @@ export async function listUsageRuns(
  * @throws {ApiClientError} 404 `usage_run_not_found`
  */
 export async function getUsageRun(runId: string): Promise<AgentUsageRun> {
-  if (!import.meta.env.VITE_ANOMALY_API_BASE_URL) {
+  if (!import.meta.env.VITE_API_BASE_URL) {
     const run = agentUsageRunsListFixture.find((item) => item.run_id === runId)
     if (!run) {
       throw new ApiClientError(404, {
@@ -199,7 +199,7 @@ export async function getUsageRun(runId: string): Promise<AgentUsageRun> {
   }
 
   const json = await apiGetJson<unknown>(
-    `/api/agent/usage/runs/${encodeURIComponent(runId)}`,
+    `/agent/usage/runs/${encodeURIComponent(runId)}`,
   )
   return parseAgentUsageRun(json)
 }
@@ -213,15 +213,15 @@ export async function getUsageRun(runId: string): Promise<AgentUsageRun> {
 export async function listUsageDaily(
   params: ListUsageDailyParams = {},
 ): Promise<AgentUsageDailyRollup[]> {
-  if (!import.meta.env.VITE_ANOMALY_API_BASE_URL) {
+  if (!import.meta.env.VITE_API_BASE_URL) {
     return filterFixtureDailyRollups(params)
   }
 
   const search = buildUsageDailySearch(params)
   const query = search.toString()
   const path = query
-    ? `/api/agent/usage/daily?${query}`
-    : '/api/agent/usage/daily'
+    ? `/agent/usage/daily?${query}`
+    : '/agent/usage/daily'
   const json = await apiGetJson<unknown>(path)
   const rollups = z.array(z.unknown()).parse(json)
 

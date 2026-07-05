@@ -31,7 +31,7 @@ export async function login(
     return authLoginFixture
   }
 
-  const response = await apiFetch('/api/auth/login', {
+  const response = await apiFetch('/auth/login', {
     method: 'POST',
     body: JSON.stringify({ username, password }),
     skipAuth: true,
@@ -48,7 +48,7 @@ export async function logout(): Promise<void> {
     return
   }
 
-  const response = await apiFetch('/api/auth/logout', { method: 'POST' })
+  const response = await apiFetch('/auth/logout', { method: 'POST' })
   parseAuthLogoutResponse(await response.json())
 }
 
@@ -62,6 +62,6 @@ export async function getCurrentUser(): Promise<AuthUserPublic> {
     return authUserFixture
   }
 
-  const json = await apiGetJson<unknown>('/api/auth/me')
+  const json = await apiGetJson<unknown>('/auth/me')
   return parseAuthUserPublic(json)
 }

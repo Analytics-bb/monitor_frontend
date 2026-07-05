@@ -52,7 +52,7 @@ export async function listInstructions(
   }
 
   const query = enabledOnly ? '?enabled_only=true' : ''
-  const json = await apiGetJson<unknown>(`/api/settings/instructions${query}`)
+  const json = await apiGetJson<unknown>(`/settings/instructions${query}`)
   return parseAgentInstructionList(json)
 }
 
@@ -76,7 +76,7 @@ export async function getInstruction(
   }
 
   const json = await apiGetJson<unknown>(
-    `/api/settings/instructions/${encodeURIComponent(instructionId)}`,
+    `/settings/instructions/${encodeURIComponent(instructionId)}`,
   )
   return parseAgentInstruction(json)
 }
@@ -116,7 +116,7 @@ export async function patchInstruction(
   }
 
   const response = await apiFetch(
-    `/api/settings/instructions/${encodeURIComponent(instructionId)}`,
+    `/settings/instructions/${encodeURIComponent(instructionId)}`,
     {
       method: 'PATCH',
       body: JSON.stringify(patch),
@@ -149,7 +149,7 @@ export async function createInstruction(
     return { ...created }
   }
 
-  const response = await apiFetch('/api/settings/instructions', {
+  const response = await apiFetch('/settings/instructions', {
     method: 'POST',
     body: JSON.stringify(body),
   })
@@ -189,7 +189,7 @@ export async function deleteInstruction(instructionId: string): Promise<void> {
   }
 
   await apiFetch(
-    `/api/settings/instructions/${encodeURIComponent(instructionId)}`,
+    `/settings/instructions/${encodeURIComponent(instructionId)}`,
     {
       method: 'DELETE',
     },

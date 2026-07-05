@@ -91,7 +91,7 @@ export async function listContexts(
   }
 
   const query = buildContextsQuery({ ...params, page, page_size: pageSize })
-  const json = await apiGetJson<unknown>(`/api/agent/contexts?${query}`)
+  const json = await apiGetJson<unknown>(`/agent/contexts?${query}`)
   return parseAgentContextListPage(json)
 }
 
@@ -123,7 +123,7 @@ export async function upsertContext(
     })
   }
 
-  const response = await apiFetch('/api/agent/contexts', {
+  const response = await apiFetch('/agent/contexts', {
     method: 'PUT',
     body: JSON.stringify(body),
   })

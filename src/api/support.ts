@@ -13,7 +13,7 @@ import {
   getSupportHistoryLimitFromEnv,
 } from '@/lib/supportHistory'
 
-const CHAT_PATH = '/api/support/chat'
+const CHAT_PATH = '/support/chat'
 
 interface FixtureSupportState {
   snapshot: SupportChatSnapshot
@@ -185,7 +185,7 @@ export async function uploadSupportAttachment(
 
   const baseUrl = getApiBaseUrl()
   if (!baseUrl) {
-    throw new Error('VITE_ANOMALY_API_BASE_URL is not configured')
+    throw new Error('VITE_API_BASE_URL is not configured')
   }
 
   const formData = new FormData()
