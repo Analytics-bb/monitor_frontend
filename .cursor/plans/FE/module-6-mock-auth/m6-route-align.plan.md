@@ -5,7 +5,7 @@ depends_on:
   - m6-protected-route
   - m6-login-page
 план читать: "да, §Границы — protected paths; M17 §7.6"
-status: pending
+status: completed
 ---
 
 # Задача: routes — wrap protected children

@@ -5,7 +5,7 @@ depends_on:
   - m7-header
   - m7-use-support-chat
 план читать: "да, §Флоу п.7"
-status: pending
+status: completed
 ---
 
 # Задача: Сброс чата — confirm + POST reset

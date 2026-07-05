@@ -6,7 +6,7 @@ depends_on:
   - m0-api-client
   - m0-mock-samples
 план читать: "да, §Ключевые гарантии п.2–3; §Флоу — Contexts п.1"
-status: pending
+status: completed
 ---
 
 # Задача: ContextsTab — list filtered by agent_kind + gate_id

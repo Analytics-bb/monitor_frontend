@@ -6,7 +6,7 @@ depends_on:
   - m1-status-polling
   - m1-status-panel
 план читать: "нет"
-status: pending
+status: completed
 ---
 
 # Задача: DegradedBanner + empty first tick

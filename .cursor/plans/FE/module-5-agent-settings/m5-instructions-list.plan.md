@@ -7,7 +7,7 @@ depends_on:
   - m0-mock-samples
   - m0-toast-provider
 план читать: "да, §Флоу — Instructions п.1–2; §Edge-cases PATCH toggle fail"
-status: pending
+status: completed
 ---
 
 # Задача: InstructionsTab — list + enabled toggle

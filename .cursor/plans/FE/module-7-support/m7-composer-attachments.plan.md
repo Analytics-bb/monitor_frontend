@@ -6,7 +6,7 @@ depends_on:
   - m7-use-support-chat
   - m0-toast-provider
 план читать: "да, §Ключевые гарантии п.4–6"
-status: pending
+status: completed
 ---
 
 # Задача: SupportComposer — text + file upload

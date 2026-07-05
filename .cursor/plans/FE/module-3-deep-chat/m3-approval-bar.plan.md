@@ -6,7 +6,7 @@ depends_on:
   - m3-use-deep-chat
   - m0-toast-provider
 план читать: "да, §Approval bar"
-status: pending
+status: completed
 ---
 
 # Задача: ApprovalBar — Approve/Reject

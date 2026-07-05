@@ -4,7 +4,7 @@ parent_module: .cursor/plans/FE/module-7-support.plan.md
 depends_on:
   - m0-mock-samples
 план читать: "нет"
-status: pending
+status: completed
 ---
 
 # Задача: fixture SupportChatSnapshot

@@ -3,7 +3,7 @@ id: m0-toast-provider
 parent_module: .cursor/plans/FE/module-0-index.plan.md
 depends_on: [m0-api-client, m0-app-layout]
 план читать: "нет"
-status: pending
+status: completed
 ---
 
 # Задача: Toaster + mapApiError

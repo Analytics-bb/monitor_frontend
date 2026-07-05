@@ -3,7 +3,7 @@ id: m7-usage-filter-support
 parent_module: .cursor/plans/FE/module-7-support.plan.md
 depends_on: []
 план читать: "нет"
-status: pending
+status: completed
 ---
 
 # Задача: agent_kind=support в usage filters

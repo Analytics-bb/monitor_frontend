@@ -5,7 +5,7 @@ depends_on:
   - m3-page-shell
   - m3-use-deep-chat
 план читать: "да, §Состояния чата — not_started"
-status: pending
+status: completed
 ---
 
 # Задача: CTA «Открыть анализ» + POST open

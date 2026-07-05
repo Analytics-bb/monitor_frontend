@@ -6,7 +6,7 @@ depends_on:
   - m0-api-client
   - m0-toast-provider
 план читать: "да, §Флоу — Contexts п.2–3; §Ключевые гарантии п.3–4"
-status: pending
+status: completed
 ---
 
 # Задача: ContextEditor — PUT upsert + DELETE

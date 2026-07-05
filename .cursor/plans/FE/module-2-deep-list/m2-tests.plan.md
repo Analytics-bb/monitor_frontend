@@ -8,7 +8,7 @@ depends_on:
   - m2-pagination
   - m2-row-nav
 план читать: "да, §Тесты; §DoD"
-status: pending
+status: completed
 ---
 
 # Задача: Vitest + e2e deep list

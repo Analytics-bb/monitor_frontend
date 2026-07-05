@@ -4,7 +4,7 @@ parent_module: .cursor/plans/FE/module-6-mock-auth.plan.md
 depends_on:
   - m6-auth-storage
 план читать: "да, §Ключевые гарантии п.3; §Edge-cases direct URL / localStorage cleared"
-status: pending
+status: completed
 ---
 
 # Задача: ProtectedRoute — guard wrapper

@@ -12,7 +12,7 @@ depends_on:
   - m1-conclusion-modal
   - m1-degraded-banner
 план читать: "да, §Тесты; §DoD"
-status: pending
+status: completed
 ---
 
 # Задача: Vitest + e2e monitoring

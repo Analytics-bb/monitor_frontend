@@ -5,7 +5,7 @@ depends_on:
   - m0-app-layout
   - m0-design-tokens
 план читать: "да, §Layout (desktop 1440)"
-status: pending
+status: completed
 ---
 
 # Задача: DeepListPage — shell списка audits

@@ -6,7 +6,7 @@ depends_on:
   - m1-status-polling
   - m0-toast-provider
 план читать: "нет"
-status: pending
+status: completed
 ---
 
 # Задача: GateSelector — select, confirm, activate

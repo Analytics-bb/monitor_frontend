@@ -6,15 +6,15 @@
 
 | id | Содержание | depends_on | Статус |
 |----|------------|------------|--------|
-| m0-design-tokens | light/dark палитра, status CSS vars, шрифты | — | pending |
-| m0-theme-toggle | ThemeProvider, ThemeToggle, localStorage | m0-design-tokens | pending |
-| m0-status-badge | StatusBadge 8 вариантов | m0-design-tokens | pending |
-| m0-api-client | client, timeout, GET-retry, Zod envelope | — | pending |
-| m0-use-polling | usePolling hook | — | pending |
-| m0-app-layout | AppLayout, Sidebar, routes M17 | m0-design-tokens, m0-theme-toggle | pending |
-| m0-toast-provider | sonner, mapApiError | m0-api-client, m0-app-layout | pending |
-| m0-mock-samples | fixtures ×5 типов | m0-api-client | pending |
-| m0-tests-shared | unit-тесты shared infra | m0-design-tokens, m0-theme-toggle, m0-status-badge, m0-app-layout, m0-api-client, m0-use-polling | pending |
+| m0-design-tokens | light/dark палитра, status CSS vars, шрифты | — | completed |
+| m0-theme-toggle | ThemeProvider, ThemeToggle, localStorage | m0-design-tokens | completed |
+| m0-status-badge | StatusBadge 8 вариантов | m0-design-tokens | completed |
+| m0-api-client | client, timeout, GET-retry, Zod envelope | — | completed |
+| m0-use-polling | usePolling hook | — | completed |
+| m0-app-layout | AppLayout, Sidebar, routes M17 | m0-design-tokens, m0-theme-toggle | completed |
+| m0-toast-provider | sonner, mapApiError | m0-api-client, m0-app-layout | completed |
+| m0-mock-samples | fixtures ×5 типов | m0-api-client | completed |
+| m0-tests-shared | unit-тесты shared infra | m0-design-tokens, m0-theme-toggle, m0-status-badge, m0-app-layout, m0-api-client, m0-use-polling | completed |
 
 ## Граф зависимостей
 

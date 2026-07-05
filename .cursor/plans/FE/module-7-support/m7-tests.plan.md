@@ -13,7 +13,7 @@ depends_on:
   - m7-message-attachments
   - m7-usage-filter-support
 план читать: "да, §Тесты"
-status: pending
+status: completed
 ---
 
 # Задача: Vitest + e2e — support module
@@ -34,12 +34,12 @@ N/A
 
 ## Решения / якоря реализации
 - Повторить паттерн: `tests/e2e/deep-chat.spec.ts`, `tests/unit/deep-chat/`.
-- e2e auth: fixture/module-7-auth (**блокер** для real API e2e); до auth — mock API + fixture login или `VITE_MOCK_AUTH_ENABLED=false` + stub Bearer.
+- e2e auth: module-6 session fixture или `VITE_MOCK_AUTH_ENABLED=false` + stub Bearer.
 - Не делать: e2e против prod secrets.
 
 ## Зависимости
 - Все m7-* UI/API tasks выше.
-- **module-7-auth** (внешний) — для e2e send message против staging.
+- **module-6-mock-auth** — Bearer для e2e send message против staging.
 
 ## Тесты
 | Сценарий | Путь теста | Критерий |

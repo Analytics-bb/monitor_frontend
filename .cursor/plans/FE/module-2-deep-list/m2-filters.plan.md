@@ -7,7 +7,7 @@ depends_on:
   - m0-mock-samples
   - m0-toast-provider
 план читать: "да, §Концепция — панель фильтров; §Публичный API"
-status: pending
+status: completed
 ---
 
 # Задача: DeepCasesFilters + listDeepCases API

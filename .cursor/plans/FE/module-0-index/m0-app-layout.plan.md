@@ -3,7 +3,7 @@ id: m0-app-layout
 parent_module: .cursor/plans/FE/module-0-index.plan.md
 depends_on: [m0-design-tokens, m0-theme-toggle]
 план читать: "да, §Флоу; маршруты M17"
-status: pending
+status: completed
 ---
 
 # Задача: AppLayout + Sidebar + routes

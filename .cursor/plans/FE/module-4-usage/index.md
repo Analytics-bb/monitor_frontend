@@ -10,13 +10,13 @@
 
 | id | Содержание | depends_on | Статус |
 |----|------------|------------|--------|
-| m4-api-usage | api/usage.ts + fixture M14 | m0-api-client, m0-mock-samples | pending |
-| m4-filters | UsageFilters + URL sync | — | pending |
-| m4-runs-table | UsagePage + table + pagination | m4-api-usage, m4-filters | pending |
-| m4-run-detail | Route /usage/:runId + detail | m4-api-usage | pending |
-| m4-daily-widget | Daily summary cards (sum rollups) | m4-api-usage, m4-runs-table | pending |
-| m4-no-usage-total | Guard no usage_total | m4-runs-table, m4-run-detail, m4-daily-widget | pending |
-| m4-tests | Vitest + e2e | все m4-* выше | pending |
+| m4-api-usage | api/usage.ts + fixture M14 | m0-api-client, m0-mock-samples | completed |
+| m4-filters | UsageFilters + URL sync | — | completed |
+| m4-runs-table | UsagePage + table + pagination | m4-api-usage, m4-filters | completed |
+| m4-run-detail | Route /usage/:runId + detail | m4-api-usage | completed |
+| m4-daily-widget | Daily summary cards (sum rollups) | m4-api-usage, m4-runs-table | completed |
+| m4-no-usage-total | Guard no usage_total | m4-runs-table, m4-run-detail, m4-daily-widget | completed |
+| m4-tests | Vitest + e2e | все m4-* выше | completed |
 
 ## Граф зависимостей
 

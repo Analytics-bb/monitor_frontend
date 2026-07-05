@@ -3,7 +3,7 @@ id: m0-design-tokens
 parent_module: .cursor/plans/FE/module-0-index.plan.md
 depends_on: []
 план читать: "да, §Дизайн-система (палитра light/dark, StatusBadge hex, типографика)"
-status: pending
+status: completed
 ---
 
 # Задача: Design tokens (light + dark)

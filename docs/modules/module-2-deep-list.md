@@ -1,7 +1,7 @@
 ---
 title: 'FE Module 2 — Deep List'
 plan: '.cursor/plans/FE/module-2-deep-list.plan.md'
-last_reviewed: '2026-06-23'
+last_reviewed: '2026-07-05'
 ---
 
 # Deep List (`/deep`)

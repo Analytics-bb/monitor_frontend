@@ -4,7 +4,7 @@ parent_module: .cursor/plans/FE/module-3-deep-chat.plan.md
 depends_on:
   - m3-page-shell
 план читать: "нет"
-status: pending
+status: completed
 ---
 
 # Задача: Link «Расход токенов» → /usage

@@ -5,7 +5,7 @@ depends_on:
   - m0-api-client
   - m0-mock-samples
 план читать: "да, §Маппинг полей"
-status: pending
+status: completed
 ---
 
 # Задача: api/usage.ts + fixture M14

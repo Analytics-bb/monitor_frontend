@@ -6,7 +6,7 @@ depends_on:
   - m0-status-badge
   - m2-filters
 план читать: "да, §Концепция — header; §Layout"
-status: pending
+status: completed
 ---
 
 # Задача: DeepChatPage — shell + breadcrumb

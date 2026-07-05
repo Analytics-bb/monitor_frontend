@@ -4,7 +4,7 @@ parent_module: .cursor/plans/FE/module-6-mock-auth.plan.md
 depends_on:
   - m0-app-layout
 план читать: "да, §Промпт дизайна — Layout /cabinet"
-status: pending
+status: completed
 ---
 
 # Задача: CabinetPage — placeholder «скоро»

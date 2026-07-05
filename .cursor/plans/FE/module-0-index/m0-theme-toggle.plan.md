@@ -3,7 +3,7 @@ id: m0-theme-toggle
 parent_module: .cursor/plans/FE/module-0-index.plan.md
 depends_on: [m0-design-tokens]
 план читать: "да, §Theme switch"
-status: pending
+status: completed
 ---
 
 # Задача: ThemeProvider + ThemeToggle

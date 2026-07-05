@@ -5,7 +5,7 @@ depends_on:
   - m0-app-layout
   - m0-design-tokens
 план читать: "да, §Layout (desktop 1440); §Концепция страницы"
-status: pending
+status: completed
 ---
 
 # Задача: MonitoringPage — grid shell 7 зон

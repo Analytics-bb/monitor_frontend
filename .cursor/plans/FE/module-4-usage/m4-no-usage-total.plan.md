@@ -6,7 +6,7 @@ depends_on:
   - m4-run-detail
   - m4-daily-widget
 план читать: "да, §Ключевые гарантии п.1–2"
-status: pending
+status: completed
 ---
 
 # Задача: Guard — no usage_total

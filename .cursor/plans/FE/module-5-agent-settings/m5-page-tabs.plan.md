@@ -5,7 +5,7 @@ depends_on:
   - m0-app-layout
   - m0-design-tokens
 план читать: "да, §Промпт дизайна — Layout; §Ключевые гарантии п.1"
-status: pending
+status: completed
 ---
 
 # Задача: AgentSettingsPage — tabs shell

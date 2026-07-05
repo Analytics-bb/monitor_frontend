@@ -8,13 +8,13 @@
 
 | id | Содержание | depends_on | Статус |
 |----|------------|------------|--------|
-| m5-page-tabs | AgentSettingsPage tabs Instructions \| Contexts | m0-app-layout, m0-design-tokens | pending |
-| m5-instructions-list | GET instructions + toggle PATCH | m5-page-tabs, m0-api-client, m0-mock-samples, m0-toast-provider | pending |
-| m5-instruction-editor | Create/edit/delete prompt_template | m5-instructions-list, m0-toast-provider | pending |
-| m5-contexts-list | GET contexts filter agent_kind + gate | m5-page-tabs, m0-api-client, m0-mock-samples | pending |
-| m5-context-upsert | PUT upsert + DELETE context | m5-contexts-list, m0-api-client, m0-toast-provider | pending |
-| m5-conflict-handling | 409 → toast error_code; form preserved | m5-instruction-editor, m5-context-upsert, m0-toast-provider | pending |
-| m5-tests | Vitest settings module | все m5-* выше | pending |
+| m5-page-tabs | AgentSettingsPage tabs Instructions \| Contexts | m0-app-layout, m0-design-tokens | completed |
+| m5-instructions-list | GET instructions + toggle PATCH | m5-page-tabs, m0-api-client, m0-mock-samples, m0-toast-provider | completed |
+| m5-instruction-editor | Create/edit/delete prompt_template | m5-instructions-list, m0-toast-provider | completed |
+| m5-contexts-list | GET contexts filter agent_kind + gate | m5-page-tabs, m0-api-client, m0-mock-samples | completed |
+| m5-context-upsert | PUT upsert + DELETE context | m5-contexts-list, m0-api-client, m0-toast-provider | completed |
+| m5-conflict-handling | 409 → toast error_code; form preserved | m5-instruction-editor, m5-context-upsert, m0-toast-provider | completed |
+| m5-tests | Vitest settings module | все m5-* выше | completed |
 
 ## Граф зависимостей
 

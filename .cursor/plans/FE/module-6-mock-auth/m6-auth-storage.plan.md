@@ -3,7 +3,7 @@ id: m6-auth-storage
 parent_module: .cursor/plans/FE/module-6-mock-auth.plan.md
 depends_on: []
 план читать: "да, §Ключевые гарантии п.2,6–7; §Публичный API (client)"
-status: pending
+status: completed
 ---
 
 # Задача: mockSession — localStorage flag + MOCK_AUTH_ENABLED

@@ -6,7 +6,7 @@ depends_on:
   - m2-filters
   - m0-status-badge
 план читать: "нет"
-status: pending
+status: completed
 ---
 
 # Задача: DeepCasesTable — колонки audits

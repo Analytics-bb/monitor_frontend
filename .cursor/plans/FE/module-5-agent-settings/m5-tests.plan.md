@@ -9,7 +9,7 @@ depends_on:
   - m5-context-upsert
   - m5-conflict-handling
 план читать: "да, §Тесты; §DoD"
-status: pending
+status: completed
 ---
 
 # Задача: Vitest — agent settings module

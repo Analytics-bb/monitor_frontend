@@ -6,7 +6,7 @@ depends_on:
   - m1-status-polling
   - m0-design-tokens
 план читать: "да, §Концепция зона 6 (Recharts, carousel)"
-status: pending
+status: completed
 ---
 
 # Задача: MetricsChartsSlider — carousel графиков

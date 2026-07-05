@@ -5,7 +5,7 @@ depends_on:
   - m5-instructions-list
   - m0-toast-provider
 план читать: "да, §Флоу — Instructions п.3–4; §Edge-cases DELETE 404"
-status: pending
+status: completed
 ---
 
 # Задача: InstructionEditor — create/edit/delete prompt_template

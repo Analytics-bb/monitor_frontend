@@ -6,7 +6,7 @@ depends_on:
   - m1-status-polling
   - m0-status-badge
 план читать: "да, §Концепция зона 7 (modal backdrop, Esc)"
-status: pending
+status: completed
 ---
 
 # Задача: ConclusionPanel + ConclusionModal

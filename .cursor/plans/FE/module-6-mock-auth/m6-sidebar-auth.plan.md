@@ -5,7 +5,7 @@ depends_on:
   - m6-auth-storage
   - m0-app-layout
 план читать: "нет"
-status: pending
+status: completed
 ---
 
 # Задача: Sidebar auth slot — Login / Logout

@@ -10,12 +10,12 @@
 
 | id | Содержание | depends_on | Статус |
 |----|------------|------------|--------|
-| m2-page-shell | DeepListPage layout filter+table+pagination | m0-app-layout, m0-design-tokens | pending |
-| m2-filters | Filters + listDeepCases + URL sync | m2-page-shell, m0-api-client, m0-mock-samples, m0-toast-provider | pending |
-| m2-cases-table | DeepCasesTable колонки + StatusBadge | m2-page-shell, m2-filters, m0-status-badge | pending |
-| m2-pagination | Envelope pagination prev/next + page size | m2-filters | pending |
-| m2-row-nav | Row click → /deep/{audit_id} | m2-cases-table | pending |
-| m2-tests | Vitest + e2e deep-list | все m2-* выше | pending |
+| m2-page-shell | DeepListPage layout filter+table+pagination | m0-app-layout, m0-design-tokens | completed |
+| m2-filters | Filters + listDeepCases + URL sync | m2-page-shell, m0-api-client, m0-mock-samples, m0-toast-provider | completed |
+| m2-cases-table | DeepCasesTable колонки + StatusBadge | m2-page-shell, m2-filters, m0-status-badge | completed |
+| m2-pagination | Envelope pagination prev/next + page size | m2-filters | completed |
+| m2-row-nav | Row click → /deep/{audit_id} | m2-cases-table | completed |
+| m2-tests | Vitest + e2e deep-list | все m2-* выше | completed |
 
 ## Граф зависимостей
 

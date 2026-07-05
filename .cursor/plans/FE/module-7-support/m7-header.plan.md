@@ -6,7 +6,7 @@ depends_on:
   - m7-use-support-chat
   - m0-status-badge
 план читать: "да, §StatusBadge маппинг"
-status: pending
+status: completed
 ---
 
 # Задача: SupportHeader — status + usage link

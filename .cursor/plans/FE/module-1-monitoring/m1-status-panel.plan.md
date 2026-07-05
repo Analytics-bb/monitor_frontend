@@ -6,7 +6,7 @@ depends_on:
   - m1-status-polling
   - m0-status-badge
 план читать: "нет"
-status: pending
+status: completed
 ---
 
 # Задача: StatusPanel — live/stale/tick pulse

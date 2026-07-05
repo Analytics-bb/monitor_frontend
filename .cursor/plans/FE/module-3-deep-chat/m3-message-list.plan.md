@@ -5,7 +5,7 @@ depends_on:
   - m3-chat-window
   - m3-use-deep-chat
 план читать: "да, §Messages (scroll area)"
-status: pending
+status: completed
 ---
 
 # Задача: ChatMessage list + scroll

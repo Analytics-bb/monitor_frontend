@@ -3,7 +3,7 @@ id: m0-api-client
 parent_module: .cursor/plans/FE/module-0-index.plan.md
 depends_on: []
 план читать: "да, §Ключевые гарантии п.2; M17 §10.z.1"
-status: pending
+status: completed
 ---
 
 # Задача: API client + error envelope

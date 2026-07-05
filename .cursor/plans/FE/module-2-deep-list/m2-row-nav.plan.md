@@ -4,7 +4,7 @@ parent_module: .cursor/plans/FE/module-2-deep-list.plan.md
 depends_on:
   - m2-cases-table
 план читать: "нет"
-status: pending
+status: completed
 ---
 
 # Задача: Row navigate → /deep/{audit_id}

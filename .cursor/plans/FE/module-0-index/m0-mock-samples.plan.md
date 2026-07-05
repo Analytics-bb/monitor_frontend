@@ -3,7 +3,7 @@ id: m0-mock-samples
 parent_module: .cursor/plans/FE/module-0-index.plan.md
 depends_on: [m0-api-client]
 план читать: "нет"
-status: pending
+status: completed
 ---
 
 # Задача: Mock fixtures

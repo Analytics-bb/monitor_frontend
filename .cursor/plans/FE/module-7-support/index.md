@@ -4,23 +4,23 @@
 
 **Внешние зависимости (module-0, completed):** `m0-api-client`, `m0-use-polling`, `m0-app-layout`, `m0-status-badge`, `m0-toast-provider`, `m0-mock-samples`.
 
-**Внешний блокер:** **module-7-auth** (Bearer в `api/client`) — support endpoints требуют auth; до готовности — fixture mode + unit tests.
+**Внешняя зависимость:** [module-6-mock-auth](../module-6-mock-auth.plan.md) (Bearer M19 в `api/client`) — реализован.
 
 ## Задачи
 
 | id | Содержание | depends_on | Статус |
 |----|------------|------------|--------|
-| m7-api-support | api/support.ts + Zod | m0-api-client | pending |
-| m7-fixture-support | supportChatSnapshot fixture | m0-mock-samples | pending |
-| m7-use-support-chat | useSupportChat hook | m7-api-support, m7-fixture-support, m0-use-polling | pending |
-| m7-page-shell | SupportPage shell + ChatWindow | m7-use-support-chat, m0-app-layout | pending |
-| m7-header | SupportHeader status + usage link | m7-page-shell, m7-use-support-chat, m0-status-badge | pending |
-| m7-reset-action | Reset confirm + POST | m7-header, m7-use-support-chat | pending |
-| m7-context-reset-banner | ContextResetBanner | m7-page-shell, m7-use-support-chat | pending |
-| m7-composer-attachments | SupportComposer + upload | m7-page-shell, m7-use-support-chat, m0-toast-provider | pending |
-| m7-message-attachments | Attachments in bubbles | m7-page-shell, m7-use-support-chat, m7-composer-attachments | pending |
-| m7-usage-filter-support | agent_kind=support in usage | — | pending |
-| m7-tests | Vitest + e2e | все m7-* выше | pending |
+| m7-api-support | api/support.ts + Zod | m0-api-client | completed |
+| m7-fixture-support | supportChatSnapshot fixture | m0-mock-samples | completed |
+| m7-use-support-chat | useSupportChat hook | m7-api-support, m7-fixture-support, m0-use-polling | completed |
+| m7-page-shell | SupportPage shell + ChatWindow | m7-use-support-chat, m0-app-layout | completed |
+| m7-header | SupportHeader status + usage link | m7-page-shell, m7-use-support-chat, m0-status-badge | completed |
+| m7-reset-action | Reset confirm + POST | m7-header, m7-use-support-chat | completed |
+| m7-context-reset-banner | ContextResetBanner | m7-page-shell, m7-use-support-chat | completed |
+| m7-composer-attachments | SupportComposer + upload | m7-page-shell, m7-use-support-chat, m0-toast-provider | completed |
+| m7-message-attachments | Attachments in bubbles | m7-page-shell, m7-use-support-chat, m7-composer-attachments | completed |
+| m7-usage-filter-support | agent_kind=support in usage | — | completed |
+| m7-tests | Vitest + e2e | все m7-* выше | completed |
 
 ## Граф зависимостей
 

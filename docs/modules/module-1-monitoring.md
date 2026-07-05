@@ -1,7 +1,7 @@
 ---
 title: 'FE Module 1 — Monitoring'
 plan: '.cursor/plans/FE/module-1-monitoring.plan.md'
-last_reviewed: '2026-06-23'
+last_reviewed: '2026-07-05'
 ---
 
 # Monitoring (`/monitoring`)

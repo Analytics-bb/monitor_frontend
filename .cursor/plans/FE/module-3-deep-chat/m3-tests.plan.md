@@ -12,7 +12,7 @@ depends_on:
   - m3-case-header
   - m3-usage-link
 план читать: "да, §Тесты; §DoD"
-status: pending
+status: completed
 ---
 
 # Задача: Vitest + e2e deep chat

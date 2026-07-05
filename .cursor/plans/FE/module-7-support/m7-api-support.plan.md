@@ -4,7 +4,7 @@ parent_module: .cursor/plans/FE/module-7-support.plan.md
 depends_on:
   - m0-api-client
 план читать: "да, §Публичный API; docs/api.md § Support chat"
-status: pending
+status: completed
 ---
 
 # Задача: api/support.ts + Zod SupportChatSnapshot
@@ -27,7 +27,7 @@ Multipart upload: `FormData` + поле `file`; не `Content-Type: application/
 
 ## Решения / якоря реализации
 - Повторить паттерн: `src/api/deepChat.ts` — `apiGetJson` / `apiFetch`, fixture branch при `isFixtureMode()`.
-- Обязательно: Bearer из `api/client` (после module-7-auth); до auth — fixture path для dev.
+- Обязательно: Bearer из `api/client` (module-6); fixture path для dev без API.
 - Не делать: дублирование OpenAPI-полей вне Zod; optimistic UI.
 
 ## Зависимости

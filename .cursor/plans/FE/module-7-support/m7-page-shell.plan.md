@@ -5,7 +5,7 @@ depends_on:
   - m7-use-support-chat
   - m0-app-layout
 план читать: "да, §Промпт дизайна (UI)"
-status: pending
+status: completed
 ---
 
 # Задача: SupportPage — shell + ChatWindow

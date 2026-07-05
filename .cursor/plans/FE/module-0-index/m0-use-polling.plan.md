@@ -3,7 +3,7 @@ id: m0-use-polling
 parent_module: .cursor/plans/FE/module-0-index.plan.md
 depends_on: []
 план читать: "да, §Ключевые гарантии п.4; M17 §10.s"
-status: pending
+status: completed
 ---
 
 # Задача: usePolling hook

@@ -5,7 +5,7 @@ depends_on:
   - m4-api-usage
   - m4-filters
 план читать: "да, §Промпт дизайна"
-status: pending
+status: completed
 ---
 
 # Задача: UsagePage + UsageRunsTable

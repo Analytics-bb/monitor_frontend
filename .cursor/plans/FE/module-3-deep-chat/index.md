@@ -10,16 +10,16 @@
 
 | id | Содержание | depends_on | Статус |
 |----|------------|------------|--------|
-| m3-page-shell | DeepChatPage header + breadcrumb + slots | m0-app-layout, m0-status-badge, m2-filters (done) | pending |
-| m3-use-deep-chat | useDeepChat + api/deepChat.ts | m0-api-client, m0-use-polling, m0-mock-samples | pending |
-| m3-open-session | CTA «Открыть анализ» + POST open | m3-page-shell, m3-use-deep-chat | pending |
-| m3-chat-window | ChatWindow LLM layout shell | m3-page-shell | pending |
-| m3-message-list | ChatMessage list + scroll | m3-chat-window, m3-use-deep-chat | pending |
-| m3-composer | ChatComposer textarea + Send | m3-chat-window, m3-use-deep-chat, m0-toast-provider | pending |
-| m3-approval-bar | ApprovalBar Approve/Reject | m3-chat-window, m3-use-deep-chat, m0-toast-provider | pending |
-| m3-case-header | CaseMetaStrip gate + время | m3-page-shell, m3-use-deep-chat | pending |
-| m3-usage-link | Link → /usage?audit_id= | m3-page-shell | pending |
-| m3-tests | Vitest + e2e deep-chat | все m3-* выше | pending |
+| m3-page-shell | DeepChatPage header + breadcrumb + slots | m0-app-layout, m0-status-badge, m2-filters (done) | completed |
+| m3-use-deep-chat | useDeepChat + api/deepChat.ts | m0-api-client, m0-use-polling, m0-mock-samples | completed |
+| m3-open-session | CTA «Открыть анализ» + POST open | m3-page-shell, m3-use-deep-chat | completed |
+| m3-chat-window | ChatWindow LLM layout shell | m3-page-shell | completed |
+| m3-message-list | ChatMessage list + scroll | m3-chat-window, m3-use-deep-chat | completed |
+| m3-composer | ChatComposer textarea + Send | m3-chat-window, m3-use-deep-chat, m0-toast-provider | completed |
+| m3-approval-bar | ApprovalBar Approve/Reject | m3-chat-window, m3-use-deep-chat, m0-toast-provider | completed |
+| m3-case-header | CaseMetaStrip gate + время | m3-page-shell, m3-use-deep-chat | completed |
+| m3-usage-link | Link → /usage?audit_id= | m3-page-shell | completed |
+| m3-tests | Vitest + e2e deep-chat | все m3-* выше | completed |
 
 ## Граф зависимостей
 

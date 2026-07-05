@@ -6,7 +6,7 @@ depends_on:
   - m5-context-upsert
   - m0-toast-provider
 план читать: "да, §Ключевые гарантии п.4–5; §Edge-cases PUT context 409"
-status: pending
+status: completed
 ---
 
 # Задача: 409 conflict — toast error_code + preserved form

@@ -32,7 +32,7 @@ todos:
   - id: m3-tests
     content: "Vitest: LLM layout render; pending blocks input; approve flow; polling stop; unmount clear"
     status: completed
-isProject: false
+isProject: true
 ---
 
 # FE Module 3 — Deep Chat (`/deep/{audit_id}`)
@@ -313,12 +313,13 @@ OpenAPI tag: `deep_analyst`. Тип: `ChatSnapshot`.
 
 ## DoD
 
-- [ ] Drill-down из list открывает стандартный LLM chat layout.
-- [ ] Open / message / approve / reject на mock/fixture.
-- [ ] Polling §10.s; stop terminal + unmount.
-- [ ] `pending_action` блокирует composer.
-- [ ] Back восстанавливает query списка через `deepListSearch` (M2 contract).
-- [ ] Тесты проходят; M17 §9.2 deep chat готов.
+- [x] Drill-down из list открывает стандартный LLM chat layout.
+- [x] Open / message / approve / reject на mock/fixture.
+- [x] Polling §10.s; stop terminal + unmount.
+- [x] `pending_action` блокирует composer.
+- [x] Back восстанавливает query списка через `deepListSearch` (M2 contract).
+- [x] Тесты проходят; M17 §9.2 deep chat готов.
+- [x] `docs/modules/module-3-deep-chat.md`.
 
 ---
 

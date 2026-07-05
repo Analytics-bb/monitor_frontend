@@ -6,7 +6,7 @@ depends_on:
   - m7-use-support-chat
   - m7-composer-attachments
 план читать: "нет"
-status: pending
+status: completed
 ---
 
 # Задача: Вложения в message bubbles

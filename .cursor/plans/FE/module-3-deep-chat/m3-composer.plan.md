@@ -6,7 +6,7 @@ depends_on:
   - m3-use-deep-chat
   - m0-toast-provider
 план читать: "да, §Composer (низ, sticky)"
-status: pending
+status: completed
 ---
 
 # Задача: ChatComposer — textarea + Send

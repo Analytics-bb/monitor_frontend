@@ -5,7 +5,7 @@ depends_on:
   - m4-api-usage
   - m4-runs-table
 план читать: "да, §Маппинг полей (daily)"
-status: pending
+status: completed
 ---
 
 # Задача: UsageDailySummary cards

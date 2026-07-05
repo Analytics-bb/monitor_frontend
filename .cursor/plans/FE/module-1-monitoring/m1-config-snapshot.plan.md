@@ -5,7 +5,7 @@ depends_on:
   - m1-page-shell
   - m1-status-polling
 план читать: "нет"
-status: pending
+status: completed
 ---
 
 # Задача: ConfigSnapshotPanel — tree/accordion, copy

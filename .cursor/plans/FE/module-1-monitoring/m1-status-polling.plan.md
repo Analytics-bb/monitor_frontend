@@ -6,7 +6,7 @@ depends_on:
   - m0-use-polling
   - m0-mock-samples
 план читать: "да, §Ключевые гарантии п.2–3; M17 §10.s"
-status: pending
+status: completed
 ---
 
 # Задача: API status + useMonitoringPolling

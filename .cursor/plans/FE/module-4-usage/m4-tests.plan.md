@@ -9,7 +9,7 @@ depends_on:
   - m4-daily-widget
   - m4-no-usage-total
 план читать: "да, §Тесты"
-status: pending
+status: completed
 ---
 
 # Задача: Vitest + e2e usage

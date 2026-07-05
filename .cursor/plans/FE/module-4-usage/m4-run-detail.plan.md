@@ -4,7 +4,7 @@ parent_module: .cursor/plans/FE/module-4-usage.plan.md
 depends_on:
   - m4-api-usage
 план читать: "да, §Edge-cases"
-status: pending
+status: completed
 ---
 
 # Задача: /usage/:runId detail page

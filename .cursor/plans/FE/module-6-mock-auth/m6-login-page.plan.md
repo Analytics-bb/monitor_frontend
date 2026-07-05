@@ -6,7 +6,7 @@ depends_on:
   - m0-design-tokens
   - m0-theme-toggle
 план читать: "да, §Промпт дизайна — Layout /login; §Edge-cases login success"
-status: pending
+status: completed
 ---
 
 # Задача: LoginPage — mock form + redirect

@@ -1,7 +1,7 @@
 ---
 title: 'FE Module 4 — Usage'
 plan: '.cursor/plans/FE/module-4-usage.plan.md'
-last_reviewed: '2026-06-28'
+last_reviewed: '2026-07-05'
 ---
 
 # Usage (`/usage`, `/usage/{run_id}`)

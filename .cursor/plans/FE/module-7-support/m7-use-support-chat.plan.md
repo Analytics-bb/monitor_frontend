@@ -6,7 +6,7 @@ depends_on:
   - m7-fixture-support
   - m0-use-polling
 план читать: "да, §Ключевые гарантии п.2–4; M18 § SPA transport"
-status: pending
+status: completed
 ---
 
 # Задача: useSupportChat

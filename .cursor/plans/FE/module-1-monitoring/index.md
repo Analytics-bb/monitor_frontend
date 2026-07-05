@@ -2,7 +2,7 @@
 
 Родительский план: [module-1-monitoring.plan.md](../module-1-monitoring.plan.md)
 
-**Внешние зависимости (module-0, все pending):** `m0-app-layout`, `m0-design-tokens`, `m0-status-badge`, `m0-api-client`, `m0-use-polling`, `m0-toast-provider`, `m0-mock-samples`.
+**Внешние зависимости (module-0, completed):** `m0-app-layout`, `m0-design-tokens`, `m0-status-badge`, `m0-api-client`, `m0-use-polling`, `m0-toast-provider`, `m0-mock-samples`.
 
 ## Задачи
 

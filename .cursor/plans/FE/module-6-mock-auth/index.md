@@ -8,13 +8,13 @@
 
 | id | Содержание | depends_on | Статус |
 |----|------------|------------|--------|
-| m6-auth-storage | mockSession localStorage + MOCK_AUTH_ENABLED | — | pending |
-| m6-login-page | LoginPage form → session → /monitoring | m6-auth-storage, m0-design-tokens, m0-theme-toggle | pending |
-| m6-protected-route | ProtectedRoute guard wrapper | m6-auth-storage | pending |
-| m6-sidebar-auth | Sidebar Login/Logout slot | m6-auth-storage, m0-app-layout | pending |
-| m6-cabinet-page | CabinetPage placeholder «скоро» | m0-app-layout | pending |
-| m6-route-align | Wrap protected paths in routes | m6-protected-route, m6-login-page | pending |
-| m6-tests | Vitest + e2e auth | все m6-* выше | pending |
+| m6-auth-storage | sessionStorage + VITE_MOCK_AUTH_ENABLED bypass | — | completed |
+| m6-login-page | LoginPage form → session → /monitoring | m6-auth-storage, m0-design-tokens, m0-theme-toggle | completed |
+| m6-protected-route | ProtectedRoute guard wrapper | m6-auth-storage | completed |
+| m6-sidebar-auth | Sidebar Login/Logout slot | m6-auth-storage, m0-app-layout | completed |
+| m6-cabinet-page | CabinetPage placeholder «скоро» | m0-app-layout | completed |
+| m6-route-align | Wrap protected paths in routes | m6-protected-route, m6-login-page | completed |
+| m6-tests | Vitest + e2e auth | все m6-* выше | completed |
 
 ## Граф зависимостей
 

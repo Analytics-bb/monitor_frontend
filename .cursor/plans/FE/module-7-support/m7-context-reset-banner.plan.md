@@ -5,7 +5,7 @@ depends_on:
   - m7-page-shell
   - m7-use-support-chat
 план читать: "нет"
-status: pending
+status: completed
 ---
 
 # Задача: ContextResetBanner

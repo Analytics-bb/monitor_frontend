@@ -26,29 +26,30 @@ alwaysApply: true
 - **Usage UI:** только `GET /agent/usage/runs` (+ `/{run_id}`); не `agent_sessions.usage_total` как primary total
 - **Ошибки API:** `{ error_code, message, details }` — UI показывает `error_code`, не пустой экран
 - **R2 prod:** `telegram_status` в audit — `null`; UI не показывает Telegram delivery
-- **Auth R2:** mock login/logout в sidebar; protected routes без mock session → `/login`
+- **Auth R2:** M19 opaque session — `POST /api/auth/login`, Bearer в REST, logout в sidebar; `VITE_MOCK_AUTH_ENABLED=false` bypass guard для e2e
 - **CORS:** нужен только в dev (localhost SPA → staging API); prod — same origin, CORS не нужен
 
 ## Статус страниц и инфраструктуры
 
 | Область | Маршрут / путь | Статус | План / примечание |
 |---------|----------------|--------|-------------------|
-| Layout + Sidebar | `src/app/` | pending | FE `module-0-index` (Phase 3) |
-| StatusBadge | `src/components/` | pending | единая система: success/error/skipped/active/awaiting_approval/completed |
+| Layout + Sidebar | `src/app/` | done | `docs/modules/module-0-index.md` |
+| StatusBadge | `src/components/` | done | единая система status-* tokens |
 | Monitoring | `/monitoring` | done | `docs/modules/module-1-monitoring.md` |
 | Deep list | `/deep` | done | `docs/modules/module-2-deep-list.md` |
-| Deep chat | `/deep/{audit_id}` | pending | polling + mutations M16 |
+| Deep chat | `/deep/{audit_id}` | done | `docs/modules/module-3-deep-chat.md` |
 | Usage | `/usage`, `/usage/{run_id}` | done | `docs/modules/module-4-usage.md` |
-| Agent settings | `/settings/agents` | pending | M6 instructions + M15 contexts |
-| Login (mock) | `/login` | done | `.cursor/plans/FE/module-6-mock-auth.plan.md` |
-| Cabinet (mock) | `/cabinet` | done | `.cursor/plans/FE/module-6-mock-auth.plan.md` |
-| API client | `src/api/` | pending | mock samples → реальный `ANOMALY_API_BASE_URL` |
-| Hooks | `src/hooks/` | pending | `usePolling`, `useDeepChat` |
-| Scaffold | корень репо | pending | Phase 2 setup-плана |
+| Agent settings | `/settings/agents` | done | `docs/modules/module-5-agent-settings.md` |
+| Support | `/support` | done | `docs/modules/module-7-support.md` |
+| Login + session | `/login` | done | `docs/modules/module-6-mock-auth.md` |
+| Cabinet | `/cabinet` | done | placeholder «скоро» |
+| API client | `src/api/` | done | Bearer M19, fixtures, Zod errors |
+| Hooks | `src/hooks/` | done | `usePolling`, `useDeepChat`, `useSupportChat` |
+| Scaffold | корень репо | done | Vite + React 19 + shadcn |
 | Deploy | `deploy/` | pending | nginx SPA + `/api/*` proxy (M0 §3.3) |
-| `.cursor` адаптация | `.cursor/` | in progress | Phase 1 setup-плана |
+| `.cursor` адаптация | `.cursor/` | done | Phase 1 setup-плана |
 
-**Критический путь реализации:** M0 (index) done → M1 monitoring done → M2 deep list done → M4 usage done → M6 mock auth done → следующий: **M3 deep chat** (формальное закрытие M5 — при необходимости).
+**Критический путь реализации:** M0–M7 FE per-page modules **done** → следующий: deploy / staging e2e против live API.
 
 ## Архитектурные решения (ADR)
 
@@ -62,10 +63,13 @@ alwaysApply: true
 Решение: **M17 plan** остаётся source of truth для контракта; **monitor_frontend** — единственный репозиторий кода SPA; per-page планы — в `.cursor/plans/FE/`.
 Нельзя: дублировать OpenAPI-поля в FE-планах; менять REST API из frontend-репо.
 
-### 2026-06-22: Mock auth в R2
-Проблема: реальный JWT/RBAC — R2+; оператору нужен guard маршрутов уже в R2.
-Решение: `/login` — любые credentials → mock flag в `localStorage` → redirect `/monitoring`; logout в sidebar очищает flag → `/login`. Protected routes без session — redirect.
-Нельзя: вызывать backend auth endpoints; хранить реальные токены в SPA.
+### 2026-06-22: Session auth в R2 (эволюция mock → M19)
+Проблема: оператору нужен guard маршрутов уже в R2; позже backend добавил M19 opaque session.
+Решение: `/login` → `POST /api/auth/login` → Bearer в `api/client`; logout → `POST /api/auth/logout` + clear localStorage. Fixture-mode без API URL — offline login fixture. `VITE_MOCK_AUTH_ENABLED=false` — bypass guard для e2e.
+Нельзя: логировать token в prod; хранить пароли в storage.
+
+### 2026-06-22: Mock auth в R2 (superseded)
+Исторически: boolean flag в localStorage без backend. Заменено M19 session auth (см. ADR выше). Deprecated aliases остаются в `mockSession.ts`.
 
 ### 2026-06-22: Polling вместо WebSocket для deep/monitoring
 Проблема: R2 без WebSocket/SSE для чата и monitoring.

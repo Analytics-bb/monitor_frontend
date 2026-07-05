@@ -1,6 +1,6 @@
 ---
 name: fe-agent-settings
-overview: "Страница /settings/agents: две секции Instructions (M6) CRUD/toggle и Contexts (M15) upsert global/per-gate; без optimistic mutations."
+overview: "Страница /settings/agents: Instructions (M6), Contexts (M15), Detector config read-only (M2); без optimistic mutations."
 todos:
   - id: m5-page-tabs
     content: "AgentSettingsPage: tabs Instructions | Contexts; route /settings/agents"
@@ -23,7 +23,7 @@ todos:
   - id: m5-tests
     content: "Vitest: toggle instruction mock; context PUT roundtrip; 409 display"
     status: completed
-isProject: false
+isProject: true
 ---
 
 # FE Module 5 — Agent Settings (`/settings/agents`)
@@ -47,12 +47,13 @@ isProject: false
 - Страница `/settings/agents` (исправить route из `/settings` если нужно).
 - **Instructions (M6):** list, toggle enabled, edit `prompt_template`, create, delete.
 - **Contexts (M15):** list filtered by `agent_kind` + `gate_id`; upsert global/per-gate; delete.
+- **Detector (M2):** read-only просмотр detector config (вкладка Detector).
 - Error handling 409 с `error_code`.
 - Pull-on-mount + manual save (no polling).
 
 **Не входит:**
 
-- Detector settings (M2) — только optional link from monitoring.
+- Редактирование detector config на сервере (только read-only UI).
 - Agent preview debug route.
 - RBAC / per-user permissions.
 
@@ -66,7 +67,7 @@ isProject: false
 
 Layout:
 - Page header: «Agent Settings».
-- Tabs (underline style): Instructions | Contexts.
+- Tabs (underline style): Instructions | Contexts | Detector.
 - Tab Instructions:
   - Toolbar: + New instruction.
   - Table: Name | agent_kind (if in API) | Enabled switch | Updated | Actions (Edit, Delete).
@@ -194,11 +195,12 @@ OpenAPI tags: `instruction_store`, `agent_context_store`.
 
 ## DoD
 
-- [ ] Tabs Instructions + Contexts на `/settings/agents`.
-- [ ] CRUD instructions и upsert/delete contexts работают на mock.
-- [ ] 409 и другие ошибки с error_code.
-- [ ] Light + dark корректны (module-0).
-- [ ] Тесты проходят; M17 §9.2 settings пункты готовы.
+- [x] Tabs Instructions + Contexts + Detector на `/settings/agents`.
+- [x] CRUD instructions и upsert/delete contexts работают на mock.
+- [x] 409 и другие ошибки с error_code.
+- [x] Light + dark корректны (module-0).
+- [x] Тесты проходят; M17 §9.2 settings пункты готовы.
+- [x] `docs/modules/module-5-agent-settings.md`.
 
 ---
 

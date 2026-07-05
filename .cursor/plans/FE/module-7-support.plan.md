@@ -1,6 +1,6 @@
 ---
 name: fe-support
-overview: "Страница /support: polling SupportChatSnapshot (M18), вложения, reset, banner context_reset. Auth — блокер module-7-auth."
+overview: "Страница /support: polling SupportChatSnapshot (M18), вложения, reset, banner context_reset. Bearer — module-6 session auth."
 todos:
   - id: m7-api-support
     content: "api/support.ts + Zod SupportChatSnapshot; multipart upload"
@@ -40,11 +40,11 @@ isProject: true
 
 # FE Module 7 — Support (`/support`)
 
-План per-page для **monitor_frontend**. Контракт полей — [`docs/api.md`](docs/api.md) § Support chat (M18); transport — M18 § «Observability & SPA transport» (аналог deep chat M3). **Auth не входит** — блокер [`module-7-auth`](.cursor/plans/FE/module-7-auth.plan.md).
+План per-page для **monitor_frontend**. Контракт полей — [`docs/api.md`](docs/api.md) § Support chat (M18); transport — M18 § «Observability & SPA transport» (аналог deep chat M3). **Auth** — [module-6-mock-auth](.cursor/plans/FE/module-6-mock-auth.plan.md) (Bearer M19).
 
-**Текущее состояние:** placeholder [`src/pages/SupportPage.tsx`](src/pages/SupportPage.tsx); маршрут `/support` и sidebar уже есть ([`routes.tsx`](src/app/routes.tsx), [`Sidebar.tsx`](src/app/layout/Sidebar.tsx)); unit-тест placeholder — [`tests/unit/auth/SupportPage.test.tsx`](tests/unit/auth/SupportPage.test.tsx) (перенести в `tests/unit/support/`).
+**Текущее состояние:** реализован [`src/pages/SupportPage.tsx`](src/pages/SupportPage.tsx) с `useSupportChat`, вложениями, reset и banners; unit-тесты — [`tests/unit/support/`](tests/unit/support/).
 
-**Зависит от:** [module-0-index.plan.md](.cursor/plans/FE/module-0-index.plan.md) (completed), **module-7-auth** (Bearer — блокер), backend M18 wire.
+**Зависит от:** [module-0-index.plan.md](.cursor/plans/FE/module-0-index.plan.md) (completed), [module-6-mock-auth](.cursor/plans/FE/module-6-mock-auth.plan.md) (Bearer), backend M18 wire.
 
 ---
 
@@ -74,7 +74,7 @@ isProject: true
 
 **Не входит:**
 
-- Реализация auth (login/logout/Bearer) — **module-7-auth**.
+- Реализация auth (login/logout/Bearer) — **module-6-mock-auth**.
 - Approve/Reject tool actions (M18 auto-execute).
 - WebSocket/SSE, streaming tokens.
 - Отображение `usage_total` из snapshot как primary total (ADR memory.md — `/usage` runs).
@@ -127,7 +127,7 @@ Out of scope: markdown editor, voice, sidebar case panel.
 
 ## Ключевые гарантии и инварианты
 
-1. **Bearer обязателен** — support-вызовы через `api/client` с токеном module-7-auth; `401 not_authenticated` → redirect `/login` (auth-слой; support только потребляет).
+1. **Bearer обязателен** — support-вызовы через `api/client` с токеном module-6-mock-auth; `401 not_authenticated` → redirect `/login` (auth-слой; support только потребляет).
 2. **Polling только при `processing`** — интервал **1–2 с** (M18 § Observability & SPA transport); `active` / `error` — stop; unmount — `clearInterval` ([`usePolling`](src/hooks/usePolling.ts)).
 3. **После любого POST** (message, attachment, reset) — немедленный `GET /api/support/chat`, затем interval по новому `state`.
 4. **`state=processing`** — composer и attach disabled; `409 chat_processing` на message → refetch + toast, draft сохранён.
@@ -156,7 +156,7 @@ Out of scope: markdown editor, voice, sidebar case panel.
 | Уход со страницы | Stop polling |
 | Tab hidden | Interval ×2 ([`usePolling`](src/hooks/usePolling.ts)) |
 | Fixture mode без API | `SupportChatSnapshot` fixture + mock `api/support` (паттерн module-1/2) |
-| 401 на GET | Auth layer → `/login` (module-7-auth) |
+| 401 на GET | Auth layer → `/login` (module-6-mock-auth) |
 | Deep-link `/usage?agent_kind=support` | Фильтр применяет `support` после todo `m7-usage-filter-support` |
 
 ---
@@ -165,7 +165,7 @@ Out of scope: markdown editor, voice, sidebar case panel.
 
 ```mermaid
 flowchart TB
-  subgraph authBlocker [module-7-auth blocker]
+  subgraph authLayer [module-6 session auth]
     Token[Bearer in api client]
   end
 
@@ -203,7 +203,7 @@ stateDiagram-v2
 
 ## Флоу (клиент ↔ сервер)
 
-1. Navigate `/support` (после module-7-auth session).
+1. Navigate `/support` (после module-6-mock-auth session).
 2. `GET /api/support/chat` → `SupportChatSnapshot` (lazy create).
 3. Polling **только** если `state=processing`.
 4. Upload: user picks file → `POST .../attachments` → pending chip с `filename`.
@@ -282,21 +282,21 @@ tests/
 | reset flow | unit | POST reset → messages empty |
 | unmount stop | unit | clearInterval on unmount |
 | usage link + filter | unit | Link с `agent_kind=support`; filter принимает literal |
-| e2e send message | e2e | auth fixture (module-7-auth) → /support → send → assistant visible |
+| e2e send message | e2e | auth fixture (module-6-mock-auth) → /support → send → assistant visible |
 
 ---
 
 ## DoD
 
-- [ ] Placeholder «Саппорт — скоро» заменён на рабочий чат.
-- [ ] Все 4 support endpoints интегрированы (или fixtures в fixture mode).
-- [ ] Polling 1–2 с только при `processing`; stop on unmount.
-- [ ] Вложения: upload + отправка с message.
-- [ ] Reset + `context_reset` banner.
-- [ ] `usage_total` не используется как primary UI total.
-- [ ] Deep-link `/usage?agent_kind=support` работает (filter literal `support`).
-- [ ] Тесты из таблицы проходят; `SupportPage.test` в `tests/unit/support/`.
-- [ ] `docs/modules/module-7-support.md` после апрува (module-doc).
+- [x] Placeholder «Саппорт — скоро» заменён на рабочий чат.
+- [x] Все 4 support endpoints интегрированы (или fixtures в fixture mode).
+- [x] Polling 1–2 с только при `processing`; stop on unmount.
+- [x] Вложения: upload + отправка с message.
+- [x] Reset + `context_reset` banner.
+- [x] `usage_total` не используется как primary UI total.
+- [x] Deep-link `/usage?agent_kind=support` работает (filter literal `support`).
+- [x] Тесты из таблицы проходят; `SupportPage.test` в `tests/unit/support/`.
+- [x] `docs/modules/module-7-support.md`.
 
 ---
 
@@ -305,7 +305,7 @@ tests/
 | Модуль | Статус | Зачем |
 |--------|--------|-------|
 | [module-0-index](.cursor/plans/FE/module-0-index.plan.md) | completed | `usePolling`, `api/client`, toast, layout |
-| **module-7-auth** | **блокер** | Bearer на API |
+| [module-6-mock-auth](.cursor/plans/FE/module-6-mock-auth.plan.md) | completed | Bearer M19 на API |
 | Backend M18 | in progress | `/api/support/chat/*` wire |
 | [module-3-deep-chat](.cursor/plans/FE/module-3-deep-chat.plan.md) | completed | `useDeepChat`, ChatWindow |
 | [module-4-usage](.cursor/plans/FE/module-4-usage.plan.md) | completed | Usage page; delta `agent_kind=support` |
@@ -330,6 +330,6 @@ tests/
 
 **Module-7-support владеет:** UX `/support`, `useSupportChat`, support components, `api/support.ts`, delta usage filter для deep-link.
 
-**Ссылается на:** M18 `SupportChatSnapshot`; M18 § SPA transport; module-7-auth; OpenAPI — поля JSON.
+**Ссылается на:** M18 `SupportChatSnapshot`; M18 § SPA transport; module-6 session auth; OpenAPI — поля JSON.
 
 **Не владеет:** auth session, backend `AgentKind`, M15 contexts CRUD.

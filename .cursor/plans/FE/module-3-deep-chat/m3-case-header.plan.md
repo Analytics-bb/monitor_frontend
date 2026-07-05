@@ -5,7 +5,7 @@ depends_on:
   - m3-page-shell
   - m3-use-deep-chat
 план читать: "да, §Compact meta strip"
-status: pending
+status: completed
 ---
 
 # Задача: CaseMetaStrip — audit, gate, время

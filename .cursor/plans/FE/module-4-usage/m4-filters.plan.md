@@ -3,7 +3,7 @@ id: m4-filters
 parent_module: .cursor/plans/FE/module-4-usage.plan.md
 depends_on: []
 план читать: "нет"
-status: pending
+status: completed
 ---
 
 # Задача: UsageFilters + URL sync

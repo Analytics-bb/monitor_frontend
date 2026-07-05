@@ -4,7 +4,7 @@ parent_module: .cursor/plans/FE/module-3-deep-chat.plan.md
 depends_on:
   - m3-page-shell
 план читать: "да, §Стандартное окно общения с LLM"
-status: pending
+status: completed
 ---
 
 # Задача: ChatWindow — LLM layout shell

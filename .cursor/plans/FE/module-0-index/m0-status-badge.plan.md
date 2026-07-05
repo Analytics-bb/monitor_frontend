@@ -3,7 +3,7 @@ id: m0-status-badge
 parent_module: .cursor/plans/FE/module-0-index.plan.md
 depends_on: [m0-design-tokens]
 план читать: "да, §StatusBadge"
-status: pending
+status: completed
 ---
 
 # Задача: StatusBadge

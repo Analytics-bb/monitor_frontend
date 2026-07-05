@@ -9,7 +9,7 @@ depends_on:
   - m0-api-client
   - m0-use-polling
 план читать: "да, §Тесты"
-status: pending
+status: completed
 ---
 
 # Задача: Shared unit tests (module-0)

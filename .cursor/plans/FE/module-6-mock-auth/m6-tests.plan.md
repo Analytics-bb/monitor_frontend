@@ -9,7 +9,7 @@ depends_on:
   - m6-cabinet-page
   - m6-route-align
 план читать: "да, §Тесты; §DoD"
-status: pending
+status: completed
 ---
 
 # Задача: Vitest + e2e — mock auth module
