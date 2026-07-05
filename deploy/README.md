@@ -1,37 +1,27 @@
 # Deploy
 
-## GitHub Pages (SPA)
+Multi-stage образ: Vite build → nginx:alpine со статикой.
 
-Project site: `https://analytics-bb.github.io/monitor_frontend/`
+| Файл | Назначение |
+|------|------------|
+| [`Dockerfile`](../Dockerfile) | build + runtime |
+| [`nginx.conf`](../nginx.conf) | SPA routing, gzip, `client_max_body_size 1m` |
+| [`.github/workflows/docker.yml`](../.github/workflows/docker.yml) | CI push в GHCR |
 
-### Однократно в репозитории
+**Образ:** `ghcr.io/analytics-bb/bb-spa:<sha|latest|semver>`
 
-1. **Settings → Pages → Build and deployment → Source** — **GitHub Actions**.
-2. (Опционально) **Settings → Actions → Variables**:
-   - `VITE_ANOMALY_API_BASE_URL` — URL staging/prod API; если задан, fixtures отключаются.
-   - `VITE_MOCK_AUTH_ENABLED` — по умолчанию `true` в workflow.
+**Сервис в compose backend-репо:** `bb-spa` (порт `80` внутри контейнера).
 
-По умолчанию workflow ставит `VITE_USE_API_FIXTURES=true` — monitoring, instructions, contexts и остальные страницы работают на fixtures без бэкенда.
-
-### Автодеплой
-
-Workflow [`.github/workflows/pages.yml`](../.github/workflows/pages.yml) на push в `main` (или вручную через **workflow_dispatch**):
-
-- `npm run lint`, `typecheck`, `test`, `build`
-- `VITE_BASE_PATH=/<repo-name>/` для assets и React Router
-- `dist/404.html` — fallback для client-side routes
-- `actions/deploy-pages`
-
-### Локальная проверка Pages-сборки
+Prod build args:
 
 ```bash
-VITE_BASE_PATH=/monitor_frontend/ npm run build
-cp dist/index.html dist/404.html
-npx vite preview --base /monitor_frontend/
+docker build --build-arg VITE_API_BASE_URL=/api -t bb-spa .
 ```
 
-Открыть `http://localhost:4173/monitor_frontend/`.
+На сервере:
 
-## nginx (staging/prod)
+```bash
+BB_SPA_IMAGE=ghcr.io/analytics-bb/bb-spa:1.2.0 docker compose up -d bb-spa
+```
 
-Docker-образ SPA + proxy `/api/*` → anomaly-api — Phase 7 (см. M0 §3.3).
+`/api/*` проксирует **хостовый** nginx → anomaly-api; SPA-контейнер отдаёт только статику.

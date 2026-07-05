@@ -68,7 +68,6 @@ last_reviewed: '2026-07-05'
 | Что | Где | Поведение |
 |-----|-----|-----------|
 | Fixture mode | `client.ts` | Без base URL — API-функции возвращают fixtures |
-| GitHub Pages base | `routes.tsx` | `basename` из `import.meta.env.BASE_URL` |
 
 ## Зависимости
 
@@ -81,9 +80,8 @@ last_reviewed: '2026-07-05'
 
 | Переменная | Назначение | Обязательная |
 |------------|------------|--------------|
-| `VITE_ANOMALY_API_BASE_URL` | Base URL anomaly-api | Нет (fixture mode) |
+| `VITE_API_BASE_URL` | Base URL anomaly-api | Нет (fixture mode) |
 | `VITE_USE_API_FIXTURES` | Fixtures в prod preview | Нет |
-| `VITE_BASE_PATH` | Basename router (GitHub Pages) | Нет |
 | `VITE_MOCK_AUTH_ENABLED` | Guard bypass при `false` | Нет (default true) |
 
 ## Тесты

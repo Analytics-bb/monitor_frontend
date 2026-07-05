@@ -46,7 +46,7 @@ export const appRoutes: RouteObject[] = [
   },
 ]
 
-/** Basename из Vite `base` (`import.meta.env.BASE_URL`); для GitHub Pages — `/monitor_frontend`. */
+/** Basename из Vite `base` (`import.meta.env.BASE_URL`); в prod/Docker — `/`. */
 function getRouterBasename(): string | undefined {
   const basename = import.meta.env.BASE_URL.replace(/\/$/, '')
   return basename || undefined
