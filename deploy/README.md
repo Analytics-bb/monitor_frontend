@@ -1,27 +1,116 @@
 # Deploy
 
-Multi-stage образ: Vite build → nginx:alpine со статикой.
+SPA-образ `bb-spa` для orchestrator в backend-репо `bb_traffic_analysis`.
+Отдельного prod `docker-compose` в этом репозитории **нет**.
+
+## Артефакты
 
 | Файл | Назначение |
 |------|------------|
-| [`Dockerfile`](../Dockerfile) | build + runtime |
-| [`nginx.conf`](../nginx.conf) | SPA routing, gzip, `client_max_body_size 1m` |
-| [`.github/workflows/docker.yml`](../.github/workflows/docker.yml) | CI push в GHCR |
+| [`Dockerfile`](../Dockerfile) | multi-stage: Node build → `nginx:alpine` runtime |
+| [`nginx.conf`](../nginx.conf) | SPA `try_files`, gzip, `client_max_body_size 1m`; **без** `location /api` |
+| [`.github/workflows/docker.yml`](../.github/workflows/docker.yml) | CI: build + push в GHCR |
 
-**Образ:** `ghcr.io/analytics-bb/bb-spa:<sha|latest|semver>`
+**Registry:** `ghcr.io/analytics-bb/bb-spa:<sha|latest|semver>`
 
-**Сервис в compose backend-репо:** `bb-spa` (порт `80` внутри контейнера).
+## Prod-схема
 
-Prod build args:
-
-```bash
-docker build --build-arg VITE_API_BASE_URL=/api -t bb-spa .
+```
+HTTPS (внешний LB/CDN, вне app-сервера)
+  → http://<app-server>:80   (хостовый nginx)
+      ├── /api/*  → 127.0.0.1:20000  anomaly-api
+      └── /*      → 127.0.0.1:20002  bb-spa (этот контейнер)
 ```
 
-На сервере:
+- Same-origin: API на `/api/*`, SPA на `/*`
+- CORS в prod не нужен
+- MCP, Anthropic, MySQL/Mongo credentials — только backend, не в SPA bundle
+- Домен и TLS — на внешнем LB; в prod bundle **нет** hardcode `https://…`
+
+Конфиг хостового nginx: `bb_traffic_analysis/deploy/prod/nginx-host/monitor-behind-lb.conf`
+
+## Build-time env
+
+| Окружение | `VITE_API_BASE_URL` |
+|-----------|----------------------|
+| Prod / Docker | `/api` |
+| Dev | `http://localhost:8000/api` |
 
 ```bash
-BB_SPA_IMAGE=ghcr.io/analytics-bb/bb-spa:1.2.0 docker compose up -d bb-spa
+docker build --build-arg VITE_API_BASE_URL=/api -t bb-spa:local .
 ```
 
-`/api/*` проксирует **хостовый** nginx → anomaly-api; SPA-контейнер отдаёт только статику.
+## Runtime (контейнер bb-spa)
+
+- `EXPOSE 80`, статика в `/usr/share/nginx/html`
+- `try_files $uri $uri/ /index.html` — SPA routing
+- **Нет** `proxy_pass /api`, **нет** TLS/certbot, **нет** `/health`
+- Healthcheck orchestrator: `wget --spider http://127.0.0.1:80/` (wget есть в `nginx:alpine`)
+
+## Auth M19
+
+- `POST /api/auth/login` `{username, password}` → `{token, user_id, username, expires_at}`
+- Bearer на всех `/api/*` (кроме login)
+- `401` → redirect `/login`
+- `POST /api/auth/logout` + очистка token
+
+## CI
+
+Push в GHCR при push в `main` или tag `v*.*.*`:
+
+- `ghcr.io/analytics-bb/bb-spa:<sha>`
+- `ghcr.io/analytics-bb/bb-spa:latest` (main)
+- `ghcr.io/analytics-bb/bb-spa:<semver>` (git tag)
+
+## Deploy на сервере
+
+В `.env` backend-репо:
+
+```bash
+BB_SPA_IMAGE=ghcr.io/analytics-bb/bb-spa:1.0.0
+```
+
+Через orchestrator (`bb_traffic_analysis`):
+
+```bash
+docker compose -f deploy/prod/docker-compose.yml pull bb-spa
+docker compose -f deploy/prod/docker-compose.yml up -d bb-spa
+```
+
+| Параметр | Значение |
+|----------|----------|
+| Имя сервиса | `bb-spa` (фиксировано) |
+| Порт на хосте | `127.0.0.1:20002` → container `:80` |
+| Наружу | не публикуем (только loopback + хостовый nginx) |
+
+**LB upstream:** `http://<app-server-IP>:80`
+
+**Firewall:** `80/tcp` на app-сервере (желательно только с IP LB)
+
+## Локальная проверка (DoD)
+
+```bash
+docker build --build-arg VITE_API_BASE_URL=/api -t bb-spa:local .
+docker run --rm -d -p 20002:80 --name bb-spa-test bb-spa:local
+
+curl -sf http://127.0.0.1:20002/          # → 200 HTML
+docker exec bb-spa-test wget --spider -q http://127.0.0.1:80/  # → exit 0
+
+docker stop bb-spa-test
+```
+
+На сервере после pull:
+
+```bash
+curl http://127.0.0.1/                    # SPA через хостовый nginx :80
+# Login: POST https://<домен>/api/auth/login — same-origin
+```
+
+## Не делать
+
+- Отдельный `deploy/docker-compose.yml` для prod в этом репо
+- `location /api` / `proxy_pass` в SPA `nginx.conf`
+- `VITE_API_BASE_URL=https://…` в prod build
+- Origin `:8080` в документации (хостовый nginx — `:80`)
+- `/health` endpoint в SPA-контейнере
+- CORS workaround для prod

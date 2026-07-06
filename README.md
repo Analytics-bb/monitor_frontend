@@ -18,8 +18,10 @@ npm run dev
 
 | Окружение | Значение |
 |-----------|----------|
-| Prod / Docker | `/api` (same-origin) |
+| Prod / Docker | `/api` (same-origin, без домена) |
 | Dev | `http://localhost:8000/api` |
+
+В prod-сборке **не** использовать полный `https://…` URL — только относительный `/api`.
 
 ## Проверки
 
@@ -33,33 +35,57 @@ npm run lint && npm run typecheck && npm test && npm run build
 
 | Параметр | Значение |
 |----------|----------|
+| Registry | `ghcr.io/analytics-bb/bb-spa` (`:latest`, `:sha`, semver tag) |
 | Имя сервиса в compose (backend-репо) | `bb-spa` |
 | Порт контейнера | `80` |
+| Порт на хосте app-сервера | `127.0.0.1:20002` → container `:80` |
 | Prod API base (build-time) | `VITE_API_BASE_URL=/api` |
+
+### Prod-схема
+
+```
+HTTPS (внешний LB/CDN)
+  → http://<app-server>:80   (хостовый nginx, listen 80)
+      ├── /api/*  → 127.0.0.1:20000  anomaly-api
+      └── /*      → 127.0.0.1:20002  bb-spa
+```
+
+Same-origin: браузер видит один домен; CORS в prod не нужен.
+TLS, certbot и `listen 443` — **не** в SPA-контейнере и **не** на app-сервере.
+Прокси `/api` — **хостовый** nginx (`bb_traffic_analysis/deploy/prod/nginx-host/monitor-behind-lb.conf`), не SPA-nginx.
 
 ### Локальная сборка и проверка
 
 ```bash
 docker build --build-arg VITE_API_BASE_URL=/api -t bb-spa:local .
-docker run --rm -p 8080:80 bb-spa:local
-curl -sf http://localhost:8080/ | head
-docker run --rm bb-spa:local wget --spider -q http://127.0.0.1:80/
+docker run --rm -d -p 20002:80 --name bb-spa-test bb-spa:local
+curl -sf http://127.0.0.1:20002/ | head
+docker exec bb-spa-test wget --spider -q http://127.0.0.1:80/
+docker stop bb-spa-test
 ```
 
 ### Обновление на сервере
 
-В `bb_traffic_analysis` (orchestrator compose):
+В `bb_traffic_analysis` (orchestrator compose, **не** отдельный compose в этом репо):
 
 ```bash
-export BB_SPA_IMAGE=ghcr.io/analytics-bb/bb-spa:1.2.0
-docker compose pull bb-spa
-docker compose up -d bb-spa
+# .env backend-репо
+BB_SPA_IMAGE=ghcr.io/analytics-bb/bb-spa:1.0.0
+
+docker compose -f deploy/prod/docker-compose.yml pull bb-spa
+docker compose -f deploy/prod/docker-compose.yml up -d bb-spa
 ```
 
-Хостовый nginx (`monitor.apibbstat.work`) проксирует `/api/*` → anomaly-api, `/*` → bb-spa.
+После pull: `curl http://127.0.0.1/` → SPA (через хостовый nginx `:80`).
+
+**Внешний LB:** upstream `http://<app-server-IP>:80`.
+
+**Firewall app-сервера:** открыть `80/tcp` (желательно только с IP LB).
 
 Подробнее: [deploy/README.md](deploy/README.md)
 
 ## Контракт
 
-Source of truth: `.cursor/plans/R2/module-17-web-frontend-contract.plan.md`
+Source of truth: `bb_traffic_analysis/.cursor/plans/R2/module-17-web-frontend-contract.plan.md`
+
+OpenAPI: `bb_traffic_analysis/docs/api.md`
