@@ -43,16 +43,24 @@ npm run lint && npm run typecheck && npm test && npm run build
 
 ### Prod-схема
 
+Orchestrator: `bb_traffic_analysis/deploy/prod/docker-compose.yml`
+
 ```
-HTTPS (внешний LB/CDN)
-  → http://<app-server>:80   (хостовый nginx, listen 80)
+LB (TLS)
+  → http://<app-server>:80   (хостовый nginx)
       ├── /api/*  → 127.0.0.1:20000  anomaly-api
       └── /*      → 127.0.0.1:20002  bb-spa
+
+docker internal: anomaly-api → fastmcp-analytics:8080/mcp
 ```
 
 Same-origin: браузер видит один домен; CORS в prod не нужен.
 TLS, certbot и `listen 443` — **не** в SPA-контейнере и **не** на app-сервере.
 Прокси `/api` — **хостовый** nginx (`bb_traffic_analysis/deploy/prod/nginx-host/monitor-behind-lb.conf`), не SPA-nginx.
+
+**Registry:** предпочтительно GHCR (`ghcr.io/analytics-bb/bb-spa`); Docker Hub с РФ нестабилен.
+
+**Firewall app-сервера:** `80/tcp` — только с IP LB; порты `20000`, `20002` — localhost only.
 
 ### Локальная сборка и проверка
 
@@ -64,12 +72,15 @@ docker exec bb-spa-test wget --spider -q http://127.0.0.1:80/
 docker stop bb-spa-test
 ```
 
-### Обновление на сервере
+### Обновление образа
 
-В `bb_traffic_analysis` (orchestrator compose, **не** отдельный compose в этом репо):
+1. CI push нового tag в GHCR (этот репо → `bb-spa`)
+2. На сервере в `bb_traffic_analysis/.env`: `BB_SPA_IMAGE` (и при необходимости `FASTMCP_IMAGE` — backend)
+3. `docker compose -f deploy/prod/docker-compose.yml pull bb-spa`
+4. `docker compose -f deploy/prod/docker-compose.yml up -d bb-spa`
 
 ```bash
-# .env backend-репо
+# bb_traffic_analysis/.env
 BB_SPA_IMAGE=ghcr.io/analytics-bb/bb-spa:1.0.0
 
 docker compose -f deploy/prod/docker-compose.yml pull bb-spa
@@ -79,8 +90,6 @@ docker compose -f deploy/prod/docker-compose.yml up -d bb-spa
 После pull: `curl http://127.0.0.1/` → SPA (через хостовый nginx `:80`).
 
 **Внешний LB:** upstream `http://<app-server-IP>:80`.
-
-**Firewall app-сервера:** открыть `80/tcp` (желательно только с IP LB).
 
 Подробнее: [deploy/README.md](deploy/README.md)
 

@@ -3,6 +3,8 @@
 SPA-образ `bb-spa` для orchestrator в backend-репо `bb_traffic_analysis`.
 Отдельного prod `docker-compose` в этом репозитории **нет**.
 
+Orchestrator: `bb_traffic_analysis/deploy/prod/docker-compose.yml`
+
 ## Артефакты
 
 | Файл | Назначение |
@@ -13,13 +15,17 @@ SPA-образ `bb-spa` для orchestrator в backend-репо `bb_traffic_anal
 
 **Registry:** `ghcr.io/analytics-bb/bb-spa:<sha|latest|semver>`
 
+Предпочтительно GHCR; Docker Hub с РФ нестабилен.
+
 ## Prod-схема
 
 ```
-HTTPS (внешний LB/CDN, вне app-сервера)
+LB (TLS)
   → http://<app-server>:80   (хостовый nginx)
       ├── /api/*  → 127.0.0.1:20000  anomaly-api
       └── /*      → 127.0.0.1:20002  bb-spa (этот контейнер)
+
+docker internal: anomaly-api → fastmcp-analytics:8080/mcp
 ```
 
 - Same-origin: API на `/api/*`, SPA на `/*`
@@ -28,6 +34,13 @@ HTTPS (внешний LB/CDN, вне app-сервера)
 - Домен и TLS — на внешнем LB; в prod bundle **нет** hardcode `https://…`
 
 Конфиг хостового nginx: `bb_traffic_analysis/deploy/prod/nginx-host/monitor-behind-lb.conf`
+
+**Firewall app-сервера:**
+
+| Порт | Доступ |
+|------|--------|
+| `80/tcp` | только с IP LB |
+| `20000`, `20002` | localhost only |
 
 ## Build-time env
 
@@ -62,17 +75,19 @@ Push в GHCR при push в `main` или tag `v*.*.*`:
 - `ghcr.io/analytics-bb/bb-spa:latest` (main)
 - `ghcr.io/analytics-bb/bb-spa:<semver>` (git tag)
 
-## Deploy на сервере
+## Обновление образа на сервере
 
-В `.env` backend-репо:
+1. CI push нового tag в GHCR
+2. В `bb_traffic_analysis/.env`: `BB_SPA_IMAGE` / `FASTMCP_IMAGE` (при обновлении backend-сервисов)
+3. `docker compose -f deploy/prod/docker-compose.yml pull <service>`
+4. `docker compose -f deploy/prod/docker-compose.yml up -d <service>`
+
+Для SPA:
 
 ```bash
+# bb_traffic_analysis/.env
 BB_SPA_IMAGE=ghcr.io/analytics-bb/bb-spa:1.0.0
-```
 
-Через orchestrator (`bb_traffic_analysis`):
-
-```bash
 docker compose -f deploy/prod/docker-compose.yml pull bb-spa
 docker compose -f deploy/prod/docker-compose.yml up -d bb-spa
 ```
@@ -84,8 +99,6 @@ docker compose -f deploy/prod/docker-compose.yml up -d bb-spa
 | Наружу | не публикуем (только loopback + хостовый nginx) |
 
 **LB upstream:** `http://<app-server-IP>:80`
-
-**Firewall:** `80/tcp` на app-сервере (желательно только с IP LB)
 
 ## Локальная проверка (DoD)
 
